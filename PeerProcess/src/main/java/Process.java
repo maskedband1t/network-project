@@ -59,6 +59,7 @@ public class Process {
                     Socket c = s.accept();
                     c.setSoTimeout(0);
 
+                    // TODO: implement multiple handlers for handling different types of incoming client messages
                     new Handler(c, peerInfo.getId()).start();
                 }
                 catch (SocketTimeoutException e) {
