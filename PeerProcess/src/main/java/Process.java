@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.time.Period;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 public class Process {
@@ -18,6 +20,9 @@ public class Process {
     public static final int REQUEST = 6;
     public static final int PIECE = 7;
 
+    // handlers
+    Hashtable <Integer, IHandler> messageHandlers = new Hashtable<Integer,IHandler>();
+
     // other variables
     private PeerInfo peerInfo;
     private boolean shutdown;
@@ -26,9 +31,22 @@ public class Process {
 
     // TODO: need to have a list of peers currently connected to
 
+    // TODO: need to save a directory of all peers from config file
+
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
+
+        // adding handlers for each message type
+        messageHandlers.put(0, new Handlers.ChokeHandler());
+        messageHandlers.put(1, new Handlers.UnchokeHandler());
+        messageHandlers.put(2, new Handlers.InterestedHandler());
+        messageHandlers.put(3, new Handlers.UninterestedHandler());
+        messageHandlers.put(4, new Handlers.HaveHandler());
+        messageHandlers.put(5, new Handlers.BitfieldHandler());
+        messageHandlers.put(6, new Handlers.RequestHandler());
+        messageHandlers.put(0, new Handlers.PieceHandler());
+
     }
 
     public List<Message> sendToPeer(String peerid, String msgtype,
@@ -45,6 +63,7 @@ public class Process {
 
     public void buildPeer(PeerInfo peerInfo) {
         // TODO: connect to the peer (this is for initial connections only)
+        // TODO: create a list of currently connected peers and add this built connection to that list
         throw new NotImplementedException();
     }
 

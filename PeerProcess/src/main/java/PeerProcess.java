@@ -16,16 +16,18 @@ public class PeerProcess {
 
     public static void main(String[] args) throws IOException
     {
-        // TODO: read and load configuration files
+        // TODO: takes in param peerId from args
         PeerInfo ourInfo = new PeerInfo(1, "localhost", 4000);
 
-        // TODO: should set up ALL peers before us
-        PeerInfo peerInfo = new PeerInfo(2, "localhost", 4001);
+        // TODO: read and load configuration files
 
         // TODO: set up logger
 
+        // generate info of our peer from config file
+        PeerInfo peerInfo = new PeerInfo(2, "localhost", 4001);
+
         // start the application
-        // TODO: start up app with ALL peers before us
+        // TODO: pass in a list of peerInfos instead of a single peerInfo
         P2PApp(ourInfo, peerInfo);
     }
 }

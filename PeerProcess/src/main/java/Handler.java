@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+// temporary handler class for reference based off of client.java
 public class Handler extends Thread{
     private String message;
     private Socket connection;
