@@ -45,11 +45,18 @@ public class Logger {
     }
 
     public boolean preferredNeighbors(List<Integer> ids) {
-        // Generate comma-separated string of preferred neighbor ids
-        String idsString = ids.toString();
-        idsString = idsString.substring(1, idsString.length() - 1);
-
-        return writeToLog(" has the preferred neighbors " + idsString);
+        try {
+            // Generate comma-separated string of preferred neighbor ids
+            String idsString = ids.toString();
+            idsString = idsString.substring(1, idsString.length() - 1);
+    
+            return writeToLog(" has the preferred neighbors " + idsString);
+        }
+        catch (StringIndexOutOfBoundsException e) {
+            System.out.println("An indexing error occurred.");
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean optimisticallyUnchokedNeighbor(int partnerId) {
