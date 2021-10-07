@@ -1,0 +1,7 @@
+public interface SocketInterface {
+
+	// write bytes from byte array over to socket
+
+	public void write(byte[] b) throws IOException;
+
+}

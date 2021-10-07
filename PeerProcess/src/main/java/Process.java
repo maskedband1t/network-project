@@ -45,6 +45,7 @@ public class Process {
 
     public void buildPeer(PeerInfo peerInfo) {
         // TODO: connect to the peer (this is for initial connections only)
+        Connection c = new Connection(peerInfo);
         throw new NotImplementedException();
     }
 
