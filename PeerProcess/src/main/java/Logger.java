@@ -24,7 +24,7 @@ public class Logger {
         try {
             // Write data to log file, prefaced with the date/time
             BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
-            bf.write(java.time.LocalDateTime.now() + ": Peer " + peerId + action + ".");
+            bf.write(java.time.LocalDateTime.now() + ": Peer " + peerId + action);
             bf.newLine();
             bf.close();
         }
@@ -37,11 +37,11 @@ public class Logger {
     }
 
     public boolean madeConnectionWith(int partnerId) {
-        return writeToLog(" makes a connection to Peer " + partnerId);
+        return writeToLog(" makes a connection to Peer " + partnerId + ".");
     }
 
     public boolean receivedConnectionFrom(int partnerId) {
-        return writeToLog(" is connected from Peer " + partnerId);
+        return writeToLog(" is connected from Peer " + partnerId + ".");
     }
 
     public boolean preferredNeighbors(List<Integer> ids) {
@@ -50,7 +50,7 @@ public class Logger {
             String idsString = ids.toString();
             idsString = idsString.substring(1, idsString.length() - 1);
     
-            return writeToLog(" has the preferred neighbors " + idsString);
+            return writeToLog(" has the preferred neighbors " + idsString + ".");
         }
         catch (StringIndexOutOfBoundsException e) {
             System.out.println("An indexing error occurred.");
@@ -60,30 +60,30 @@ public class Logger {
     }
 
     public boolean optimisticallyUnchokedNeighbor(int partnerId) {
-        return writeToLog(" has the optimistically unchoked neighbor " + partnerId);
+        return writeToLog(" has the optimistically unchoked neighbor " + partnerId + ".");
     }
 
     public boolean unchokedBy(int partnerId) {
-        return writeToLog(" is unchoked by " + partnerId);
+        return writeToLog(" is unchoked by " + partnerId + ".");
     }
 
     public boolean chokedBy(int partnerId) {
-        return writeToLog(" is choked by " + partnerId);
+        return writeToLog(" is choked by " + partnerId + ".");
     }
 
     public boolean receivedInterestedFrom(int partnerId) {
-        return writeToLog(" received the 'interested' message from " + partnerId);
+        return writeToLog(" received the 'interested' message from " + partnerId + ".");
     }
 
     public boolean receivedNotInterestedFrom(int partnerId) {
-        return writeToLog(" received the 'not interested' message from " + partnerId);
+        return writeToLog(" received the 'not interested' message from " + partnerId + ".");
     }
 
     public boolean downloadedPiece(int partnerId, int pieceIndex, int pieceCount) {
-        return writeToLog(" has downloaded the piece " + pieceIndex + " from " + partnerId + ". Now the number of pieces it has is " + pieceCount);
+        return writeToLog(" has downloaded the piece " + pieceIndex + " from " + partnerId + ". Now the number of pieces it has is " + pieceCount + ".");
     }
 
     public boolean completedDownload() {
-        return writeToLog(" has downloaded the complete file");
+        return writeToLog(" has downloaded the complete file.");
     }
 }
