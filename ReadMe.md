@@ -1,1 +1,3 @@
-I wrote this just so i can see the little discord webhook in action
+Network Project Fall 2021
+
+Allison Wu, Brian Koehler, Anurag Akkiraju
