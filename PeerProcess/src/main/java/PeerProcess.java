@@ -1,7 +1,73 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Vector;
 
 public class PeerProcess {
+    public static PeerInfoConfig _peerInfoConfig;
+    public static CommonConfig _commonConfig;
+
+    public static void debugPrintConfigs() {
+        _peerInfoConfig.debugPrint();
+        _commonConfig.debugPrint();
+    }
+
+    public static void getPeerInfoConfig() {
+        String st;
+        Vector<PeerTrackerInfo> peerInfoVector = new Vector<PeerTrackerInfo>();
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader("./../../../resources/main/PeerInfo.cfg"));
+            while((st = in.readLine()) != null) {
+
+                String[] tokens = st.split("\\s+");
+
+                peerInfoVector.addElement(new PeerTrackerInfo(
+                        Integer.parseInt(tokens[0]),
+                        tokens[1],
+                        Integer.parseInt(tokens[2]),
+                        tokens[3].equals("1")
+                    )
+                );
+            }
+            in.close();
+
+            // create the config
+            _peerInfoConfig = new PeerInfoConfig(peerInfoVector);
+        }
+        catch (Exception ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void getCommonConfig() {
+        String st;
+        int i = 1;
+        Vector<String> values = new Vector<String>();
+        try {
+            BufferedReader in = new BufferedReader(new FileReader("./../../../resources/main/Common.cfg"));
+            while((st = in.readLine()) != null) {
+                String[] tokens = st.split("\\s+");
+                values.add(tokens[1]);
+            }
+            in.close();
+
+            // create the config
+            _commonConfig = new CommonConfig(Integer.parseInt(values.elementAt(0)),
+                    Integer.parseInt(values.elementAt(1)),
+                    Integer.parseInt(values.elementAt(2)),
+                    values.elementAt(3),
+                    Integer.parseInt(values.elementAt(4)),
+                    Integer.parseInt(values.elementAt(5))
+            );
+
+        }
+        catch (Exception ex) {
+            System.out.println(ex.toString());
+        }
+    }
 
     public static void P2PApp(PeerInfo ourInfo, PeerInfo peerInfo) throws IOException {
         // initialize the process for this process
@@ -33,7 +99,13 @@ public class PeerProcess {
         int port = Integer.parseInt(args[1]);
         String isFirstPeer = args[2].toLowerCase(Locale.ROOT);
 
-        // TODO: read/load config files
+        // read/load config files
+        getPeerInfoConfig();
+        getCommonConfig();
+        debugPrintConfigs();
+
+        // TODO: use config files
+
         // TODO: this info should come from config files
         PeerInfo ourInfo = new PeerInfo(peerId, "localhost", port);
 

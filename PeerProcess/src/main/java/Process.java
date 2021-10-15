@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.time.Period;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -83,7 +81,7 @@ public class Process {
                     c.setSoTimeout(0);
 
                     // TODO: implement multiple handlers for handling different types of incoming client messages
-                    new Handler(c, peerInfo.getId()).start();
+                    new ExampleHandler(c, peerInfo.getId()).start();
                 }
                 catch (SocketTimeoutException e) {
                     continue;

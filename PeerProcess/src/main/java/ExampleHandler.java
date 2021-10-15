@@ -4,14 +4,14 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 // temporary handler class for reference based off of client.java
-public class Handler extends Thread{
+public class ExampleHandler extends Thread{
     private String message;
     private Socket connection;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private int peerId;
 
-    public Handler(Socket connection, int peerId) {
+    public ExampleHandler(Socket connection, int peerId) {
         this.connection = connection;
         this.peerId = peerId;
     }
