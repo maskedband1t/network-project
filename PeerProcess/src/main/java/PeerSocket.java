@@ -12,7 +12,7 @@ public class PeerSocket implements SocketInterface{
 	//constructor for PeerSocket, uses params to create Java API Socket
 	public PeerSocket(String host, int port)
 	throws IOException, UnknownHostException {
-		this(new Socket(host,port));
+		s = new Socket(host,port);
 	}
 
 	// above constructor gets thrown into this one for instantiation
@@ -42,12 +42,12 @@ public class PeerSocket implements SocketInterface{
 		return is.read();
 	}
 
-	public int read(byte[] b , int len){
+	public int read(byte[] b, int len) throws IOException {
 		// set default offset to 0
 		return is.read(b, 0, len);
 	}
 
-	public int read(byte[] b){
+	public int read(byte[] b) throws IOException {
 		return is.read(b);
 	}
 }

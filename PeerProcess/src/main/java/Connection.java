@@ -24,13 +24,13 @@ public class Connection{
 	throws IOException {
 		// TODO: implement logging here
 		// TODO: think about whether writing a message will also need its type passed
-		_socket.write(m.getMsgData()); // passed in byte[]
+		_socket.write(m.getPayload()); // passed in byte[]
 	}
 
 	public Message receive()
 	throws IOException {
-		msg_length = new byte[4];
-		type = new byte[1];
+		byte[] msg_length = new byte[4];
+		Byte type = -1;
 
 		try{
 			_socket.read(msg_length, 4);
@@ -40,10 +40,10 @@ public class Connection{
 		int ml = ByteBuffer.wrap(msg_length).getInt();
 
 		// allocating byte array for msg 
-		msg = new byte[ml];
+		byte[] msg = new byte[ml];
 		
 		try {
-			int type = _socket.read();
+			type = (byte)_socket.read();
 			if(type == -1){ 
 				// end of stream reached
 				//TODO: handle
@@ -54,12 +54,12 @@ public class Connection{
 		}
 
 		try {
-			_socketInterface.read(msg,ml);  // tries to read buffer length ml from output stream to capture the msg
+			_socket.read(msg,ml);  // tries to read buffer length ml from output stream to capture the msg
 		} catch (IOException e) {
 			//TODO: handle exception
 		}
 
-		Message m = new Message(type,msg); // not sure yet if type is representing exactly what it should
+		Message m = new Message(msg_length, type,msg); // not sure yet if type is representing exactly what it should
 		return m;
 	}
 

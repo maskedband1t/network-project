@@ -61,18 +61,20 @@ public class Process {
         throw new NotImplementedException();
     }
 
-    public void buildPeer(PeerInfo peerInfo) {
-        Connection c = new Connection(peerInfo);
+    public void buildPeer(PeerInfo info) throws IOException {
+        Connection c = new Connection(info);
+
+        System.out.println("Peer " + peerInfo.getId() + " connected to " + info.getId() + " at " + info.getHost() + ":" + info.getPort());
 
         // TODO: create a list of currently connected peers and add this built connection to that list
-        
-        throw new NotImplementedException();
     }
 
     public void run() {
         try {
             // listens for other peers to connect to us
             ServerSocket s = new ServerSocket(peerInfo.getPort());
+
+            System.out.println("Peer " + peerInfo.getId() + " is listening on " + peerInfo.getHost() + ":" + peerInfo.getPort());
 
             while (!shutdown) {
                 try {
