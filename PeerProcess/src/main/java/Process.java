@@ -89,13 +89,6 @@ public class Process {
 
                     // TODO: implement multiple handlers for handling different types of incoming client messages
                     new ExampleHandler(c, peerInfo.getId()).start();
-
-                    // TODO: get peerId (and pieceIndex if needed) or move each within handler and provide logger
-                    // if 'unchoke' message: logger.unchokedBy(peerId)
-                    // if 'choke' message: logger.chokedBy(peerId)
-                    // if 'have' message: logger.receivedHaveFrom(peerId, pieceIndex)
-                    // if 'interested' message: logger.receivedInterestedFrom(peerId)
-                    // if 'not interested' message: logger.receivedNotInterestedFrom(peerId)
                 }
                 catch (SocketTimeoutException e) {
                     continue;
