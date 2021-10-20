@@ -117,8 +117,6 @@ public class PeerProcess {
             peerInfo = new PeerInfo(peerId-1, "localhost", port-1);
         }
 
-        // TODO: set up logger
-
         // start the application
         // TODO: pass in a list of peerInfos instead of a single peerInfo
         P2PApp(ourInfo, peerInfo);
