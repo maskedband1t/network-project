@@ -24,7 +24,6 @@ public class Process {
     // other variables
     private PeerInfo peerInfo;
     private boolean shutdown;
-    private Logger logger;
 
     // TODO: need to have a bitfield for file information
 
@@ -35,9 +34,6 @@ public class Process {
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
-
-        // instantiate logger
-        this.logger = new Logger(peerInfo.getId());
 
         // adding handlers for each message type
         messageHandlers.put(0, new Handlers.ChokeHandler());
@@ -67,7 +63,7 @@ public class Process {
         Connection c = new Connection(info);
 
         System.out.println("Peer " + peerInfo.getId() + " connected to " + info.getId() + " at " + info.getHost() + ":" + info.getPort());
-        logger.madeConnectionWith(info.getId());
+        Logger.getInstance().madeConnectionWith(info.getId());
 
         // TODO: create a list of currently connected peers and add this built connection to that list
     }

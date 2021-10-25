@@ -2,7 +2,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class Handlers {
     public static class ChokeHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Choke Messages
 
             // NO packet payload
@@ -11,14 +11,14 @@ public class Handlers {
             // Unchoked = false
             // // We should no longer be sending RequestMessages to the peer
 
-            // logger.chokedBy(peerId)
+             Logger.getInstance().chokedBy(peerInfo.getId());
 
             throw new NotImplementedException();
         }
     }
 
     public static class UnchokeHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Unchoke Messages
 
             // NO packet payload
@@ -31,14 +31,14 @@ public class Handlers {
             //     If NotReceiveForRequest():
             //         break
 
-            // logger.unchokedBy(peerId)
+             Logger.getInstance().unchokedBy(peerInfo.getId());
 
             throw new NotImplementedException();
         }
     }
 
     public static class InterestedHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Interested Messages
 
             // NO packet payload
@@ -46,14 +46,14 @@ public class Handlers {
             // Psuedocode
             // I don't think this does anything? Interested/Not interested messages are moreso used by the peer that sent it
 
-            // logger.receivedInterestedFrom(peerId)
+             Logger.getInstance().receivedInterestedFrom(peerInfo.getId());
 
             throw new NotImplementedException();
         }
     }
 
     public static class UninterestedHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Uninterested Messages
 
             // NO packet payload
@@ -61,14 +61,14 @@ public class Handlers {
             // Psuedocode
             // I don't think this does anything? Interested/Not interested messages are moreso used by the peer that sent it
 
-            // logger.receivedNotInterestedFrom(peerId)
+            Logger.getInstance().receivedNotInterestedFrom(peerInfo.getId());
 
             throw new NotImplementedException();
         }
     }
 
     public static class HaveHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Have Messages
 
             // HAS packet payload: 4 byte piece index field
@@ -84,14 +84,14 @@ public class Handlers {
             // Else:
             //     SendNotInterestedMessageTo(peerInfo)
 
-            // logger.receivedHaveFrom(peerId, pieceIndex)
+            // Logger.getInstance().receivedHaveFrom(peerInfo.getId(), pieceIndex)
 
             throw new NotImplementedException();
         }
     }
 
     public static class BitfieldHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Bitfield Messages
 
             // HAS packet payload: bitfield structure, which tracks the pieces of the file the peer has
@@ -111,7 +111,7 @@ public class Handlers {
     }
 
     public static class RequestHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Request Messages
 
             // HAS packet payload: 4 byte piece index field
@@ -125,7 +125,7 @@ public class Handlers {
     }
 
     public static class PieceHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo, Logger logger) {
+        public void handleMsg(Message msg, PeerInfo peerInfo) {
             // TODO: Implement Handler for Piece Messages
 
             // Psuedocode
