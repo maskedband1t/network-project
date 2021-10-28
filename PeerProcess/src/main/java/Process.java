@@ -9,17 +9,18 @@ import java.util.List;
 
 public class Process {
     /* MESSAGE TYPES */
-    public static final int CHOKE = 0;
-    public static final int UNCHOKE = 1;
-    public static final int INTERESTED = 2;
-    public static final int NOTINTERESTED = 3;
-    public static final int HAVE = 4;
-    public static final int BITFIELD = 5;
-    public static final int REQUEST = 6;
-    public static final int PIECE = 7;
+    public static final byte CHOKE = 0;
+    public static final byte UNCHOKE = 1;
+    public static final byte INTERESTED = 2;
+    public static final byte NOTINTERESTED = 3;
+    public static final byte HAVE = 4;
+    public static final byte BITFIELD = 5;
+    public static final byte REQUEST = 6;
+    public static final byte PIECE = 7;
 
     // handlers
-    Hashtable <Integer, IHandler> messageHandlers = new Hashtable<Integer,IHandler>();
+    Hashtable<byte, IHandler> messageHandlers = new Hashtable<byte,IHandler>();
+    Hashtable<Integer, Connection> peerConnections = new Hashtable<Integer, Connection>();
 
     // other variables
     private PeerInfo peerInfo;
@@ -36,14 +37,14 @@ public class Process {
         this.shutdown = false;
 
         // adding handlers for each message type
-        messageHandlers.put(0, new Handlers.ChokeHandler());
-        messageHandlers.put(1, new Handlers.UnchokeHandler());
-        messageHandlers.put(2, new Handlers.InterestedHandler());
-        messageHandlers.put(3, new Handlers.UninterestedHandler());
-        messageHandlers.put(4, new Handlers.HaveHandler());
-        messageHandlers.put(5, new Handlers.BitfieldHandler());
-        messageHandlers.put(6, new Handlers.RequestHandler());
-        messageHandlers.put(0, new Handlers.PieceHandler());
+        messageHandlers.put(CHOKE, new Handlers.ChokeHandler());
+        messageHandlers.put(UNCHOKE, new Handlers.UnchokeHandler());
+        messageHandlers.put(INTERESTED, new Handlers.InterestedHandler());
+        messageHandlers.put(NOTINTERESTED, new Handlers.UninterestedHandler());
+        messageHandlers.put(HAVE, new Handlers.HaveHandler());
+        messageHandlers.put(BITFIELD, new Handlers.BitfieldHandler());
+        messageHandlers.put(REQUEST, new Handlers.RequestHandler());
+        messageHandlers.put(PIECE, new Handlers.PieceHandler());
 
     }
 
@@ -61,6 +62,7 @@ public class Process {
 
     public void buildPeer(PeerInfo info) throws IOException {
         Connection c = new Connection(info);
+        peerConnections.put(info.getId(), c);
 
         System.out.println("Peer " + peerInfo.getId() + " connected to " + info.getId() + " at " + info.getHost() + ":" + info.getPort());
         Logger.getInstance().madeConnectionWith(info.getId());
@@ -80,11 +82,31 @@ public class Process {
                     // every time a peer connects to us, we handle their connection with Handler
                     Socket c = s.accept();
                     c.setSoTimeout(0);
-                    
-                    // TODO: logger.receivedConnectionFrom(peerId)
+                    DataInputStream is = new DataInputStream(c.getInputStream());
 
-                    // TODO: implement multiple handlers for handling different types of incoming client messages
-                    new ExampleHandler(c, peerInfo.getId()).start();
+                    Logger.getInstance().receivedConnectionFrom(theirId);
+
+                    // if we don't have connection to this peer, make one
+                    Connection peerConn;
+                    if (!peerConnections.containsKey(theirId)) {
+                        peerConn = new Connection(theirPeerInfo);
+                        peerConnections.put(theirId, peerConn);
+                    }
+                    else
+                        peerConn = peerConnections.get(theirId);
+
+                    // parse incoming info into a message
+                    byte[] incomingMsgLen = new byte[4];
+                    byte incomingMsgType;
+                    is.readFully(incomingMsgLen);
+                    is.readFully(incomingMsgType);
+                    int lenAsInt = ByteBuffer.wrap(incomingMsgLen).getInt();
+                    byte[] incomingMsgPayload = new byte[lenAsInt];
+                    is.readFully(incomingMsgPayload);
+                    Message incomingMsg = new Message(incomingMsgLen, incomingMsgType, incomingMsgPayload);
+
+                    // handle msg
+                    messageHandlers.get(incomingMsg).handleMsg(incomingMsg, peerConn);
                 }
                 catch (SocketTimeoutException e) {
                     continue;

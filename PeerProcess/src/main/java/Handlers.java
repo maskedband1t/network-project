@@ -2,14 +2,14 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class Handlers {
     public static class ChokeHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Choke Messages
 
             // NO packet payload
 
             // Psuedocode
             // Unchoked = false
-            // // We should no longer be sending RequestMessages to the peer
+            // We should no longer be sending RequestMessages to the peer
 
              Logger.getInstance().chokedBy(peerInfo.getId());
 
@@ -17,8 +17,9 @@ public class Handlers {
         }
     }
 
+
     public static class UnchokeHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Unchoke Messages
 
             // NO packet payload
@@ -27,6 +28,10 @@ public class Handlers {
             // While(Unchoked):
             //     PieceToRequest = Random Selection Strategy to select a piece that the peer has that we do not and have not requested
             //     SendRequestMessageTo(peerInfo, forPieceWithHeader=PieceToRequest.Header)
+                    /**
+                     * Message msg = new Message();
+                     * peerConn.send(msg);
+                     * **/
             //     // Handle the edge case in which we request the piece but never recieve it bc the peer chokes us
             //     If NotReceiveForRequest():
             //         break
@@ -38,7 +43,7 @@ public class Handlers {
     }
 
     public static class InterestedHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Interested Messages
 
             // NO packet payload
@@ -53,7 +58,7 @@ public class Handlers {
     }
 
     public static class UninterestedHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Uninterested Messages
 
             // NO packet payload
@@ -68,7 +73,7 @@ public class Handlers {
     }
 
     public static class HaveHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Have Messages
 
             // HAS packet payload: 4 byte piece index field
@@ -80,18 +85,27 @@ public class Handlers {
             // Note: We keep a bitfield per peer to track what pieces they have
 
             // If bitfield contains PieceThatWeDontHave:
-            //     SendInterestedMessageTo(peerInfo)
+                    //SendInterestedMessageTo(peerInfo)
+                    /**
+                     * Message msg = new Message(new byte[]{0,0,0,0}, 2, new byte[]);
+                     * peerConn.send(msg);
+                     * **/
             // Else:
-            //     SendNotInterestedMessageTo(peerInfo)
+                    //SendNotInterestedMessageTo(peerInfo)
+                    /**
+                     * Message msg = new Message(new byte[]{0,0,0,0}, 3, new byte[]);
+                     * peerConn.send(msg);
+                     * **/
 
-            // Logger.getInstance().receivedHaveFrom(peerInfo.getId(), pieceIndex)
+
+            Logger.getInstance().receivedHaveFrom(peerInfo.getId(), pieceIndex)
 
             throw new NotImplementedException();
         }
     }
 
     public static class BitfieldHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Bitfield Messages
 
             // HAS packet payload: bitfield structure, which tracks the pieces of the file the peer has
@@ -102,16 +116,24 @@ public class Handlers {
             // Note: We only handle this bitfield message once per peer
 
             // If bitfield contains PieceThatWeDontHave:
-            //     SendInterestedMessageTo(peerInfo)
+                    //SendInterestedMessageTo(peerInfo)
+                    /**
+                     * Message msg = new Message(new byte[]{0,0,0,0}, 2, new byte[]);
+                     * peerConn.send(msg);
+                     * **/
             // Else:
-            //     SendNotInterestedMessageTo(peerInfo)
+                    //SendNotInterestedMessageTo(peerInfo)
+                    /**
+                     * Message msg = new Message(new byte[]{0,0,0,0}, 3, new byte[]);
+                     * peerConn.send(msg);
+                     * **/
 
             throw new NotImplementedException();
         }
     }
 
     public static class RequestHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Request Messages
 
             // HAS packet payload: 4 byte piece index field
@@ -119,13 +141,17 @@ public class Handlers {
 
             // Psuedocode
             // SendPieceMessageTo(peerInfo, pieceWithHeader=payload)
+            /**
+             * Message msg = new Message(new byte[]{length of payload}, 7, new byte[piece index field + piece content]);
+             * peerConn.send(msg);
+             */
 
             throw new NotImplementedException();
         }
     }
 
     public static class PieceHandler implements IHandler {
-        public void handleMsg(Message msg, PeerInfo peerInfo) {
+        public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Piece Messages
 
             // Psuedocode
@@ -135,6 +161,10 @@ public class Handlers {
             // Foreach neighbor in neighbors:
             //     If neighbor.bitfield does not have any pieces we want:
             //         SendNotInterestedMessageTo(neighbor.peerInfo)
+                        /**
+                         * Message msg = new Message(new byte[]{0,0,0,0}, 3, new byte[]);
+                         * peerConn.send(msg);
+                         * **/
 
             throw new NotImplementedException();
         }
