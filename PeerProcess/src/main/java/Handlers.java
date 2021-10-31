@@ -11,7 +11,7 @@ public class Handlers {
             // Unchoked = false
             // We should no longer be sending RequestMessages to the peer
 
-             Logger.getInstance().chokedBy(peerInfo.getId());
+             Logger.getInstance().chokedBy(peerConn.GetInfo().getId());
 
             throw new NotImplementedException();
         }
@@ -36,7 +36,7 @@ public class Handlers {
             //     If NotReceiveForRequest():
             //         break
 
-             Logger.getInstance().unchokedBy(peerInfo.getId());
+             Logger.getInstance().unchokedBy(peerConn.GetInfo().getId());
 
             throw new NotImplementedException();
         }
@@ -51,7 +51,7 @@ public class Handlers {
             // Psuedocode
             // I don't think this does anything? Interested/Not interested messages are moreso used by the peer that sent it
 
-             Logger.getInstance().receivedInterestedFrom(peerInfo.getId());
+             Logger.getInstance().receivedInterestedFrom(peerConn.GetInfo().getId());
 
             throw new NotImplementedException();
         }
@@ -66,7 +66,7 @@ public class Handlers {
             // Psuedocode
             // I don't think this does anything? Interested/Not interested messages are moreso used by the peer that sent it
 
-            Logger.getInstance().receivedNotInterestedFrom(peerInfo.getId());
+            Logger.getInstance().receivedNotInterestedFrom(peerConn.GetInfo().getId());
 
             throw new NotImplementedException();
         }
@@ -97,8 +97,8 @@ public class Handlers {
                      * peerConn.send(msg);
                      * **/
 
-
-            Logger.getInstance().receivedHaveFrom(peerInfo.getId(), pieceIndex)
+            // TODO: log correct pieceindex
+            Logger.getInstance().receivedHaveFrom(peerConn.GetInfo().getId(), -1);//, pieceIndex)
 
             throw new NotImplementedException();
         }

@@ -1,25 +1,27 @@
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
 import java.util.Hashtable;
 import java.util.List;
 
 public class Process {
     /* MESSAGE TYPES */
-    public static final byte CHOKE = 0;
-    public static final byte UNCHOKE = 1;
-    public static final byte INTERESTED = 2;
-    public static final byte NOTINTERESTED = 3;
-    public static final byte HAVE = 4;
-    public static final byte BITFIELD = 5;
-    public static final byte REQUEST = 6;
-    public static final byte PIECE = 7;
+    public static final Integer CHOKE = 0;
+    public static final Integer UNCHOKE = 1;
+    public static final Integer INTERESTED = 2;
+    public static final Integer NOTINTERESTED = 3;
+    public static final Integer HAVE = 4;
+    public static final Integer BITFIELD = 5;
+    public static final Integer REQUEST = 6;
+    public static final Integer PIECE = 7;
 
     // handlers
-    Hashtable<byte, IHandler> messageHandlers = new Hashtable<byte,IHandler>();
+    Hashtable<Integer, IHandler> messageHandlers = new Hashtable<Integer,IHandler>();
     Hashtable<Integer, Connection> peerConnections = new Hashtable<Integer, Connection>();
 
     // other variables
@@ -84,29 +86,37 @@ public class Process {
                     c.setSoTimeout(0);
                     DataInputStream is = new DataInputStream(c.getInputStream());
 
-                    Logger.getInstance().receivedConnectionFrom(theirId);
+                    // we can collect ip and port and map to peer id
+                    String host = c.getInetAddress().getHostName();
+                    int port = c.getPort();
+                    PeerInfo peerInfo = PeerInfoConfig.GetPeerInfo(host, port);
 
-                    // if we don't have connection to this peer, make one
+                    Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
+
+                    // if handshake, make connection for this peer
                     Connection peerConn;
-                    if (!peerConnections.containsKey(theirId)) {
-                        peerConn = new Connection(theirPeerInfo);
-                        peerConnections.put(theirId, peerConn);
+                    // TODO: detect handshakes
+                    if (true) {//(IsHandshake()) {
+                        peerConn = new Connection(peerInfo);
+                        peerConnections.put(peerInfo.getId(), peerConn);
                     }
-                    else
-                        peerConn = peerConnections.get(theirId);
+                    else {
+                        // use existing connection
+                        peerConn = peerConnections.get(peerInfo.getId());
 
-                    // parse incoming info into a message
-                    byte[] incomingMsgLen = new byte[4];
-                    byte incomingMsgType;
-                    is.readFully(incomingMsgLen);
-                    is.readFully(incomingMsgType);
-                    int lenAsInt = ByteBuffer.wrap(incomingMsgLen).getInt();
-                    byte[] incomingMsgPayload = new byte[lenAsInt];
-                    is.readFully(incomingMsgPayload);
-                    Message incomingMsg = new Message(incomingMsgLen, incomingMsgType, incomingMsgPayload);
+                        // parse incoming info into a message
+                        byte[] incomingMsgLen = new byte[4];
+                        byte[] incomingMsgType = new byte[1];
+                        is.readFully(incomingMsgLen);
+                        is.readFully(incomingMsgType);
+                        int lenAsInt = ByteBuffer.wrap(incomingMsgLen).getInt();
+                        byte[] incomingMsgPayload = new byte[lenAsInt];
+                        is.readFully(incomingMsgPayload);
+                        Message incomingMsg = new Message(incomingMsgLen, incomingMsgType[0], incomingMsgPayload);
 
-                    // handle msg
-                    messageHandlers.get(incomingMsg).handleMsg(incomingMsg, peerConn);
+                        // handle msg
+                        messageHandlers.get(incomingMsg).handleMsg(incomingMsg, peerConn);
+                    }
                 }
                 catch (SocketTimeoutException e) {
                     continue;

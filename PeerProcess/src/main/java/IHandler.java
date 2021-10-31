@@ -1,3 +1,3 @@
 public interface IHandler {
-    public void handleMsg(Message msg, PeerInfo peerInfo);
+    public void handleMsg(Message msg, Connection peerConn);
 }

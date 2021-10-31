@@ -24,9 +24,9 @@ public class Connection{
 	throws IOException {
 		// TODO: implement logging here
 		// TODO: think about whether writing a message will also need its type passed
-		byte[] lengthAsArr = { m.getLength() };
+		byte[] lengthAsArr = m.getLength();
 		_socket.write(lengthAsArr);
-		_socket.write(m.getType());
+		_socket.write(new byte[]{m.getType()});
 		_socket.write(m.getPayload()); // passed in byte[]
 	}
 
@@ -77,5 +77,7 @@ public class Connection{
 		}
 	}
 
-
+	public PeerInfo GetInfo() {
+		return _info;
+	}
 }
