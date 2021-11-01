@@ -119,12 +119,14 @@ public class Process {
                     }
                 }
                 catch (SocketTimeoutException e) {
-                    continue;
+                    System.out.println(e);
+                    shutdown = true;
                 }
             }
             s.close();
         }
         catch (Exception e) {
+            System.out.println(e);
         }
         shutdown = true;
     }
