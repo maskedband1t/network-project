@@ -1,17 +1,13 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Vector;
 
 public class PeerProcess {
-    public static PeerInfoConfig _peerInfoConfig;
-    public static CommonConfig _commonConfig;
-
     public static void debugPrintConfigs() {
-        _peerInfoConfig.debugPrint();
-        _commonConfig.debugPrint();
+        PeerInfoConfig.getInstance().debugPrint();
+        CommonConfig.getInstance().debugPrint();
     }
 
     public static void getPeerInfoConfig() {
@@ -35,7 +31,7 @@ public class PeerProcess {
             in.close();
 
             // create the config
-            _peerInfoConfig = new PeerInfoConfig(peerInfoVector);
+            PeerInfoConfig.init(peerInfoVector);
         }
         catch (Exception ex) {
             System.out.println(ex.toString());
@@ -55,7 +51,7 @@ public class PeerProcess {
             in.close();
 
             // create the config
-            _commonConfig = new CommonConfig(Integer.parseInt(values.elementAt(0)),
+            CommonConfig.init(Integer.parseInt(values.elementAt(0)),
                     Integer.parseInt(values.elementAt(1)),
                     Integer.parseInt(values.elementAt(2)),
                     values.elementAt(3),

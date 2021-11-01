@@ -1,15 +1,30 @@
 import java.util.List;
 
 public class PeerInfoConfig {
+    private static PeerInfoConfig instance = null;
     List<PeerTrackerInfo> peerTrackerInfo;
+
+    public static PeerInfoConfig getInstance() {
+        if (instance == null) {
+            throw new AssertionError("PeerInfoConfig not yet initialized. Try PeerInfoConfig.init(List<PeerTrackerInfo>).");
+        }
+        return instance;
+    }
+
+    public static void init(List<PeerTrackerInfo> peerTrackerInfo) {
+        if (instance != null) {
+            throw new AssertionError("PeerInfoConfig is already initialized!");
+        }
+        instance = new PeerInfoConfig(peerTrackerInfo);
+    }
 
     public PeerInfoConfig(List<PeerTrackerInfo> peerTrackerInfo) {
         this.peerTrackerInfo = peerTrackerInfo;
     }
 
-    public static PeerInfo GetPeerInfo(String host, int port){
+    public PeerInfo GetPeerInfo(String host, int port){
         return peerTrackerInfo.stream()
-                .filter(info -> info.peerInfo.hostname == host && info.peerInfo.port == port)
+                .filter(info -> info.peerInfo.getHost() == host && info.peerInfo.getPort() == port)
                 .findFirst()
                 .get().peerInfo;
     }

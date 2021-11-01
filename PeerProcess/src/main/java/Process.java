@@ -89,7 +89,7 @@ public class Process {
                     // we can collect ip and port and map to peer id
                     String host = c.getInetAddress().getHostName();
                     int port = c.getPort();
-                    PeerInfo peerInfo = PeerInfoConfig.GetPeerInfo(host, port);
+                    PeerInfo peerInfo = PeerInfoConfig.getInstance().GetPeerInfo(host, port);
 
                     Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
 
