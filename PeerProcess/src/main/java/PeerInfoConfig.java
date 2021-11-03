@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class PeerInfoConfig {
@@ -27,6 +28,17 @@ public class PeerInfoConfig {
                 .filter(info -> info.peerInfo.getHost() == host && info.peerInfo.getPort() == port)
                 .findFirst()
                 .get().peerInfo;
+    }
+
+    public List<PeerInfo> GetPeersToConnectToFor(int peerId) {
+        List<PeerInfo> peersBefore = new ArrayList<PeerInfo>();
+        for (int i = 0; i < peerTrackerInfo.size(); i++) {
+            if (peerTrackerInfo.get(i).peerInfo.getId() != peerId)
+                peersBefore.add(peerTrackerInfo.get(i).peerInfo);
+            else
+                return peersBefore;
+        }
+        return new ArrayList<PeerInfo>();
     }
 
     public void debugPrint() {

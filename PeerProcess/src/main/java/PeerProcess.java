@@ -71,7 +71,7 @@ public class PeerProcess {
 
         // build connections to its peers if it has any peers
         if (peerInfo != null)
-            peer.buildPeer(peerInfo);
+            peer.buildPeers();
 
         (new Thread() {
             public void run() { peer.run();
