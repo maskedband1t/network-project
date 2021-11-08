@@ -1,5 +1,6 @@
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Handlers {
@@ -48,7 +49,13 @@ public class Handlers {
                 byte[] length = ByteBuffer.allocate(4).putInt(4).array();
                 byte[] pieceIndex = ByteBuffer.allocate(4).putInt(index).array();
                 Message requestMsg = new Message(length, Process.REQUEST.byteValue(), pieceIndex);
-                peerConn.send(requestMsg);
+                try {
+                    peerConn.send(requestMsg);
+                }
+                catch (IOException e) {
+                    System.err.println("IO Error on request.");
+                    e.printStackTrace();
+                }
             }
             // handle not received
 
@@ -163,6 +170,10 @@ public class Handlers {
                          * Message msg = new Message(new byte[]{0,0,0,0}, 3, new byte[]);
                          * peerConn.send(msg);
                          * **/
+
+            // Logger.getInstance().downloadedPiece(peerConn.GetInfo().getId(), pieceIndex, pieceCount);
+            // if complete file:
+            //     Logger.getInstance().completedDownload();
 
             throw new NotImplementedException();
         }
