@@ -26,12 +26,12 @@ public class Process {
     // handlers
     Hashtable<Integer, IHandler> messageHandlers = new Hashtable<Integer,IHandler>();
     Hashtable<Integer, Connection> peerConnections = new Hashtable<Integer, Connection>();
+    Hashtable<Integer, Bitfield> peerBitfields = new Hashtable<Integer, Bitfield>();
 
     // other variables
     private PeerInfo peerInfo;
     private boolean shutdown;
-
-    // TODO: need to have a bitfield for file information
+    private Bitfield bitfield;
 
     // TODO: need to have a list of peers currently connected to
 
@@ -40,6 +40,7 @@ public class Process {
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
+        this.bitfield = new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize);
 
         // adding handlers for each message type
         messageHandlers.put(CHOKE, new Handlers.ChokeHandler());
@@ -78,6 +79,7 @@ public class Process {
         // create connection
         Connection c = new Connection(info);
         peerConnections.put(info.getId(), c);
+        peerBitfields.put(info.getId(), new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize));
 
         System.out.println("Peer " + peerInfo.getId() + " connected to " + info.getId() + " at " + info.getHost() + ":" + info.getPort());
         Logger.getInstance().madeConnectionWith(info.getId());

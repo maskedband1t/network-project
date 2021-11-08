@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 public class Bitfield {
     private BitSet bits;
@@ -29,6 +31,14 @@ public class Bitfield {
         return bits.size();
     }
 
+    public int getRandomUnsetIndex() {
+        List<Integer> unsets = new ArrayList<Integer>();
+        for (int i = bits.nextSetBit(0); i != -1; i = bits.nextSetBit(i + 1)) {
+            unsets.add(i);
+        }
+        return (int) Math.random() * unsets.size();
+    }
+    
     // return true if has piece (i.e. bit at index is 1)
     public boolean hasPiece(int pieceIndex) {
         try {

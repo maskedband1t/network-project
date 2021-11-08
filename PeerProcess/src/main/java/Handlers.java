@@ -1,6 +1,10 @@
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.nio.ByteBuffer;
+
 public class Handlers {
+    public static boolean choked = true;
+
     public static class ChokeHandler implements IHandler {
         public void handleMsg(Message msg, Connection peerConn) {
             // TODO: Implement Handler for Choke Messages
@@ -10,8 +14,8 @@ public class Handlers {
             // Psuedocode
             // Unchoked = false
             // We should no longer be sending RequestMessages to the peer
-
-             Logger.getInstance().chokedBy(peerConn.GetInfo().getId());
+            choked = true;
+            Logger.getInstance().chokedBy(peerConn.GetInfo().getId());
 
             throw new NotImplementedException();
         }
@@ -36,7 +40,17 @@ public class Handlers {
             //     If NotReceiveForRequest():
             //         break
 
-             Logger.getInstance().unchokedBy(peerConn.GetInfo().getId());
+            choked = false;
+            Logger.getInstance().unchokedBy(peerConn.GetInfo().getId());
+
+            while (!choked) { // need to choose an actual conditional - where to keep track of choked?
+                int index = 0; // int index = Bitfield.getRandomUnsetIndex();
+                byte[] length = ByteBuffer.allocate(4).putInt(4).array();
+                byte[] pieceIndex = ByteBuffer.allocate(4).putInt(index).array();
+                Message requestMsg = new Message(length, Process.REQUEST.byteValue(), pieceIndex);
+                peerConn.send(requestMsg);
+            }
+            // handle not received
 
             throw new NotImplementedException();
         }
@@ -44,31 +58,15 @@ public class Handlers {
 
     public static class InterestedHandler implements IHandler {
         public void handleMsg(Message msg, Connection peerConn) {
-            // TODO: Implement Handler for Interested Messages
-
-            // NO packet payload
-
-            // Psuedocode
-            // I don't think this does anything? Interested/Not interested messages are moreso used by the peer that sent it
-
-             Logger.getInstance().receivedInterestedFrom(peerConn.GetInfo().getId());
-
-            throw new NotImplementedException();
+            // This doesn't do anything?
+            Logger.getInstance().receivedInterestedFrom(peerConn.GetInfo().getId());
         }
     }
 
     public static class UninterestedHandler implements IHandler {
         public void handleMsg(Message msg, Connection peerConn) {
-            // TODO: Implement Handler for Uninterested Messages
-
-            // NO packet payload
-
-            // Psuedocode
-            // I don't think this does anything? Interested/Not interested messages are moreso used by the peer that sent it
-
+            // This doesn't do anything?
             Logger.getInstance().receivedNotInterestedFrom(peerConn.GetInfo().getId());
-
-            throw new NotImplementedException();
         }
     }
 
