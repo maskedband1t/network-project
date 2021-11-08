@@ -14,16 +14,31 @@ public class Connection{
 		_socket = factory.buildSocket(_info.getHost(), _info.getPort());
 	}
 
+	// opens new connection to localhost peer for dev purposes
+	public Connection(int peerId, int port)
+			throws IOException, UnknownHostException {
+		_info = new PeerInfo(peerId, "localhost", port);
+		PeerSocketFactory factory = new PeerSocketFactory();
+		_socket = factory.buildSocket(_info.getHost(), _info.getPort());
+	}
+
 	// creates connection with pre-existing socket
 	public Connection(PeerInfo info, SocketInterface socket){
 		_info = info;
 		_socket = socket;
 	}
 
+	public void sendHandshake(byte[] handshake) throws IOException{
+		_socket.write(handshake);
+	}
+
 	public void send(Message m)
 	throws IOException {
 		// TODO: implement logging here
 		// TODO: think about whether writing a message will also need its type passed
+		byte[] lengthAsArr = m.getLength();
+		_socket.write(lengthAsArr);
+		_socket.write(new byte[]{m.getType()});
 		_socket.write(m.getPayload()); // passed in byte[]
 	}
 
@@ -74,5 +89,7 @@ public class Connection{
 		}
 	}
 
-
+	public PeerInfo GetInfo() {
+		return _info;
+	}
 }

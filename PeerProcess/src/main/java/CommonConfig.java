@@ -1,12 +1,27 @@
-import java.util.List;
+
 
 public class CommonConfig {
+    private static CommonConfig instance = null;
     int numPrefNeighbors;
     int unchokingInterval;
     int optimisticUnchokingInterval;
     String fileName;
     long fileSize;
     long pieceSize;
+
+    public static CommonConfig getInstance() {
+        if (instance == null) {
+            throw new AssertionError("CommonConfig not yet initialized. Try CommonConfig.init(int, int, int, String, long, long).");
+        }
+        return instance;
+    }
+
+    public static void init(int numPrefNeighbors, int unchokingInterval, int optimisticUnchokingInterval, String fileName, long fileSize, long pieceSize) {
+        if (instance != null) {
+            throw new AssertionError("CommonConfig is already initialized!");
+        }
+        instance = new CommonConfig(numPrefNeighbors, unchokingInterval, optimisticUnchokingInterval, fileName, fileSize, pieceSize);
+    }
 
     public CommonConfig(int numPrefNeighbors, int unchokingInterval, int optimisticUnchokingInterval, String fileName, long fileSize, long pieceSize) {
         this.numPrefNeighbors = numPrefNeighbors;

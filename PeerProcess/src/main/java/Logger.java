@@ -5,10 +5,26 @@ import java.io.IOException;
 import java.util.List;
 
 public class Logger {
+    private static Logger instance = null;
     private int peerId;
     private File logFile;
+
+    public static Logger getInstance() {
+        if (instance == null) {
+            throw new AssertionError("Logger not yet initialized. Try logger.init().");
+        }
+        return instance;
+    }
+
+    public static void init(int peerId) {
+        if (instance != null) {
+            throw new AssertionError("Logger already initialized!");
+        }
+
+        instance = new Logger(peerId);
+    }
     
-    public Logger(int peerId) {
+    private Logger(int peerId) {
         this.peerId = peerId;
         try {
             logFile = new File("log_peer_" + peerId + ".log");
