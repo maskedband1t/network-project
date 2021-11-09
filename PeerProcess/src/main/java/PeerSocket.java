@@ -5,14 +5,16 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class PeerSocket implements SocketInterface{
-	private Socket s;
-	private InputStream is;
-	private OutputStream os;
+	private Socket s = null;
+	private InputStream is = null;
+	private OutputStream os = null;
 
 	//constructor for PeerSocket, uses params to create Java API Socket
 	public PeerSocket(String host, int port)
 	throws IOException, UnknownHostException {
 		s = new Socket(host,port);
+		is = s.getInputStream();
+		os = s.getOutputStream();
 	}
 
 	// above constructor gets thrown into this one for instantiation
@@ -33,6 +35,9 @@ public class PeerSocket implements SocketInterface{
 
 	public void write(byte[] b)
 	throws IOException{
+		if (os == null)
+			System.out.println("Outputstream is null");
+		System.out.println("Will be writing: " + b.toString() + " using the following output stream: " + os.toString());
 		os.write(b);
 		os.flush();
 	}

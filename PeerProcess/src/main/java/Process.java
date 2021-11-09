@@ -104,6 +104,8 @@ public class Process {
             outputStream.write(peerId);
             byte[] handshakeMsg = outputStream.toByteArray();
 
+            System.out.println("Handshake message created for " + peerInfo.getId() + " -> " + peer.getId() + ": " + handshakeMsg.toString());
+
             // create connection
             System.out.println("Created connection");
             Connection c = new Connection(peer.getId(), peer.getPort()); // dev purposes, localhost host assumed
