@@ -1,4 +1,0 @@
-StartRemotePeers.java
- StartRemotePeers
-RemotePeerInfo.java
- RemotePeerInfo

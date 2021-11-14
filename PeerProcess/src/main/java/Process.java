@@ -3,9 +3,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Hashtable;
@@ -107,7 +105,7 @@ public class Process {
             System.out.println("Handshake message created for " + peerInfo.getId() + " -> " + peer.getId() + ": " + handshakeMsg.toString());
 
             // create connection
-            System.out.println("Created connection");
+            System.out.println("Created connection for localhost:" + peer.getPort());
             Connection c = new Connection(peer.getId(), peer.getPort()); // dev purposes, localhost host assumed
             peerConnections.put(peer.getId(), c);
 
@@ -134,10 +132,28 @@ public class Process {
                     c.setSoTimeout(0);
                     DataInputStream is = new DataInputStream(c.getInputStream());
 
+                    System.out.println("Accepted socket connection");
+
                     // we can collect ip and port and map to peer id
                     String host = c.getInetAddress().getHostName();
+                    System.out.println("Host: " + host);
                     int port = c.getPort();
-                    PeerInfo peerInfo = PeerInfoConfig.getInstance().GetPeerInfo(host, port);
+                    System.out.println("Port: " + port);
+
+                    InetSocketAddress sockaddr = (InetSocketAddress)c.getRemoteSocketAddress();
+                    System.out.println("Sock address: " + sockaddr);
+
+                    InetAddress inaddr = sockaddr.getAddress();
+                    System.out.println("Address: " + inaddr);
+
+                    PeerInfo peerInfo;
+                    try {
+                        peerInfo = PeerInfoConfig.getInstance().GetPeerInfo(host, port);
+                    }
+                    catch (java.util.NoSuchElementException e){
+                        System.out.println("I do not recognized a peer with host:port = " + host + ":" + port);
+                        break;
+                    }
 
                     Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
 
