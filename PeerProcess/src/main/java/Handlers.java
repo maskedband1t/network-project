@@ -1,6 +1,8 @@
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 public class Handlers {
@@ -138,44 +140,51 @@ public class Handlers {
     }
 
     public static class RequestHandler implements IHandler {
-        public void handleMsg(Message msg, Connection peerConn) {
+        public void handleMsg(Message msg, Connection peerConn) throws IOException {
             // TODO: Implement Handler for Request Messages
 
             // HAS packet payload: 4 byte piece index field
             // Ex: The peer has requested for us to send the piece corresponding to the 4 byte piece index field in the payload
 
             // Psuedocode
-            // SendPieceMessageTo(peerInfo, pieceWithHeader=payload)
-            /**
-             * Message msg = new Message(new byte[]{length of payload}, 7, new byte[piece index field + piece content]);
-             * peerConn.send(msg);
-             */
+            if (PeerManager.getInstance().CanUploadToPeer(peerConn.GetInfo())) {
+                byte[] piece = FileManager.getInstance().GetPiece(msg.getPayload());
+                if (piece != null) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    outputStream.write(msg.getPayload());
+                    outputStream.write(piece);
+                    byte[] newPayload = outputStream.toByteArray();
+                    byte[] newPayloadLen = BigInteger.valueOf(newPayload.length).toByteArray();
+                    Message returnMsg = new Message(newPayloadLen, (byte) 7, newPayload);
+                    peerConn.send(returnMsg);
+                }
+            }
 
             throw new NotImplementedException();
         }
     }
 
     public static class PieceHandler implements IHandler {
-        public void handleMsg(Message msg, Connection peerConn) {
-            // TODO: Implement Handler for Piece Messages
+            public void handleMsg(Message msg, Connection peerConn) {
+                // TODO: Implement Handler for Piece Messages
 
-            // Psuedocode
-            // HAS packet payload: 4 byte piece index field AND piece content
-            // Ex: The peer sent the whole piece including its index field
+                // Psuedocode
+                // HAS packet payload: 4 byte piece index field AND piece content
+                // Ex: The peer sent the whole piece including its index field
 
-            // Foreach neighbor in neighbors:
-            //     If neighbor.bitfield does not have any pieces we want:
-            //         SendNotInterestedMessageTo(neighbor.peerInfo)
-                        /**
-                         * Message msg = new Message(new byte[]{0,0,0,0}, 3, new byte[]);
-                         * peerConn.send(msg);
-                         * **/
+                // Foreach neighbor in neighbors:
+                //     If neighbor.bitfield does not have any pieces we want:
+                //         SendNotInterestedMessageTo(neighbor.peerInfo)
+                /**
+                 * Message msg = new Message(new byte[]{0,0,0,0}, 3, new byte[]);
+                 * peerConn.send(msg);
+                 * **/
 
-            // Logger.getInstance().downloadedPiece(peerConn.GetInfo().getId(), pieceIndex, pieceCount);
-            // if complete file:
-            //     Logger.getInstance().completedDownload();
+                // Logger.getInstance().downloadedPiece(peerConn.GetInfo().getId(), pieceIndex, pieceCount);
+                // if complete file:
+                //     Logger.getInstance().completedDownload();
 
-            throw new NotImplementedException();
+                throw new NotImplementedException();
+            }
         }
-    }
 }
