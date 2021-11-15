@@ -3,22 +3,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.BitSet;
 
 public class FileManager {
-    private static FileManager instance = null;
+    public FileManager() {
 
-    public static FileManager getInstance() {
-        if (instance == null) {
-            throw new AssertionError("FileManager not yet initialized. Try FileManager.init().");
-        }
-        return instance;
-    }
-
-    public static void init() {
-        if (instance != null) {
-            throw new AssertionError("FileManager is already initialized!");
-        }
-        instance = new FileManager();
     }
 
     public byte[] GetPiece(byte[] pieceIndex) {
@@ -53,5 +42,20 @@ public class FileManager {
             }
         }
         return null;
+    }
+
+    public BitSet getReceivedPieces() {
+        return null;
+    }
+
+    public byte[] getPiece(int pieceIndexFromByteArray) {
+        return null;
+    }
+
+    public void addPiece(int pieceIdx, byte[] pieceContent) {
+    }
+
+    public int getPieceToRequest(BitSet receivedPieces) {
+        return -1;
     }
 }

@@ -3,6 +3,12 @@ public class PeerInfo {
     private String hostname;
     private int port;
 
+    public PeerInfo() {
+        peerId = -1;
+        hostname = "";
+        port = -1;
+    }
+
     public PeerInfo(int peerId, String hostname, int port) {
         this.peerId = peerId;
         this.hostname = hostname;

@@ -1,29 +1,43 @@
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.BitSet;
+import java.util.List;
 
 public class PeerManager {
-    private static PeerManager instance = null;
-    private final Collection<PeerTrackerInfo> _preferredPeers = new HashSet<>();
-    private final List<PeerTrackerInfo> _chokedNeighbors = new ArrayList<>();
-    final Collection<PeerTrackerInfo> _optmisticallyUnchokedPeers =
-            Collections.newSetFromMap(new ConcurrentHashMap<PeerTrackerInfo, Boolean>());
+    public List<Integer> _interestedPeers;
+    public List<Integer> _preferredPeers;
+    public List<Integer> _optimisticallyUnchokedPeers;
 
-    public static PeerManager getInstance() {
-        if (instance == null) {
-            throw new AssertionError("PeerManager not yet initialized. Try PeerManager.init().");
-        }
-        return instance;
-    }
-
-    public static void init() {
-        if (instance != null) {
-            throw new AssertionError("PeerManager is already initialized!");
-        }
-        instance = new PeerManager();
+    public PeerManager() {
     }
 
     public boolean CanUploadToPeer(PeerInfo info) {
-        return (_preferredPeers.contains(info) ||
-                _optmisticallyUnchokedPeers.contains(info));
+        return (_preferredPeers.contains(info.getId()) ||
+                _optimisticallyUnchokedPeers.contains(info.getId()));
+    }
+
+    public void addPeerInterested(int remotePeerId) {
+        if (!_interestedPeers.contains(remotePeerId))
+            _interestedPeers.add(remotePeerId);
+    }
+
+    public void removePeerInterested(int remotePeerId) {
+        if (_interestedPeers.contains(remotePeerId))
+            _interestedPeers.remove(remotePeerId);
+    }
+
+    public void handleHave(int remotePeerId, int pieceIdx) {
+    }
+
+    public void handleBitfield(int remotePeerId, BitSet bitset) {
+    }
+
+    public boolean canUploadToPeer(int remotePeerId) {
+        return false;
+    }
+
+    public void receivedPiece(int remotePeerId, int pieceContentLength) {
+    }
+
+    public BitSet getReceivedPieces(int peerId) {
+        return null;
     }
 }
