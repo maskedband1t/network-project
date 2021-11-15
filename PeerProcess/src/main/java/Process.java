@@ -1,5 +1,3 @@
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -39,14 +37,14 @@ public class Process implements Runnable {
     public List<Message> sendToPeer(String peerid, String msgtype,
                                     String msgdata) {
         // TODO: send to an existing peer
-        throw new NotImplementedException();
+        return new ArrayList<Message>();
     }
 
     // TODO: do we need this func?
     public List<Message> connectAndSend(PeerInfo peerInfo, String msgtype,
                                             String msgdata) {
         // TODO: connect to peer and send them a message
-        throw new NotImplementedException();
+        return new ArrayList<Message>();
     }
 
     public void buildPeer(PeerInfo info) throws IOException {
