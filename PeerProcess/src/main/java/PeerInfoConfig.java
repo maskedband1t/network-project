@@ -23,11 +23,20 @@ public class PeerInfoConfig {
         this.peerTrackerInfo = peerTrackerInfo;
     }
 
+    public PeerTrackerInfo GetPeerTrackerInfo(int id) {
+        return peerTrackerInfo.stream().filter(info -> info.peerInfo.getId() == id).findFirst().get();
+    }
+
+    public PeerTrackerInfo GetPeerTrackerInfo(String host, int port) {
+        return peerTrackerInfo.stream().filter(info -> info.peerInfo.getHost().equals(host) && info.peerInfo.getPort() == port).findFirst().get();
+    }
+
+    public PeerInfo GetPeerInfo(int id){
+        return GetPeerTrackerInfo(id).peerInfo;
+    }
+
     public PeerInfo GetPeerInfo(String host, int port){
-        return peerTrackerInfo.stream()
-                .filter(info -> info.peerInfo.getHost() == host && info.peerInfo.getPort() == port)
-                .findFirst()
-                .get().peerInfo;
+        return GetPeerTrackerInfo(host, port).peerInfo;
     }
 
     public List<PeerInfo> GetPeersToConnectToFor(int peerId) {
