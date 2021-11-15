@@ -5,17 +5,17 @@
 *    - a message payload with variable size.
 **/
 public class Message {
-    private byte[] length;
+    private int length;
     private byte type;
     private byte[] payload;
 
-    public Message(byte[] length, byte type, byte[] data) {
-        this.length = (byte[])length;
+    public Message(byte type, byte[] data) {
+        this.length = (data == null ? 0 : data.length) + 1;
         this.type = type;
         this.payload = (byte[])data.clone();
     }
 
-    public byte[] getLength() { return length; }
+    public int getLength() { return length; }
 
     public byte getType() { return type; }
 

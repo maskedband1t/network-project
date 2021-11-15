@@ -1,10 +1,19 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class Connection{
+public class Connection implements Runnable{
 	private PeerInfo _info;
 	private SocketInterface _socket;
+	private int _peerId;
+	private FileManager _fileManager;
+	private PeerManager _peerManager;
+	private boolean _isConnectingPeer;
+	private int _expectedRemotePeerId;
+	private int _remotePeerId;
+	private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
 
 	// opens new connection to specified peer 
 	public Connection(PeerInfo info)
@@ -28,6 +37,16 @@ public class Connection{
 		_socket = socket;
 	}
 
+	public Connection(int id, PeerSocket sock, FileManager fileManager, PeerManager peerManager) {
+		_peerId = id;
+		_socket = sock;
+		_remotePeerId = -1;
+		_expectedRemotePeerId = -1;
+		_fileManager = fileManager;
+		_peerManager = peerManager;
+		_isConnectingPeer = false;
+	}
+
 	public void sendHandshake(byte[] handshake) throws IOException{
 		_socket.write(handshake);
 	}
@@ -36,7 +55,7 @@ public class Connection{
 	throws IOException {
 		// TODO: implement logging here
 		// TODO: think about whether writing a message will also need its type passed
-		byte[] lengthAsArr = m.getLength();
+		byte[] lengthAsArr = Helpers.intToByte(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
 		_socket.write(m.getPayload()); // passed in byte[]
@@ -74,7 +93,7 @@ public class Connection{
 			//TODO: handle exception
 		}
 
-		Message m = new Message(msg_length, type,msg); // not sure yet if type is representing exactly what it should
+		Message m = new Message(type, msg); // not sure yet if type is representing exactly what it should
 		return m;
 	}
 
@@ -91,5 +110,12 @@ public class Connection{
 
 	public PeerInfo GetInfo() {
 		return _info;
+	}
+
+	@Override
+	public void run() {
+		new ConnectionHelper(_queue, _socket).start();
+
+		// TODO: MORE STUFF
 	}
 }

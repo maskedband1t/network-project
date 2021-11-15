@@ -1,30 +1,18 @@
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-public class Process {
-    /* MESSAGE TYPES */
-    public static final Integer CHOKE = 0;
-    public static final Integer UNCHOKE = 1;
-    public static final Integer INTERESTED = 2;
-    public static final Integer NOTINTERESTED = 3;
-    public static final Integer HAVE = 4;
-    public static final Integer BITFIELD = 5;
-    public static final Integer REQUEST = 6;
-    public static final Integer PIECE = 7;
-    public static final Integer HANDSHAKE = 8;
+public class Process implements Runnable {
 
     // handlers
-    Hashtable<Integer, IHandler> messageHandlers = new Hashtable<Integer,IHandler>();
+    private final List<Connection> _connHandlers = new ArrayList<Connection>();
     Hashtable<Integer, Connection> peerConnections = new Hashtable<Integer, Connection>();
     Hashtable<Integer, Bitfield> peerBitfields = new Hashtable<Integer, Bitfield>();
 
@@ -32,6 +20,9 @@ public class Process {
     private PeerInfo peerInfo;
     private boolean shutdown;
     private Bitfield bitfield;
+
+    private FileManager fileManager;
+    private PeerManager peerManager;
 
     // TODO: need to have a list of peers currently connected to
 
@@ -42,16 +33,9 @@ public class Process {
         this.shutdown = false;
         this.bitfield = new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize);
 
-        // adding handlers for each message type
-        messageHandlers.put(CHOKE, new Handlers.ChokeHandler());
-        messageHandlers.put(UNCHOKE, new Handlers.UnchokeHandler());
-        messageHandlers.put(INTERESTED, new Handlers.InterestedHandler());
-        messageHandlers.put(NOTINTERESTED, new Handlers.UninterestedHandler());
-        messageHandlers.put(HAVE, new Handlers.HaveHandler());
-        messageHandlers.put(BITFIELD, new Handlers.BitfieldHandler());
-        messageHandlers.put(REQUEST, new Handlers.RequestHandler());
-        messageHandlers.put(PIECE, new Handlers.PieceHandler());
-
+        // TODO: Need to add more to fileMgr and peerMgr constructors
+        this.fileManager = new FileManager();
+        this.peerManager = new PeerManager();
     }
 
     public List<Message> sendToPeer(String peerid, String msgtype,
@@ -104,8 +88,10 @@ public class Process {
             outputStream.write(peerId);
             byte[] handshakeMsg = outputStream.toByteArray();
 
+            System.out.println("Handshake message created for " + peerInfo.getId() + " -> " + peer.getId() + ": " + handshakeMsg.toString());
+
             // create connection
-            System.out.println("Created connection");
+            System.out.println("Created connection for localhost:" + peer.getPort());
             Connection c = new Connection(peer.getId(), peer.getPort()); // dev purposes, localhost host assumed
             peerConnections.put(peer.getId(), c);
 
@@ -118,6 +104,19 @@ public class Process {
         }
     }
 
+    private boolean addConnection(Connection conn) {
+        if (!_connHandlers.contains(conn)) {
+            _connHandlers.add(conn);
+            new Thread(conn).start();
+            try {
+                wait(10);
+            } catch (InterruptedException e) {
+            }
+
+        }
+        return true;
+    }
+
     public void run() {
         try {
             // listens for other peers to connect to us
@@ -127,64 +126,27 @@ public class Process {
 
             while (!shutdown) {
                 try {
-                    // every time a peer connects to us, we handle their connection with Handler
+                    // Every time a peer connects to us, we handle their connection with Handler
                     Socket c = s.accept();
                     c.setSoTimeout(0);
-                    DataInputStream is = new DataInputStream(c.getInputStream());
 
-                    // we can collect ip and port and map to peer id
-                    String host = c.getInetAddress().getHostName();
-                    int port = c.getPort();
-                    PeerInfo peerInfo = PeerInfoConfig.getInstance().GetPeerInfo(host, port);
-
+                    // Log
                     Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
 
-                    // if handshake, make connection for this peer
-                    Connection peerConn;
-                    // read first 18 bytes, check if handshake
-                    byte[] firstFourBytes = new byte[4];
-                    is.readFully(firstFourBytes);
-                    if (Base64.getEncoder().encodeToString(firstFourBytes).equals("P2PF")) {
-                        byte[] restOfHandshake = new byte[28];
-                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        outputStream.write(firstFourBytes);
-                        outputStream.write(restOfHandshake);
-                        HandshakeMessage msg = new HandshakeMessage(outputStream.toByteArray());
-                        System.out.println("Received handshake from peer id: " + msg.PeerId);
-                        if (msg.PeerId != peerInfo.getId()) {
-                            System.out.println("Received handshake with Peer Id:" + msg.PeerId + " from someone with id: " + peerInfo.getId());
-                            return;
-                        }
-                        // we return handshake and build the connection
-                        buildPeer(peerInfo);
-                    }
-                    else {
-                        // use existing connection
-                        peerConn = peerConnections.get(peerInfo.getId());
-
-                        // parse incoming info into a message
-                        byte[] incomingMsgType = new byte[1];
-                        is.readFully(firstFourBytes);
-                        is.readFully(incomingMsgType);
-                        int lenAsInt = ByteBuffer.wrap(firstFourBytes).getInt();
-                        byte[] incomingMsgPayload = new byte[lenAsInt];
-                        is.readFully(incomingMsgPayload);
-                        Message incomingMsg = new Message(firstFourBytes, incomingMsgType[0], incomingMsgPayload);
-
-                        // handle msg
-                        messageHandlers.get(incomingMsg).handleMsg(incomingMsg, peerConn);
-                    }
+                    // Add connection
+                    PeerSocket peerSocket = new PeerSocket(c);
+                    addConnection(new Connection(peerInfo.getId(), peerSocket, fileManager, peerManager));
                 }
-                catch (SocketTimeoutException e) {
+                catch (Exception e) {
                     System.out.println(e);
-                    shutdown = true;
                 }
             }
-            s.close();
         }
         catch (Exception e) {
             System.out.println(e);
         }
-        shutdown = true;
+        finally {
+            System.out.println("Shuttding Down");
+        }
     }
 }
