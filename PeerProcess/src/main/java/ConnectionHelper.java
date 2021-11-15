@@ -4,11 +4,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ConnectionHelper extends Thread {
     private boolean remoteChoked = true;
     private BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
-    private SocketInterface socket;
+    private Connection conn;
 
-    public ConnectionHelper(BlockingQueue<Message> q, SocketInterface s) {
+    public ConnectionHelper(BlockingQueue<Message> q, Connection c) {
         q = queue;
-        socket = s;
+        conn = c;
     }
 
     @Override
@@ -27,9 +27,7 @@ public class ConnectionHelper extends Thread {
                     remoteChoked = false;
 
                 byte[] lengthAsArr = Helpers.intToByte(msg.getLength(), 4);
-                socket.write(lengthAsArr);
-                socket.write(new byte[]{msg.getType()});
-                socket.write(msg.getPayload());
+                conn.send(msg);
             }
             catch (Exception e) {
                 System.out.println(e);

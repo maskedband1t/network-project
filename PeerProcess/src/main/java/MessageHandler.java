@@ -5,14 +5,12 @@ public class MessageHandler {
     private int _remotePeerId;
     private FileManager _fileManager;
     private PeerManager _peerManager;
-    private Logger _logger;
 
-    MessageHandler(int remotePeerId, FileManager fileManager, PeerManager peerManager, Logger logger) {
+    MessageHandler(int remotePeerId, FileManager fileManager, PeerManager peerManager) {
         _choked = true;
         _remotePeerId = remotePeerId;
         _fileManager = fileManager;
         _peerManager = peerManager;
-        _logger = logger;
     }
 
     public Message handle(HandshakeMessage msg) {

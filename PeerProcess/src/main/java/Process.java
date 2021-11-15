@@ -10,23 +10,20 @@ import java.util.Hashtable;
 import java.util.List;
 
 public class Process implements Runnable {
-
-    // handlers
-    private final List<Connection> _connHandlers = new ArrayList<Connection>();
-    Hashtable<Integer, Connection> peerConnections = new Hashtable<Integer, Connection>();
+    // list of connections per peers
+    // we do not map to id because we do not know their id at this scope level
+    List<ConnectionHandler> _connHandlers = new ArrayList<ConnectionHandler>();
+    // list of bitfields per peer
     Hashtable<Integer, Bitfield> peerBitfields = new Hashtable<Integer, Bitfield>();
 
-    // other variables
+    // our info && bitfield && manager objects for files and peers
     private PeerInfo peerInfo;
-    private boolean shutdown;
     private Bitfield bitfield;
-
     private FileManager fileManager;
     private PeerManager peerManager;
 
-    // TODO: need to have a list of peers currently connected to
-
-    // TODO: need to save a directory of all peers from config file
+    // whether we should shutdown the program
+    private boolean shutdown;
 
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
@@ -38,12 +35,14 @@ public class Process implements Runnable {
         this.peerManager = new PeerManager();
     }
 
+    // TODO: do we need this func?
     public List<Message> sendToPeer(String peerid, String msgtype,
                                     String msgdata) {
         // TODO: send to an existing peer
         throw new NotImplementedException();
     }
 
+    // TODO: do we need this func?
     public List<Message> connectAndSend(PeerInfo peerInfo, String msgtype,
                                             String msgdata) {
         // TODO: connect to peer and send them a message
@@ -51,25 +50,10 @@ public class Process implements Runnable {
     }
 
     public void buildPeer(PeerInfo info) throws IOException {
-        // format handshake msg
-        String inputString = "P2PFILESHARINGPROJ";
-        byte[] peerId = ByteBuffer.allocate(4).putInt(peerInfo.getId()).array();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(inputString.getBytes());
-        outputStream.write(new byte[]{0,0,0,0,0,0,0,0,0,0});
-        outputStream.write(peerId);
-        byte[] handshakeMsg = outputStream.toByteArray();
-
-        // create connection
+        System.out.println("Attempting to connect to peer id: " + info.getId());
+        Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
-        peerConnections.put(info.getId(), c);
-        peerBitfields.put(info.getId(), new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize));
-
-        System.out.println("Peer " + peerInfo.getId() + " connected to " + info.getId() + " at " + info.getHost() + ":" + info.getPort());
-        Logger.getInstance().madeConnectionWith(info.getId());
-
-        // send handshake
-        c.sendHandshake(handshakeMsg);
+        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId(), true));
     }
 
     public void buildPeers() throws IOException {
@@ -77,42 +61,21 @@ public class Process implements Runnable {
         for (PeerInfo peer : ourPeers) {
             System.out.println(peerInfo.getId() + " will connect to " + peer.getId());
         }
+
+        // init connection handler for each peer
         for (PeerInfo peer : ourPeers) {
-            System.out.println("Attempting to connect to peer id: " + peer.getId());
-            // format handshake msg
-            String inputString = "P2PFILESHARINGPROJ";
-            byte[] peerId = ByteBuffer.allocate(4).putInt(peerInfo.getId()).array();
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(inputString.getBytes());
-            outputStream.write(new byte[]{0,0,0,0,0,0,0,0,0,0});
-            outputStream.write(peerId);
-            byte[] handshakeMsg = outputStream.toByteArray();
-
-            System.out.println("Handshake message created for " + peerInfo.getId() + " -> " + peer.getId() + ": " + handshakeMsg.toString());
-
-            // create connection
-            System.out.println("Created connection for localhost:" + peer.getPort());
-            Connection c = new Connection(peer.getId(), peer.getPort()); // dev purposes, localhost host assumed
-            peerConnections.put(peer.getId(), c);
-
-            System.out.println("Peer " + peerInfo.getId() + " connected to " + peer.getId() + " at " + peer.getHost() + ":" + peer.getPort());
-            Logger.getInstance().madeConnectionWith(peer.getId());
-
-            // send handshake
-            c.sendHandshake(handshakeMsg);
-            System.out.println("Sent handshake");
+            buildPeer(peer);
         }
     }
 
-    private boolean addConnection(Connection conn) {
-        if (!_connHandlers.contains(conn)) {
-            _connHandlers.add(conn);
-            new Thread(conn).start();
+    private boolean addConnectionHandler(ConnectionHandler connHdlr) {
+        if (!_connHandlers.contains(connHdlr)) {
+            _connHandlers.add(connHdlr);
+            new Thread(connHdlr).start();
             try {
                 wait(10);
             } catch (InterruptedException e) {
             }
-
         }
         return true;
     }
@@ -135,7 +98,8 @@ public class Process implements Runnable {
 
                     // Add connection
                     PeerSocket peerSocket = new PeerSocket(c);
-                    addConnection(new Connection(peerInfo.getId(), peerSocket, fileManager, peerManager));
+                    Connection conn = new Connection(new PeerInfo(), peerSocket);
+                    addConnectionHandler(new ConnectionHandler(peerInfo.getId(), conn, fileManager, peerManager));
                 }
                 catch (Exception e) {
                     System.out.println(e);
@@ -146,7 +110,7 @@ public class Process implements Runnable {
             System.out.println(e);
         }
         finally {
-            System.out.println("Shuttding Down");
+            System.out.println("Shutting Down");
         }
     }
 }

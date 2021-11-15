@@ -4,16 +4,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class Connection implements Runnable{
+public class Connection {
 	private PeerInfo _info;
 	private SocketInterface _socket;
-	private int _peerId;
-	private FileManager _fileManager;
-	private PeerManager _peerManager;
-	private boolean _isConnectingPeer;
-	private int _expectedRemotePeerId;
-	private int _remotePeerId;
-	private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
 
 	// opens new connection to specified peer 
 	public Connection(PeerInfo info)
@@ -37,18 +30,48 @@ public class Connection implements Runnable{
 		_socket = socket;
 	}
 
-	public Connection(int id, PeerSocket sock, FileManager fileManager, PeerManager peerManager) {
-		_peerId = id;
-		_socket = sock;
-		_remotePeerId = -1;
-		_expectedRemotePeerId = -1;
-		_fileManager = fileManager;
-		_peerManager = peerManager;
-		_isConnectingPeer = false;
+	public void sendHandshake(HandshakeMessage msg) throws IOException{
+		_socket.write("P2PFILESHARINGPROJ".getBytes());
+		_socket.write(new byte[10]);
+		_socket.write(msg.getPeerIdPayload());
 	}
 
-	public void sendHandshake(byte[] handshake) throws IOException{
-		_socket.write(handshake);
+	public HandshakeMessage receieveHandshake() throws IOException {
+		byte[] str = new byte[18];
+		byte[] zeros = new byte[10];
+		byte[] id = new byte[4];
+
+		try {
+			_socket.read(str);
+
+			if (!new String(str).equals("P2PFILESHARINGPROJ"))
+				return null;
+		}
+		catch(Exception ex) {
+			System.out.println(ex);
+			return null;
+		}
+
+		try {
+			_socket.read(zeros);
+
+			if (!new String(zeros).equals("0000000000"))
+				return null;
+		}
+		catch(Exception ex) {
+			System.out.println(ex);
+			return null;
+		}
+
+		try {
+			_socket.read(id);
+		}
+		catch(Exception ex) {
+			System.out.println(ex);
+			return null;
+		}
+
+		return new HandshakeMessage(Helpers.getPieceIndexFromByteArray(id));
 	}
 
 	public void send(Message m)
@@ -110,12 +133,5 @@ public class Connection implements Runnable{
 
 	public PeerInfo GetInfo() {
 		return _info;
-	}
-
-	@Override
-	public void run() {
-		new ConnectionHelper(_queue, _socket).start();
-
-		// TODO: MORE STUFF
 	}
 }
