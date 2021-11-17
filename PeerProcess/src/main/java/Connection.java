@@ -1,8 +1,10 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class Connection{
+public class Connection {
 	private PeerInfo _info;
 	private SocketInterface _socket;
 
@@ -28,15 +30,55 @@ public class Connection{
 		_socket = socket;
 	}
 
-	public void sendHandshake(byte[] handshake) throws IOException{
-		_socket.write(handshake);
+	public void sendHandshake(HandshakeMessage msg) throws IOException{
+		_socket.write("P2PFILESHARINGPROJ".getBytes());
+		_socket.write(new byte[10]);
+		_socket.write(msg.getPeerIdPayload());
+	}
+
+	public HandshakeMessage receieveHandshake() throws IOException {
+		byte[] str = new byte[18];
+		byte[] zeros = new byte[10];
+		byte[] id = new byte[4];
+
+		try {
+			_socket.read(str);
+
+			if (!new String(str).equals("P2PFILESHARINGPROJ"))
+				return null;
+		}
+		catch(Exception ex) {
+			System.out.println(ex);
+			return null;
+		}
+
+		try {
+			_socket.read(zeros);
+
+			if (!new String(zeros).equals("0000000000"))
+				return null;
+		}
+		catch(Exception ex) {
+			System.out.println(ex);
+			return null;
+		}
+
+		try {
+			_socket.read(id);
+		}
+		catch(Exception ex) {
+			System.out.println(ex);
+			return null;
+		}
+
+		return new HandshakeMessage(Helpers.getPieceIndexFromByteArray(id));
 	}
 
 	public void send(Message m)
 	throws IOException {
 		// TODO: implement logging here
 		// TODO: think about whether writing a message will also need its type passed
-		byte[] lengthAsArr = m.getLength();
+		byte[] lengthAsArr = Helpers.intToByte(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
 		_socket.write(m.getPayload()); // passed in byte[]
@@ -74,7 +116,7 @@ public class Connection{
 			//TODO: handle exception
 		}
 
-		Message m = new Message(msg_length, type,msg); // not sure yet if type is representing exactly what it should
+		Message m = new Message(type, msg); // not sure yet if type is representing exactly what it should
 		return m;
 	}
 
