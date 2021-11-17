@@ -55,7 +55,8 @@ public class Process implements Runnable {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
-        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId()));
+        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId(), true));
+        Logger.getInstance().madeConnectionWith(info.getId());
     }
 
     public void buildPeers() throws IOException {
@@ -70,7 +71,7 @@ public class Process implements Runnable {
         }
     }
 
-    private boolean addConnectionHandler(ConnectionHandler connHdlr) {
+    synchronized private boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
             new Thread(connHdlr).start();
@@ -95,13 +96,20 @@ public class Process implements Runnable {
                     Socket c = s.accept();
                     c.setSoTimeout(0);
 
+<<<<<<< HEAD
                     // Log connection init
                     Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
 
                     // Add connection - the handler will handle this on a separate thread
+=======
+                    // Add connection
+>>>>>>> 6f0df078f7c5df9e179964449cbcd8b15076f201
                     PeerSocket peerSocket = new PeerSocket(c);
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
                     addConnectionHandler(new ConnectionHandler(peerInfo.getId(), conn, fileManager, peerManager));
+
+                    // Log
+                    Logger.getInstance().receivedConnectionFrom(conn.GetInfo().getId());
                 }
                 catch (Exception e) {
                     System.out.println(e);

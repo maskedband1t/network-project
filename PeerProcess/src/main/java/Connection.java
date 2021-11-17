@@ -57,7 +57,6 @@ public class Connection {
 				if (b != 0) {
 					return null;
 				}
-			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);
