@@ -56,6 +56,7 @@ public class PeerManager implements Runnable {
     private int _unchokingInterval;
     private int _num_Preffered_Neighbors;
     private int _numPieces;
+    private final AtomicBoolean _fileDone = new AtomicBoolean(false);
 
     public PeerManager(int peerId, List<PeerInfo> peers) {
         _optimisticUnchoker = new OptimisticUnchoker();
@@ -70,7 +71,7 @@ public class PeerManager implements Runnable {
                 _optimisticallyUnchokedPeers.contains(info.getId()));
     }
 
-    public void addPeerInterested(int peerId) {
+    synchronized void addPeerInterested(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getPeerId() == peerId) {
                 if(peer != null){
@@ -80,7 +81,7 @@ public class PeerManager implements Runnable {
         }
     }
 
-    public void removePeerInterested(int peerId) {
+    synchronized void removePeerInterested(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getPeerId() == peerId) {
                 if(peer != null){
@@ -88,6 +89,21 @@ public class PeerManager implements Runnable {
                 }
             }
         } 
+    }
+
+    synchronized List<PeerInfo> getInterestedPeers(){
+        List<PeerInfo> interestedPeers = new ArrayList<>();
+
+        for(PeerInfo peer : _peers){
+            if(peer.isInterested()){
+                interestedPeers.add(peer);
+            }
+        }
+        return interestedPeers;
+    }
+
+    synchronized void fileCompleted() {
+        _fileDone.set(true);
     }
 
     public void handleHave(int peerId, int pieceIdx) {
@@ -105,5 +121,35 @@ public class PeerManager implements Runnable {
 
     public BitSet getReceivedPieces(int peerId) {
         return null;
+    }
+
+    @Override
+    public void run(){
+        _optimisticUnchoker.start();
+
+        while(true){
+            try {
+                Thread.sleep(_unchokingInterval);
+            } catch (InterruptedException e) {
+                //TODO: handle exception
+            }
+
+            _interestedPeers = getInterestedPeers();
+
+            if(_fileDone.get()){ // here we randomly shuffle neighbors
+                Collections.shuffle(_interestedPeers);
+            }
+            else{ // sort by preference (depends on download rate of peer in previous interval)
+                Collections.sort(_interestedPeers , new Comparator() {
+                    @Override
+                    public int compare(Object o1, Object o2){
+                        PeerInfo p1 = (PeerInfo)(o1);
+                        PeerInfo p2 = (PeerInfo)(o2);
+
+                        return(p1._downloadRate.get() - p2._downloadRate.get());
+                    }
+                });
+            }
+        }
     }
 }
