@@ -6,8 +6,12 @@ public class Helpers {
     /*
     Helper functions
     */
-    public static byte[] intToByte(int i, int size) {
+    public static byte[] intToBytes(int i, int size) {
         return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
+    }
+
+    public static int bytesToInt(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getInt();
     }
 
     public static int getPieceIndexFromByteArray(byte[] payload) {

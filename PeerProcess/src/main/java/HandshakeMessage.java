@@ -8,7 +8,7 @@ public class HandshakeMessage {
 
     public HandshakeMessage (int id) {
         _peerId = id;
-        byte[] _peerIdByteArray = Helpers.intToByte(id, 4);
+        byte[] _peerIdByteArray = Helpers.intToBytes(id, 4);
         int i = 0;
         for (byte b : _peerIdByteArray) {
             _peerIdByteArray[i++] = b;

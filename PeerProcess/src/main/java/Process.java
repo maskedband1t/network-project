@@ -29,7 +29,7 @@ public class Process implements Runnable {
         this.bitfield = new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize);
 
         // TODO: Need to add more to fileMgr and peerMgr constructors
-        this.fileManager = new FileManager();
+        this.fileManager = new FileManager(peerInfo.getId());
         this.peerManager = new PeerManager();
     }
 

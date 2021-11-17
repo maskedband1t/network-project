@@ -74,7 +74,7 @@ public class MessageHandler {
         // Return Request msg if applicable
         if (!_choked) {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
-            byte[] newPieceIdxByteArray = Helpers.intToByte(newPieceIdx, 4);
+            byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0)
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
@@ -174,7 +174,7 @@ public class MessageHandler {
         // Return Request msg if applicable
         if (!_choked) {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
-            byte[] newPieceIdxByteArray = Helpers.intToByte(newPieceIdx, 4);
+            byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0)
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }

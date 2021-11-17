@@ -26,7 +26,7 @@ public class ConnectionHelper extends Thread {
                 else if (msg.getType() == Helpers.UNCHOKE)
                     remoteChoked = false;
 
-                byte[] lengthAsArr = Helpers.intToByte(msg.getLength(), 4);
+                byte[] lengthAsArr = Helpers.intToBytes(msg.getLength(), 4);
                 conn.send(msg);
             }
             catch (Exception e) {
