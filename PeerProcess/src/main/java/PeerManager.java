@@ -10,10 +10,10 @@ public class PeerManager implements Runnable {
         private final int _optimistic_unchoking_interval;
         private final List<PeerInfo> _chokedPeers = new ArrayList<>();
         // TODO: set up collection of optimistically unchoked peers
-        final Collection<PeerInfo> _optimisticallyUnchokedPeers = Collection.newSetFromMap(); // not done
+        final List<PeerInfo> _optimisticallyUnchokedPeers = Collections.newSetFromMap(new ConcurrentHashMap<PeerInfo, Boolean>);
         
         OptimisticUnchoker(){
-            _num_optimistic_unchoked_neighbors = 1; // hardcoded for now (maybe don't need to change)
+            _num_optimistic_unchoked_neighbors = 1;    // hardcoded for now (maybe don't need to change)
             _optimistic_unchoking_interval = CommonConfig.getInstance().optimisticUnchokingInterval;
         }
 
@@ -51,7 +51,18 @@ public class PeerManager implements Runnable {
     public List<Integer> _preferredPeers;
     public List<Integer> _optimisticallyUnchokedPeers;
 
-    public PeerManager() {
+    private final List<PeerInfo> _peers = new Arraylist<>();
+    private final OptimisticUnchoker _optimisticUnchoker;
+    private int _unchokingInterval;
+    private int _num_Preffered_Neighbors;
+    private int _numPieces;
+
+    public PeerManager(int peerId, List<PeerInfo> peers) {
+        _optimisticUnchoker = new OptimisticUnchoker();
+        _unchokingInterval = CommonConfig.getInstance().unchokingInterval;
+        _num_Preffered_Neighbors = CommonConfig.getInstance().numPrefNeighbors;
+        _numPieces = (int)Math.ceil(CommonConfig.getInstance().fileSize/CommonConfig.getInstance().pieceSize);
+        _peers.addAll(peers);
     }
 
     public boolean CanUploadToPeer(PeerInfo info) {
@@ -59,27 +70,37 @@ public class PeerManager implements Runnable {
                 _optimisticallyUnchokedPeers.contains(info.getId()));
     }
 
-    public void addPeerInterested(int remotePeerId) {
-        if (!_interestedPeers.contains(remotePeerId))
-            _interestedPeers.add(remotePeerId);
+    public void addPeerInterested(int peerId) {
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    peer.setIfInterested(true);
+                }
+            }
+        }
     }
 
-    public void removePeerInterested(int remotePeerId) {
-        if (_interestedPeers.contains(remotePeerId))
-            _interestedPeers.remove(remotePeerId);
+    public void removePeerInterested(int peerId) {
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    peer.setIfInterested(false);
+                }
+            }
+        } 
     }
 
-    public void handleHave(int remotePeerId, int pieceIdx) {
+    public void handleHave(int peerId, int pieceIdx) {
     }
 
-    public void handleBitfield(int remotePeerId, BitSet bitset) {
+    public void handleBitfield(int peerId, BitSet bitset) {
     }
 
-    public boolean canUploadToPeer(int remotePeerId) {
+    public boolean canUploadToPeer(int peerId) {
         return false;
     }
 
-    public void receivedPiece(int remotePeerId, int pieceContentLength) {
+    public void receivedPiece(int peerId, int pieceContentLength) {
     }
 
     public BitSet getReceivedPieces(int peerId) {

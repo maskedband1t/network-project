@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 public class PeerInfo {
@@ -27,12 +28,9 @@ public class PeerInfo {
     public boolean isInterested() {
         return _interested.get();
     }
-    public void setInterested() {
-        _interested.set (true);
-    }
-
-    public void setNotIterested() {
-        _interested.set (false);
+    public void setIfInterested(boolean isInterested) {
+        if(isInterested){_interested.set (true);}
+        else{_interested.set(false);}
     }
 
     public int getId() {
@@ -57,5 +55,12 @@ public class PeerInfo {
 
     public void setPort(int port) {
         this.port = port;
+    }
+    // get list of pure peerIds
+    public static List<Integer> toIdList(List<PeerInfo> peerInfoList){
+       List<PeerInfo> ids = new ArrayList<>();
+       for(PeerInfo peer : peerInfoList){
+           ids.add(peer.getId());
+       }
     }
 }
