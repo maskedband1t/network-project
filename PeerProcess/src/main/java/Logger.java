@@ -52,6 +52,21 @@ public class Logger {
         return true;
     }
 
+    public boolean dangerouslyWrite(String text) {
+        try {
+            BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
+            bf.write(java.time.LocalDateTime.now() + ": " + text);
+            bf.newLine();
+            bf.close();
+        }
+        catch (IOException e) {
+            System.out.println("An IO error occurred");
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public boolean madeConnectionWith(int partnerId) {
         return writeToLog("makes a connection to Peer " + partnerId + ".");
     }

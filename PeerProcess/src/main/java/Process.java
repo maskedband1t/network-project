@@ -52,6 +52,7 @@ public class Process implements Runnable {
         Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
         addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId(), true));
+        Logger.getInstance().madeConnectionWith(info.getId());
     }
 
     public void buildPeers() throws IOException {
@@ -91,13 +92,13 @@ public class Process implements Runnable {
                     Socket c = s.accept();
                     c.setSoTimeout(0);
 
-                    // Log
-                    Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
-
                     // Add connection
                     PeerSocket peerSocket = new PeerSocket(c);
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
                     addConnectionHandler(new ConnectionHandler(peerInfo.getId(), conn, fileManager, peerManager));
+
+                    // Log
+                    Logger.getInstance().receivedConnectionFrom(conn.GetInfo().getId());
                 }
                 catch (Exception e) {
                     System.out.println(e);
