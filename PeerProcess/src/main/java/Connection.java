@@ -55,8 +55,10 @@ public class Connection {
 		try {
 			_socket.read(zeros);
 
-			if (!new String(zeros).equals("0000000000"))
-				return null;
+			for (byte b : zeros) {
+				if (b != 0)
+                    return null;
+			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);

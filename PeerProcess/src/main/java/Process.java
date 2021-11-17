@@ -66,7 +66,7 @@ public class Process implements Runnable {
         }
     }
 
-    private boolean addConnectionHandler(ConnectionHandler connHdlr) {
+    synchronized private boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
             new Thread(connHdlr).start();
