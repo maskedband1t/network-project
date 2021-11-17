@@ -5,11 +5,13 @@ import java.util.BitSet;
 public class FileManager {
     int peerId;
     BitSet receivedPieces;
+    RequestedPiecesBitSet requestedPieces;
 
     public FileManager(int peerId) {
         this.peerId = peerId;
         int numPieces = (int)Math.ceil(CommonConfig.getInstance().fileSize/CommonConfig.getInstance().pieceSize);
         this.receivedPieces = new BitSet(numPieces);
+        this.requestedPieces = new RequestedPiecesBitSet(numPieces);
     }
 
     public boolean addPiece(int pieceIndex, byte[] piece) {
@@ -72,16 +74,9 @@ public class FileManager {
     public int getPieceToRequest(BitSet piecesNotRequested) {
         BitSet availablePieces = getAvailablePiecesToRequest(piecesNotRequested);
 
-        // logic for which piece to choose is detailed in the proj description
-        // TODO: RETURN PIECEINDEX OF NEXT PIECE TO REQUEST BASED OFF OF LOGIC
-        // Request a piece that we do not have, that we haven't requested yet
-        // Random Selection Strategy if there are multiple choices
-        // Ex: We are Peer A, and are requesting a Piece from Peer B
-        //     We will randomly select a Piece to request from Peer B
-        //     of the pieces we do not have, and have not requested
-
-        // temporary return val
-        return -1;
+        // determine which piece to request based off of which ones we haven't requested yet,
+        // and which ones are available from the remote peer
+        return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
     }
 
     private String getPathForPieceIndex(int pieceIndex) {
