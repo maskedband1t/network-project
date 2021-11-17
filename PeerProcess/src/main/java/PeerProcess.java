@@ -15,7 +15,7 @@ public class PeerProcess {
         Vector<PeerTrackerInfo> peerInfoVector = new Vector<PeerTrackerInfo>();
 
         try {
-            BufferedReader in = new BufferedReader(new FileReader("./../../../resources/main/PeerInfo.cfg"));
+            BufferedReader in = new BufferedReader(new FileReader(Helpers.pathToResourcesFolder + "PeerInfo.cfg"));
             while((st = in.readLine()) != null) {
 
                 String[] tokens = st.split("\\s+");
@@ -43,7 +43,7 @@ public class PeerProcess {
         int i = 1;
         Vector<String> values = new Vector<String>();
         try {
-            BufferedReader in = new BufferedReader(new FileReader("./../../../resources/main/Common.cfg"));
+            BufferedReader in = new BufferedReader(new FileReader(Helpers.pathToResourcesFolder + "Common.cfg"));
             while((st = in.readLine()) != null) {
                 String[] tokens = st.split("\\s+");
                 values.add(tokens[1]);
@@ -69,6 +69,10 @@ public class PeerProcess {
         // initialize the process for this process
         Process peer = new Process(ourInfo);
 
+        // if we have the file, split it up into pieces
+        if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId()))
+            peer.splitFile();
+
         // build connections to its peers if it has any peers
         peer.buildPeers();
 
@@ -77,10 +81,7 @@ public class PeerProcess {
             }}).start();
     }
 
-    // TODO: IMPORTANT: at the moment when you run peerProcess, it fails to connect because it tries to build
-    //  a socket connection to localhost:4001, but that socket is not up yet
-    //  The FIRST peer should only listen, THEN the second peer can connect to the first
-    // java peerProcess <peerId> <port> <isFirstPeer>
+    // java peerProcess <peerId>
     public static void main(String[] args) throws IOException
     {
         if (args.length != 1) {

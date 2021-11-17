@@ -2,11 +2,13 @@ import java.util.BitSet;
 import java.util.List;
 
 public class PeerManager {
+    int _peerId;
     public List<Integer> _interestedPeers;
     public List<Integer> _preferredPeers;
     public List<Integer> _optimisticallyUnchokedPeers;
 
-    public PeerManager() {
+    public PeerManager(int peerId) {
+        _peerId = peerId;
     }
 
     public boolean CanUploadToPeer(PeerInfo info) {

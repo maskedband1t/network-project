@@ -1,8 +1,6 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Connection {
 	private PeerInfo _info;
@@ -55,8 +53,11 @@ public class Connection {
 		try {
 			_socket.read(zeros);
 
-			if (!new String(zeros).equals("0000000000"))
-				return null;
+			for (byte b : zeros) {
+				if (b != 0) {
+					return null;
+				}
+			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);
@@ -76,12 +77,10 @@ public class Connection {
 
 	public void send(Message m)
 	throws IOException {
-		// TODO: implement logging here
-		// TODO: think about whether writing a message will also need its type passed
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
-		_socket.write(m.getPayload()); // passed in byte[]
+		_socket.write(m.getPayload());
 	}
 
 	public Message receive()

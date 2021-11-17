@@ -30,7 +30,7 @@ public class Process implements Runnable {
 
         // TODO: Need to add more to fileMgr and peerMgr constructors
         this.fileManager = new FileManager(peerInfo.getId());
-        this.peerManager = new PeerManager();
+        this.peerManager = new PeerManager(peerInfo.getId());
     }
 
     // TODO: do we need this func?
@@ -47,11 +47,15 @@ public class Process implements Runnable {
         return new ArrayList<Message>();
     }
 
+    public void splitFile() {
+        fileManager.splitFileIntoPieces();
+    }
+
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
-        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId(), true));
+        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId()));
     }
 
     public void buildPeers() throws IOException {
@@ -91,10 +95,10 @@ public class Process implements Runnable {
                     Socket c = s.accept();
                     c.setSoTimeout(0);
 
-                    // Log
+                    // Log connection init
                     Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
 
-                    // Add connection
+                    // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
                     addConnectionHandler(new ConnectionHandler(peerInfo.getId(), conn, fileManager, peerManager));

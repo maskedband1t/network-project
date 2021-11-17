@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.BitSet;
 
 public class MessageHandler {
@@ -13,13 +14,14 @@ public class MessageHandler {
         _peerManager = peerManager;
     }
 
-    public Message handle(HandshakeMessage msg) {
+/*    public Message handle(HandshakeMessage msg) {
         BitSet bitset = _fileManager.getReceivedPieces();
         if (!bitset.isEmpty()) {
             return (new Message(Helpers.BITFIELD, bitset.toByteArray()));
         }
         return null;
     }
+*/
 
     public Message handle(Message msg) {
         switch (msg.getType()) {

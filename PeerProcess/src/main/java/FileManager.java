@@ -6,19 +6,27 @@ public class FileManager {
     int peerId;
     BitSet receivedPieces;
     RequestedPiecesBitSet requestedPieces;
+    int numPieces;
 
     public FileManager(int peerId) {
         this.peerId = peerId;
-        int numPieces = (int)Math.ceil(CommonConfig.getInstance().fileSize/CommonConfig.getInstance().pieceSize);
+        this.numPieces = (int)Math.ceil(CommonConfig.getInstance().fileSize/CommonConfig.getInstance().pieceSize);
         this.receivedPieces = new BitSet(numPieces);
         this.requestedPieces = new RequestedPiecesBitSet(numPieces);
+
+        // create pieces dir if necessary
+        File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
+        piecesDir.mkdirs();
     }
 
     public boolean addPiece(int pieceIndex, byte[] piece) {
         // output piece as a file piece
-        File file = getFileForPieceIndex(pieceIndex);
-        // make dir if not made
-        file.mkdirs();
+        File file = new File(getPathForPieceIndex(pieceIndex));
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         FileOutputStream fos;
         try {
@@ -40,8 +48,32 @@ public class FileManager {
         return (BitSet)receivedPieces.clone();
     }
 
+    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
+        BitSet availablePieces = getReceivedPieces();
+        availablePieces.andNot(piecesNotRequested);
+        return availablePieces;
+    }
+
+    public int getPieceToRequest(BitSet piecesNotRequested) {
+        BitSet availablePieces = getAvailablePiecesToRequest(piecesNotRequested);
+
+        // determine which piece to request based off of which ones we haven't requested yet,
+        // and which ones are available from the remote peer
+        return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
+    }
+
     public byte[] getPiece(int pieceIndex) {
-        File file = getFileForPieceIndex(pieceIndex);
+        String path = getPathForPieceIndex(pieceIndex);
+        return getFile(path);
+    }
+
+    public byte[] getFile(String path){
+        File file = new File(path);
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         int fileLength = (int)file.length();
         FileInputStream fis = null;
         try {
@@ -65,25 +97,21 @@ public class FileManager {
         return null;
     }
 
-    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
-        BitSet availablePieces = getReceivedPieces();
-        availablePieces.andNot(piecesNotRequested);
-        return availablePieces;
-    }
-
-    public int getPieceToRequest(BitSet piecesNotRequested) {
-        BitSet availablePieces = getAvailablePiecesToRequest(piecesNotRequested);
-
-        // determine which piece to request based off of which ones we haven't requested yet,
-        // and which ones are available from the remote peer
-        return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
-    }
-
     private String getPathForPieceIndex(int pieceIndex) {
-        return "./peer_" + peerId + "/pieces/" + pieceIndex;
+        return Helpers.pathToResourcesFolder + peerId + "/pieces/" + pieceIndex;
     }
 
-    private File getFileForPieceIndex(int pieceIndex) {
-        return new File(getPathForPieceIndex(pieceIndex));
+    public void splitFileIntoPieces() {
+        // get the file
+        String wholeFilePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
+        byte[] wholeFile = getFile(wholeFilePath);
+        byte[] currPieceBytes;
+        int size = (int)CommonConfig.getInstance().pieceSize;
+        for (int i = 0; i < numPieces; i++) {
+            int start = size * i;
+            int end = start + size;
+            byte[] pieceSubset = Helpers.getByteSubset(wholeFile, start, end);
+            addPiece(i, pieceSubset);
+        }
     }
 }

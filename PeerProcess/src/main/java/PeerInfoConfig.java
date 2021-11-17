@@ -23,6 +23,10 @@ public class PeerInfoConfig {
         this.peerTrackerInfo = peerTrackerInfo;
     }
 
+    public boolean HasFile(int id) {
+        return peerTrackerInfo.stream().filter(info -> info.peerInfo.getId() == id).findFirst().get().hasFile;
+    }
+
     public PeerTrackerInfo GetPeerTrackerInfo(int id) {
         return peerTrackerInfo.stream().filter(info -> info.peerInfo.getId() == id).findFirst().get();
     }
