@@ -28,6 +28,8 @@ public class ConnectionHelper extends Thread {
                     else if (msg.getType() == Helpers.UNCHOKE)
                         remoteChoked = false;
                 }
+                else
+                    System.out.println("Cannot send messages yet - we have not handshaked");
 
                 // send the actual msg
                 conn.send(msg);

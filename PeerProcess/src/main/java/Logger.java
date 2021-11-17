@@ -27,7 +27,7 @@ public class Logger {
     private Logger(int peerId) {
         this.peerId = peerId;
         try {
-            logFile = new File("log_peer_" + peerId + ".log");
+            logFile = new File(Helpers.pathToResourcesFolder + "log_peer_" + peerId + ".log");
             logFile.createNewFile();
         }
         catch (IOException e) {
@@ -67,12 +67,9 @@ public class Logger {
         return true;
     }
 
-    public boolean madeConnectionWith(int partnerId) {
-        return writeToLog("makes a connection to Peer " + partnerId + ".");
-    }
-
-    public boolean receivedConnectionFrom(int partnerId) {
-        return writeToLog("is connected from Peer " + partnerId + ".");
+    public boolean connectedWith(int partnerId, boolean connectingPeer) {
+        if (connectingPeer) return writeToLog("makes a connection to Peer " + partnerId + ".");
+        else return writeToLog("is connected from Peer " + partnerId + ".");
     }
 
     public boolean preferredNeighbors(List<Integer> ids) {

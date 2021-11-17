@@ -8,6 +8,7 @@ public class ConnectionHandler implements Runnable{
     private PeerManager _peerManager;
     private int _remotePeerId;
     private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
+    private boolean _connectingPeer;
 
     public ConnectionHandler(int id, Connection conn, FileManager fileManager, PeerManager peerManager) {
         _peerId = id;
@@ -15,14 +16,16 @@ public class ConnectionHandler implements Runnable{
         _remotePeerId = -1;
         _fileManager = fileManager;
         _peerManager = peerManager;
+        _connectingPeer = false;
     }
 
-    public ConnectionHandler(int id, Connection conn, FileManager fileManager, PeerManager peerManager, int remoteId) {
+    public ConnectionHandler(int id, Connection conn, FileManager fileManager, PeerManager peerManager, int remoteId, boolean connectingPeer) {
         _peerId = id;
         _conn = conn;
         _remotePeerId = remoteId;
         _fileManager = fileManager;
         _peerManager = peerManager;
+        _connectingPeer = connectingPeer;
     }
 
     @Override
@@ -32,17 +35,24 @@ public class ConnectionHandler implements Runnable{
         new ConnectionHelper(_queue, _conn).start();
 
         try {
-            // send handshake
-            _conn.sendHandshake(new HandshakeMessage(_peerId));
+            // if we are the connector, we send -> receive
+            if (_connectingPeer) {
+                _conn.sendHandshake(new HandshakeMessage(_peerId));
+            }
 
             // receive handshake, we now identified remote peer
             HandshakeMessage rcvHandshake = _conn.receieveHandshake();
             _remotePeerId = rcvHandshake.getPeerId();
 
+            // if we aren't the connector, we receive -> send
+            if (!_connectingPeer) {
+                _conn.sendHandshake(new HandshakeMessage(_peerId));
+            }
+
             System.out.println("Received Handshake from peer " + _remotePeerId);
 
             // Log
-            Logger.getInstance().madeConnectionWith(_remotePeerId);
+            Logger.getInstance().connectedWith(_remotePeerId, _connectingPeer);
 
             // start handling messages for this connection to the remote peer
             MessageHandler msgHandler = new MessageHandler(_remotePeerId, _fileManager, _peerManager);

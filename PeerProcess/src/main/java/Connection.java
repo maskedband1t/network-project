@@ -31,7 +31,8 @@ public class Connection {
 	public void sendHandshake(HandshakeMessage msg) throws IOException{
 		_socket.write("P2PFILESHARINGPROJ".getBytes());
 		_socket.write(new byte[10]);
-		_socket.write(msg.getPeerIdPayload());
+		System.out.println("Sending handshake with id" + msg.getPeerId());
+		_socket.write(Helpers.intToBytes(msg.getPeerId(), 4));
 	}
 
 	public HandshakeMessage receieveHandshake() throws IOException {
@@ -42,8 +43,10 @@ public class Connection {
 		try {
 			_socket.read(str);
 
-			if (!new String(str).equals("P2PFILESHARINGPROJ"))
+			if (!new String(str).equals("P2PFILESHARINGPROJ")) {
+				System.out.println("Did not receive handshake - expected handshake");
 				return null;
+			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);
@@ -55,8 +58,10 @@ public class Connection {
 
 			for (byte b : zeros) {
 				if (b != 0) {
+					System.out.println("Handshake header not followed by 10 zero bits");
 					return null;
 				}
+			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);
@@ -66,12 +71,13 @@ public class Connection {
 		try {
 			_socket.read(id);
 		}
-		catch(Exception ex) {
-			System.out.println(ex);
+		catch(Exception e) {
+			System.out.println(e);
 			return null;
 		}
 
-		return new HandshakeMessage(Helpers.getPieceIndexFromByteArray(id));
+		System.out.println("Received handshake with id " + Helpers.bytesToInt(id));
+		return new HandshakeMessage(Helpers.bytesToInt(id));
 	}
 
 	public void send(Message m)
