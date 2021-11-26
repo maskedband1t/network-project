@@ -4,15 +4,13 @@ import java.util.BitSet;
 
 public class FileManager {
     int peerId;
-    BitSet receivedPieces;
-    RequestedPiecesBitSet requestedPieces;
-    int numPieces;
+    Bitfield receivedPieces;
+    Bitfield requestedPieces;
 
     public FileManager(int peerId) {
         this.peerId = peerId;
-        this.numPieces = (int)Math.ceil(CommonConfig.getInstance().fileSize/CommonConfig.getInstance().pieceSize);
-        this.receivedPieces = new BitSet(numPieces);
-        this.requestedPieces = new RequestedPiecesBitSet(numPieces);
+        this.receivedPieces = new Bitfield();
+        this.requestedPieces = new Bitfield();
 
         // create pieces dir if necessary
         File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
@@ -45,7 +43,7 @@ public class FileManager {
 
     // We are going to return a copy of receivedPieces, because we are using logical operations on the clone
     public BitSet getReceivedPieces() {
-        return (BitSet)receivedPieces.clone();
+        return (BitSet)receivedPieces.getBits().clone();
     }
 
     public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
@@ -107,7 +105,7 @@ public class FileManager {
         byte[] wholeFile = getFile(wholeFilePath);
         byte[] currPieceBytes;
         int size = (int)CommonConfig.getInstance().pieceSize;
-        for (int i = 0; i < numPieces; i++) {
+        for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
             int start = size * i;
             int end = start + size;
             byte[] pieceSubset = Helpers.getByteSubset(wholeFile, start, end);

@@ -178,7 +178,7 @@ public class MessageHandler {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0)
-                return new Message(Helpers.REQUEST, newPieceIdxByteArray);
+                return (set[i/8] & (1<<(i%8))) != 0Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
 
         return null;

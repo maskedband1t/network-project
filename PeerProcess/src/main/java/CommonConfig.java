@@ -8,6 +8,7 @@ public class CommonConfig {
     String fileName;
     long fileSize;
     long pieceSize;
+    int numPieces;
 
     public static CommonConfig getInstance() {
         if (instance == null) {
@@ -30,6 +31,7 @@ public class CommonConfig {
         this.fileName = fileName;
         this.fileSize = fileSize;
         this.pieceSize = pieceSize;
+        this.numPieces = (int)Math.ceil(fileSize/pieceSize);
     }
 
     public void debugPrint() {

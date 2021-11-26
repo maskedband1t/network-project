@@ -28,6 +28,10 @@ public class Logger {
         this.peerId = peerId;
         try {
             logFile = new File(Helpers.pathToResourcesFolder + "log_peer_" + peerId + ".log");
+            if (logFile.exists()) {
+                System.out.println("log_peer_" + peerId + " exists, deleting it!");
+                logFile.delete();
+            }
             logFile.createNewFile();
         }
         catch (IOException e) {

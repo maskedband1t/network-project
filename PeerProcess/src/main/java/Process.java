@@ -16,7 +16,6 @@ public class Process implements Runnable {
 
     // our info && bitfield && manager objects for files and peers
     private PeerInfo peerInfo;
-    private Bitfield bitfield;
     private FileManager fileManager;
     private PeerManager peerManager;
 
@@ -26,7 +25,6 @@ public class Process implements Runnable {
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
-        this.bitfield = new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize);
 
         // TODO: Need to add more to fileMgr and peerMgr constructors
         this.fileManager = new FileManager(peerInfo.getId());
@@ -55,7 +53,7 @@ public class Process implements Runnable {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
-        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId(), true));
+        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info.getId(), true));
     }
 
     public void buildPeers() throws IOException {
@@ -98,8 +96,9 @@ public class Process implements Runnable {
 
                     // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
+                    // we use a default peer info since we haven't identified who they are yet
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
-                    addConnectionHandler(new ConnectionHandler(peerInfo.getId(), conn, fileManager, peerManager));
+                    addConnectionHandler(new ConnectionHandler(peerInfo, conn, fileManager, peerManager));
                 }
                 catch (Exception e) {
                     System.out.println(e);
