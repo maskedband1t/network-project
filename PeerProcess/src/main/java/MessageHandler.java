@@ -24,6 +24,7 @@ public class MessageHandler {
 */
 
     public Message handle(Message msg) {
+        System.out.println("Handling message of type: " + msg.getType());
         switch (msg.getType()) {
             case Helpers.CHOKE: {
                 handleChokeMsg(msg);
@@ -123,15 +124,16 @@ public class MessageHandler {
 
         // Initialize the bitfield for the peer that sent this message
         // Note: We only handle this bitfield message once per peer
-        BitSet bitset = new BitSet();
-        bitset.valueOf(msg.getPayload());
-        _peerManager.handleBitfield(_remotePeerId, bitset);
+        Bitfield bf = new Bitfield(msg.getPayload());
+        _peerManager.handleBitfield(_remotePeerId, bf);
+        System.out.println("Setting Bitfield for peer " + _remotePeerId + " to: ");
+        bf.debugPrint();
 
         // clears all bits that are set
-        bitset.andNot(_fileManager.getReceivedPieces());
+        bf.getBits().andNot(_fileManager.getReceivedPieces());
 
         // Send message back based on whether or not bitfield has this piece
-        if (bitset.isEmpty()) {
+        if (bf.empty()) {
             return new Message(Helpers.NOTINTERESTED, new byte[]{});
         } else {
             return new Message(Helpers.INTERESTED, new byte[]{});
@@ -178,7 +180,7 @@ public class MessageHandler {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0)
-                return (set[i/8] & (1<<(i%8))) != 0Message(Helpers.REQUEST, newPieceIdxByteArray);
+                return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
 
         return null;

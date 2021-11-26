@@ -17,7 +17,8 @@ public class Bitfield {
     }
 
     public Bitfield(byte[] set) {
-        int length = (set.length * 8) - 7;
+        bits = BitSet.valueOf(set);
+        /*int length = (set.length * 8) - 7;
         if (set.length != length)
             throw new InputMismatchException();
 
@@ -28,7 +29,7 @@ public class Bitfield {
         }
 
         System.out.println("Initialized Bitfield from a byte[]");
-        debugPrint();
+        debugPrint();*/
     }
 
     public byte[] toByteArray() {

@@ -29,7 +29,7 @@ public class PeerManager {
     public void handleHave(int remotePeerId, int pieceIdx) {
     }
 
-    public void handleBitfield(int remotePeerId, BitSet bitset) {
+    public void handleBitfield(int remotePeerId, Bitfield bitfield) {
     }
 
     public boolean canUploadToPeer(int remotePeerId) {
