@@ -31,7 +31,7 @@ public class CommonConfig {
         this.fileName = fileName;
         this.fileSize = fileSize;
         this.pieceSize = pieceSize;
-        this.numPieces = (int)Math.ceil(fileSize/pieceSize);
+        this.numPieces = (int)Math.ceil((double)fileSize/pieceSize);
     }
 
     public void debugPrint() {

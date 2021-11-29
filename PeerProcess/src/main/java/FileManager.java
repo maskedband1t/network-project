@@ -105,9 +105,10 @@ public class FileManager {
         byte[] wholeFile = getFile(wholeFilePath);
         byte[] currPieceBytes;
         int size = (int)CommonConfig.getInstance().pieceSize;
+        int fileSize = (int)CommonConfig.getInstance().fileSize;
         for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
             int start = size * i;
-            int end = start + size;
+            int end = Math.min(start + size, fileSize);
             byte[] pieceSubset = Helpers.getByteSubset(wholeFile, start, end);
             addPiece(i, pieceSubset);
         }
