@@ -132,6 +132,9 @@ public class MessageHandler {
         Bitfield bf = new Bitfield(msg.getPayload());
         _peerManager.handleBitfield(_remotePeerId, bf);
 
+        // Log
+        Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
+
         // TODO: Debug print - can remove later
         System.out.println("Setting Bitfield for peer " + _remotePeerId + " to: ");
         bf.debugPrint();
@@ -150,10 +153,16 @@ public class MessageHandler {
         // HAS packet payload: 4 byte piece index field
         // Ex: The peer has requested for us to send the piece corresponding to the 4 byte piece index field in the payload
 
+        // Get piece index field
+        int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
+
+        // Log
+        Logger.getInstance().receivedRequestFrom(_remotePeerId, pieceIdx);
+
         // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
             // Get the piece
-            byte[] piece = _fileManager.getPiece(Helpers.getPieceIndexFromByteArray(msg.getPayload()));
+            byte[] piece = _fileManager.getPiece(pieceIdx);
 
             // Send the piece
             if (piece != null)
