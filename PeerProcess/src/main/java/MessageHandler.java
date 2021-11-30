@@ -1,6 +1,3 @@
-import java.io.IOException;
-import java.util.BitSet;
-
 public class MessageHandler {
     private boolean _choked;
     private int _remotePeerId;
@@ -60,6 +57,7 @@ public class MessageHandler {
     private void handleChokeMsg(Message msg) {
         // NO packet payload
 
+        // Choked by the remote peer
         _choked = true;
 
         // Log
@@ -69,6 +67,7 @@ public class MessageHandler {
     private Message handleUnchokedMsg(Message msg) {
         // NO packet payload
 
+        // Unchoked by the remote peer
         _choked = false;
 
         // Log
@@ -86,15 +85,23 @@ public class MessageHandler {
     }
 
     private void handleInterestedMsg(Message msg) {
+        // NO packet payload
+
+        // Interested in remote peer
+        _peerManager.addPeerInterested(_remotePeerId);
+
         // Log
         Logger.getInstance().receivedInterestedFrom(_remotePeerId);
-        _peerManager.addPeerInterested(_remotePeerId);
     }
 
     private void handleNotInterestedMsg(Message msg) {
+        // NO packet payload
+
+        // Uninterested in remote peer
+        _peerManager.removePeerInterested(_remotePeerId);
+
         // Log
         Logger.getInstance().receivedNotInterestedFrom(_remotePeerId);
-        _peerManager.removePeerInterested(_remotePeerId);
     }
 
     private Message handleHaveMsg(Message msg) {
@@ -110,41 +117,40 @@ public class MessageHandler {
         _peerManager.handleHave(_remotePeerId, pieceIdx);
 
         // Send message back based on whether or not bitfield has this piece
-        if (_fileManager.getReceivedPieces().get(pieceIdx)) {
+        if (_fileManager.getReceivedPieces().get(pieceIdx))
             return new Message(Helpers.NOTINTERESTED, new byte[]{});
-        }
-        else {
+        else
             return new Message(Helpers.INTERESTED, new byte[]{});
-        }
     }
 
     private Message handleBitfieldMsg(Message msg) {
         // HAS packet payload: bitfield structure, which tracks the pieces of the file the peer has
-        // Ex: If there are 32 pieces of the file, and the peer has all of them, it will send a payload of 32 1 bits
+        // Ex: If there are 32 pieces of the file, and the peer has all of them, it will send a payload of 32 bits
 
         // Initialize the bitfield for the peer that sent this message
         // Note: We only handle this bitfield message once per peer
         Bitfield bf = new Bitfield(msg.getPayload());
         _peerManager.handleBitfield(_remotePeerId, bf);
+
+        // TODO: Debug print - can remove later
         System.out.println("Setting Bitfield for peer " + _remotePeerId + " to: ");
         bf.debugPrint();
 
-        // clears all bits that are set
+        // Clears all bits that are set
         bf.getBits().andNot(_fileManager.getReceivedPieces());
 
         // Send message back based on whether or not bitfield has this piece
-        if (bf.empty()) {
+        if (bf.empty())
             return new Message(Helpers.NOTINTERESTED, new byte[]{});
-        } else {
+        else
             return new Message(Helpers.INTERESTED, new byte[]{});
-        }
     }
 
     private Message handleRequestMsg(Message msg) {
         // HAS packet payload: 4 byte piece index field
         // Ex: The peer has requested for us to send the piece corresponding to the 4 byte piece index field in the payload
 
-        // make sure we can send to remotePeer
+        // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
             // get the piece
             byte[] piece = _fileManager.getPiece(Helpers.getPieceIndexFromByteArray(msg.getPayload()));
