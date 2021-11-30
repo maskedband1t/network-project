@@ -1,4 +1,3 @@
-import java.util.BitSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -11,6 +10,7 @@ public class ConnectionHandler implements Runnable{
     private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
     private boolean _connectingPeer;
 
+    // Constructs a ConnectionHandler for an anonymous remote peer
     public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager) {
         _info = in;
         _conn = conn;
@@ -20,6 +20,7 @@ public class ConnectionHandler implements Runnable{
         _connectingPeer = false;
     }
 
+    // Constructs a ConnectionHandler for a known remote peer
     public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager, int remoteId, boolean connectingPeer) {
         _info = in;
         _conn = conn;
@@ -33,30 +34,34 @@ public class ConnectionHandler implements Runnable{
     public void run() {
         System.out.println("Handling connection for peer " + _info.getId() + " with unknown peer");
 
+        // Acts as the first layer of our ConnectionHandler, handling choke information
         new ConnectionHelper(_queue, _conn).start();
 
         try {
-            // if we are the connector, we send -> receive
-            if (_connectingPeer) {
+            // If we are the connector, we send -> receive
+            if (_connectingPeer)
                 _conn.sendHandshake(new HandshakeMessage(_info.getId()));
-            }
 
-            // receive handshake, we now identified remote peer
-            HandshakeMessage rcvHandshake = _conn.receieveHandshake();
+            // Receive handshake, we now identified remote peer
+            HandshakeMessage rcvHandshake = _conn.receiveHandshake();
             _remotePeerId = rcvHandshake.getPeerId();
-            // based off of their id, fill connection's peerinfo properly
+
+            // Based off of their id, fill connection's peerinfo properly
             _conn.updatePeerInfo(PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId));
 
-            // if we aren't the connector, we receive -> send
+            // If we aren't the connector, we receive -> send
             if (!_connectingPeer)
                 _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
-            // after handshake send bitfield message if we have any pieces
+            // After handshake send bitfield message if we have any pieces
             System.out.println("Checking if we have any set bits in our bitfield...");
             Bitfield field = _info.getBitfield();
             if (!field.empty()) {
+                // TODO: Debugging purposes, can remove
                 System.out.println("We do! Sending out bitfield too: ");
                 field.debugPrint();
+
+                // Send the bitfield message
                 Message msg = new Message(Helpers.BITFIELD, field.getBits().toByteArray());
                 _conn.send(msg);
             }
@@ -66,23 +71,26 @@ public class ConnectionHandler implements Runnable{
             // Log
             Logger.getInstance().connectedWith(_remotePeerId, _connectingPeer);
 
-            // start handling messages for this connection to the remote peer
+            // Start handling messages for this connection to the remote peer
             MessageHandler msgHandler = new MessageHandler(_remotePeerId, _fileManager, _peerManager);
 
-            // handle connection, this is the server portion of our peer
+            // Handle the connection, this is the server portion of our peer
             while (true) {
                 try {
                     msgHandler.handle(_conn.receive());
                 }
-                catch (Exception ex) {
-                    System.out.println(ex);
+                catch (Exception e) {
+                    System.out.println(e);
+                    e.printStackTrace();
                 }
             }
         }
         catch (Exception e) {
             System.out.println(e);
+            e.printStackTrace();
         }
         finally {
+            // Close the connection before exiting the run() function
             _conn.close();
         }
     }

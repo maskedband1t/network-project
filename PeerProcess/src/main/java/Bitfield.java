@@ -1,53 +1,48 @@
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.InputMismatchException;
 import java.util.List;
 
 public class Bitfield {
     private BitSet bits;
 
+    // Default constructor, init bits with number of pieces defined in CommonConfig
     public Bitfield() {
         bits = new BitSet(CommonConfig.getInstance().numPieces);
     }
 
+    // Init bits with number of pieces defined in CommonConfig as all true or false
     public Bitfield(boolean allTrue) {
         bits = new BitSet(CommonConfig.getInstance().numPieces);
         if (allTrue)
             bits.flip(0, CommonConfig.getInstance().numPieces);
     }
 
+    // Init bits with a byte array
     public Bitfield(byte[] set) {
         bits = BitSet.valueOf(set);
-        /*int length = (set.length * 8) - 7;
-        if (set.length != length)
-            throw new InputMismatchException();
-
-        // transform byte array into BitSet type
-        for (int i = 0; i < length; i++) {
-            boolean val = (set[i/8] & (1<<(i%8))) != 0;
-            bits.set(i, val);
-        }
-
-        System.out.println("Initialized Bitfield from a byte[]");
-        debugPrint();*/
     }
 
+    // Get bits as byte array
     public byte[] toByteArray() {
         return bits.toByteArray();
     }
 
+    // Get bits as a string
     public String toString() {
         return bits.toString();
     }
 
+    // Get bits
     public BitSet getBits() {
         return bits;
     }
-    
+
+    // Get number of bits
     public int getSize() {
         return bits.size();
     }
 
+    // TODO: Can probably remove
     public int getRandomUnsetIndex() {
         List<Integer> unsets = new ArrayList<Integer>();
         for (int i = bits.nextSetBit(0); i != -1; i = bits.nextSetBit(i + 1)) {
@@ -56,7 +51,7 @@ public class Bitfield {
         return (int) Math.random() * unsets.size();
     }
     
-    // return true if has piece (i.e. bit at index is 1)
+    // Check if bit at index is == 1
     public boolean hasPiece(int pieceIndex) {
         try {
             return bits.get(pieceIndex);
@@ -68,7 +63,7 @@ public class Bitfield {
         }
     }
 
-    // return true if piece is successfully set
+    // Check if piece is successfully set to 1
     public boolean setPiece(int pieceIndex) {
         try {
             bits.set(pieceIndex);
@@ -81,6 +76,7 @@ public class Bitfield {
         }
     }
 
+    // Check if bits are all set to 0
     public boolean empty() {
         return bits.cardinality() == 0;
     }
@@ -124,6 +120,7 @@ public class Bitfield {
         return -1;
     }
 
+    // Debugging function to print the bitset into the command line
     public void debugPrint() {
         int[] arr = bits.stream().toArray();
         System.out.print("{");

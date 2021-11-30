@@ -1,5 +1,3 @@
-
-
 public class CommonConfig {
     private static CommonConfig instance = null;
     int numPrefNeighbors;
@@ -10,6 +8,7 @@ public class CommonConfig {
     long pieceSize;
     int numPieces;
 
+    // Get the singleton
     public static CommonConfig getInstance() {
         if (instance == null) {
             throw new AssertionError("CommonConfig not yet initialized. Try CommonConfig.init(int, int, int, String, long, long).");
@@ -17,6 +16,7 @@ public class CommonConfig {
         return instance;
     }
 
+    // Init the singleton
     public static void init(int numPrefNeighbors, int unchokingInterval, int optimisticUnchokingInterval, String fileName, long fileSize, long pieceSize) {
         if (instance != null) {
             throw new AssertionError("CommonConfig is already initialized!");
@@ -24,6 +24,7 @@ public class CommonConfig {
         instance = new CommonConfig(numPrefNeighbors, unchokingInterval, optimisticUnchokingInterval, fileName, fileSize, pieceSize);
     }
 
+    // Constructor used by init(...)
     public CommonConfig(int numPrefNeighbors, int unchokingInterval, int optimisticUnchokingInterval, String fileName, long fileSize, long pieceSize) {
         this.numPrefNeighbors = numPrefNeighbors;
         this.unchokingInterval = unchokingInterval;
@@ -34,6 +35,7 @@ public class CommonConfig {
         this.numPieces = (int)Math.ceil((double)fileSize/pieceSize);
     }
 
+    // Debugging function to print the common configuration
     public void debugPrint() {
         System.out.println("Common Config");
         System.out.println("----------------");
