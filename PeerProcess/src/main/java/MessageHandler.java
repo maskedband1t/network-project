@@ -139,6 +139,9 @@ public class MessageHandler {
         // Clears all bits that are set
         bf.getBits().andNot(_fileManager.getReceivedPieces());
 
+        // Log
+        Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
+
         // Send message back based on whether or not bitfield has this piece
         if (bf.empty())
             return new Message(Helpers.NOTINTERESTED, new byte[]{});
@@ -150,10 +153,15 @@ public class MessageHandler {
         // HAS packet payload: 4 byte piece index field
         // Ex: The peer has requested for us to send the piece corresponding to the 4 byte piece index field in the payload
 
+        int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
+
+        // Log
+        Logger.getInstance().receivedRequestFrom(_remotePeerId, pieceIdx);
+
         // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
             // get the piece
-            byte[] piece = _fileManager.getPiece(Helpers.getPieceIndexFromByteArray(msg.getPayload()));
+            byte[] piece = _fileManager.getPiece(pieceIdx);
 
             // send the piece
             if (piece != null) {

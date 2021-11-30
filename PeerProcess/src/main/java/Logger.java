@@ -115,6 +115,14 @@ public class Logger {
         return writeToLog("received the 'not interested' message from " + partnerId + ".");
     }
 
+    public boolean receivedBitfieldFrom(int partnerId) {
+        return writeToLog("received the 'bitfield' message from " + partnerId + ".");
+    }
+
+    public boolean receivedRequestFrom(int partnerId, int pieceIndex) {
+        return writeToLog("received the 'request' message from " + partnerId + " for the piece " + pieceIndex + ".");
+    }
+
     public boolean downloadedPiece(int partnerId, int pieceIndex, int pieceCount) {
         return writeToLog("has downloaded the piece " + pieceIndex + " from " + partnerId + ". Now the number of pieces it has is " + pieceCount + ".");
     }
