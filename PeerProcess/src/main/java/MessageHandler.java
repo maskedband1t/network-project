@@ -152,13 +152,12 @@ public class MessageHandler {
 
         // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
-            // get the piece
+            // Get the piece
             byte[] piece = _fileManager.getPiece(Helpers.getPieceIndexFromByteArray(msg.getPayload()));
 
-            // send the piece
-            if (piece != null) {
+            // Send the piece
+            if (piece != null)
                 return new Message(Helpers.PIECE, piece);
-            }
         }
 
         return null;
@@ -168,25 +167,29 @@ public class MessageHandler {
         // HAS packet payload: 4 byte piece index field AND piece content
         // Ex: The peer sent the whole piece including its index field
 
-        int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
-        byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
-        int pieceContentLength = pieceContent.length;
-
-        // Add piece to file
-        _fileManager.addPiece(pieceIdx, pieceContent);
-
-        // Mark that we receieved piece
-        _peerManager.receivedPiece(_remotePeerId, pieceContentLength);
-
-        // Log
-        Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
-
-        // Return Request msg if applicable
+        // We add this check here to ensure that the remote peer has not choked us before sending a requested piece over
         if (!_choked) {
-            int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
-            byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
-            if (newPieceIdx >= 0)
-                return new Message(Helpers.REQUEST, newPieceIdxByteArray);
+            // Get piece index field
+            int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
+
+            // Get piece content
+            byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
+            int pieceContentLength = pieceContent.length;
+
+            // Add piece to file
+            _fileManager.addPiece(pieceIdx, pieceContent);
+
+            // Mark that we received piece
+            _peerManager.receivedPiece(_remotePeerId, pieceContentLength);
+
+            // Log
+            Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
+
+            // Return Request msg if applicable
+                int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
+                byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
+                if (newPieceIdx >= 0)
+                    return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
 
         return null;
