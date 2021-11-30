@@ -1,7 +1,11 @@
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class PeerManager implements Runnable {
 
@@ -10,7 +14,7 @@ public class PeerManager implements Runnable {
         private final int _optimistic_unchoking_interval;
         private final List<PeerInfo> _chokedPeers = new ArrayList<>();
         // TODO: set up collection of optimistically unchoked peers
-        final List<PeerInfo> _optimisticallyUnchokedPeers = Collections.newSetFromMap(new ConcurrentHashMap<PeerInfo, Boolean>);
+        final List<PeerInfo> _optimisticallyUnchokedPeers = Collections.newSetFromMap(new ConcurrentHashMap<PeerInfo, Boolean>());
         
         OptimisticUnchoker(){
             _num_optimistic_unchoked_neighbors = 1;    // hardcoded for now (maybe don't need to change)
@@ -47,22 +51,21 @@ public class PeerManager implements Runnable {
 
 
 
-    public List<Integer> _interestedPeers;
-    public List<Integer> _preferredPeers;
-    public List<Integer> _optimisticallyUnchokedPeers;
+    public Collection<PeerInfo> _preferredPeers = new HashSet<>();
 
-    private final List<PeerInfo> _peers = new Arraylist<>();
+    private final List<PeerInfo> _peers = new ArrayList<>();
     private final OptimisticUnchoker _optimisticUnchoker;
     private int _unchokingInterval;
     private int _num_Preffered_Neighbors;
     private int _numPieces;
     private final AtomicBoolean _fileDone = new AtomicBoolean(false);
+    CommonConfig config = CommonConfig.getInstance();
 
     public PeerManager(int peerId, List<PeerInfo> peers) {
         _optimisticUnchoker = new OptimisticUnchoker();
-        _unchokingInterval = CommonConfig.getInstance().unchokingInterval;
-        _num_Preffered_Neighbors = CommonConfig.getInstance().numPrefNeighbors;
-        _numPieces = (int)Math.ceil(CommonConfig.getInstance().fileSize/CommonConfig.getInstance().pieceSize);
+        _unchokingInterval = config.unchokingInterval;
+        _num_Preffered_Neighbors = config.numPrefNeighbors;
+        _numPieces = (int)Math.ceil(config.fileSize/config.getInstance().pieceSize);
         _peers.addAll(peers);
     }
 
@@ -150,6 +153,49 @@ public class PeerManager implements Runnable {
                     }
                 });
             }
+
+            Set<PeerInfo> optimistically_unchokable_peers = null;
+            Set<Integer> chokedPeerIDs = new HashSet<>();
+            Set<Integer> preferredPeerIDs = new HashSet<>();
+            Map<Integer, Long> downloadedBytes = new HashMap<>();
+
+            synchronized(this){
+                for(PeerInfo p : _peers){
+                    downloadedBytes.put(p.getId() , p._downloadRate.longValue()); // store so we can run calculations
+                    p._downloadRate.set(0); //reset
+                }
+
+                // select highest ranked peers
+                _preferredPeers.clear();
+                _preferredPeers.addAll(_interestedPeers.subList(0, Math.min(_num_Preffered_Neighbors, _interestedPeers.size())));
+                if(_preferredPeers.size() > 0){
+                    // logs
+                }
+
+                Collection <PeerInfo> _choked_peers = new LinkedList<>(_peers);
+                _choked_peers.removeAll(_preferredPeers); // remove unchoked ones
+                chokedPeerIDs.addAll(PeerInfo.toIdList(_choked_peers)); // adding List to Set
+
+                if(_num_Preffered_Neighbors >= _interestedPeers.size()){
+                    optimistically_unchokable_peers = new ArrayList<>();
+                }
+                else{
+                    optimistically_unchokable_peers = _interestedPeers.subList(_num_Preffered_Neighbors , _interestedPeers.size());
+                }
+
+                preferredPeerIDs.addAll(PeerInfo.toIdList(_preferredPeers));
+            }
+
+            // could log here the state of every peer if helpful
+            // ex. if choked, unchoked, or interested
+            // anything helpful/needed to log every thread run
+
+            // TODO: hand chokedPeerIds and preferredPeerIds to process
+
+            if(optimistically_unchokable_peers != null){
+                _optimisticUnchoker.setChokedPeers(optimistically_unchokable_peers); // pass new unchokable peers to unchoker
+            }
+
         }
     }
 }
