@@ -6,8 +6,10 @@ public class PeerInfo {
     private String hostname;
     private int port;
     private final AtomicBoolean _interested;
-    public AtomicInteger _downloadRate; // want public accessibility here. NOTE: how much did it download over last interval
-     // should we add bitset here?
+    private AtomicInteger _downloadRate;
+     // should we add bitfield here?
+    private Bitfield _bitfield;
+    private AtomicBoolean _file_complete;
 
     public PeerInfo() {
         peerId = -1;
@@ -15,15 +17,31 @@ public class PeerInfo {
         port = -1;
         _interested = new AtomicBoolean (false);
         _downloadRate = new AtomicInteger(0);
+        this._bitfield = null;
+        _file_complete = new AtomicBoolean(false);
     }
 
-    public PeerInfo(int peerId, String hostname, int port) {
+    public PeerInfo(int peerId, String hostname, int port, boolean file_complete) {
         this.peerId = peerId;
         this.hostname = hostname;
         this.port = port;
         _interested = new AtomicBoolean (false);
         _downloadRate = new AtomicInteger(0);
+        
+        this._file_complete.set(file_complete);
+        this._bitfield = new Bitfield(this._file_complete.get());
     }
+
+    public boolean is_file_complete() { return this._file_complete.get(); }
+    public void set_file_complete(boolean is_complete) { this._file_complete.set(is_complete); }
+
+    public int get_download_rate() { return this._downloadRate.get(); }
+    public AtomicInteger get_download_rate_atomic() { return this._downloadRate; }
+    public void set_download_rate(int rate) { this._downloadRate.set(rate); }
+
+    public void initBitfield() { _bitfield = new Bitfield(this.is_file_complete.get());}
+
+    public Bitfield getBitfield() { return _bitfield; }
 
     public boolean isInterested() {
         return _interested.get();

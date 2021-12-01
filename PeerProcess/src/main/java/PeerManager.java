@@ -69,7 +69,7 @@ public class PeerManager implements Runnable {
         _peers.addAll(peers);
     }
 
-    public boolean CanUploadToPeer(PeerInfo info) {
+    synchronized boolean CanUploadToPeer(PeerInfo info) {
         return (_preferredPeers.contains(info.getId()) ||
                 _optimisticallyUnchokedPeers.contains(info.getId()));
     }
@@ -93,7 +93,28 @@ public class PeerManager implements Runnable {
             }
         } 
     }
+    synchronized void updateDownloadRate(int peerId, int size){
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    peer.set_download_rate(peer.get_download_rate() + size); 
+                }
+            }
+        } 
+    }
 
+    synchronized boolean isPeerInteresting(int peerId, Bitfield b){ // return true if has interesting parts in bitfield 
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    Bitfield clone_bitfield = peer.getBitfield().clone(); // clone peers bitfield
+                    clone_bitfield = clone_bitfield.andNot(b);
+                    return !clone_bitfield.empty();
+                }
+            }
+        }
+        return false; 
+    }
     synchronized List<PeerInfo> getInterestedPeers(){
         List<PeerInfo> interestedPeers = new ArrayList<>();
 
@@ -112,18 +133,16 @@ public class PeerManager implements Runnable {
     public void handleHave(int peerId, int pieceIdx) {
     }
 
-    public void handleBitfield(int peerId, BitSet bitset) {
-    }
-
-    public boolean canUploadToPeer(int peerId) {
-        return false;
-    }
-
-    public void receivedPiece(int peerId, int pieceContentLength) {
-    }
-
-    public BitSet getReceivedPieces(int peerId) {
-        return null;
+    synchronized BitSet getReceivedPieces(int peerId) {
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    Bitfield clone_bitfield = peer.getBitfield().clone(); // clone peers bitfield
+                    return clone_bitfield.getBits();
+                }
+            }
+        }
+        return new BitSet();
     }
 
     @Override
@@ -149,7 +168,7 @@ public class PeerManager implements Runnable {
                         PeerInfo p1 = (PeerInfo)(o1);
                         PeerInfo p2 = (PeerInfo)(o2);
 
-                        return(p1._downloadRate.get() - p2._downloadRate.get());
+                        return(p1.get_download_rate() - p2.get_download_rate());
                     }
                 });
             }
@@ -161,8 +180,8 @@ public class PeerManager implements Runnable {
 
             synchronized(this){
                 for(PeerInfo p : _peers){
-                    downloadedBytes.put(p.getId() , p._downloadRate.longValue()); // store so we can run calculations
-                    p._downloadRate.set(0); //reset
+                    downloadedBytes.put(p.getId() , p.set_download_rate(p.get_download_rate_atomic().longValue())); // store so we can run calculations
+                    p.set_download_rate(0); //reset
                 }
 
                 // select highest ranked peers
