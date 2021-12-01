@@ -57,7 +57,6 @@ public class PeerManager implements Runnable {
     private final OptimisticUnchoker _optimisticUnchoker;
     private int _unchokingInterval;
     private int _num_Preffered_Neighbors;
-    private int _numPieces;
     private final AtomicBoolean _fileDone = new AtomicBoolean(false);
     CommonConfig config = CommonConfig.getInstance();
 
@@ -65,7 +64,6 @@ public class PeerManager implements Runnable {
         _optimisticUnchoker = new OptimisticUnchoker();
         _unchokingInterval = config.unchokingInterval;
         _num_Preffered_Neighbors = config.numPrefNeighbors;
-        _numPieces = (int)Math.ceil(config.fileSize/config.getInstance().pieceSize);
         _peers.addAll(peers);
     }
 
@@ -147,7 +145,7 @@ public class PeerManager implements Runnable {
         for (PeerInfo peer : _peers) {
             if (peer.getPeerId() == peerId) {
                 if(peer != null){
-                    if(peer.getBitfield().getBits().cardinality() < _numPieces){
+                    if(peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
                         // log that a neighbor hasnt finished
                         return;
                     }
