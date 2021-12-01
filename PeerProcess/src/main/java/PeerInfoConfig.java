@@ -24,7 +24,7 @@ public class PeerInfoConfig {
     }
 
     public boolean HasFile(int id) {
-        return peerInfos.stream().filter(info -> info.getId() == id).findFirst().get().getHasFile();
+        return peerInfos.stream().filter(info -> info.getId() == id).findFirst().get().getFileComplete();
     }
 
     public PeerInfo GetPeerInfo(int id) {
