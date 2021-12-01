@@ -4,7 +4,7 @@ import java.util.List;
 public class PeerInfoConfig {
     private static PeerInfoConfig instance = null;
     List<PeerInfo> peerInfos;
-
+    
     public static PeerInfoConfig getInstance() {
         if (instance == null) {
             throw new AssertionError("PeerInfoConfig not yet initialized. Try PeerInfoConfig.init(List<PeerTrackerInfo>).");
@@ -24,7 +24,7 @@ public class PeerInfoConfig {
     }
 
     public boolean HasFile(int id) {
-        return peerInfos.stream().filter(info -> info.getId() == id).findFirst().get().getHasFile();
+        return peerInfos.stream().filter(info -> info.getId() == id).findFirst().get().getFileComplete();
     }
 
     public PeerInfo GetPeerInfo(int id) {

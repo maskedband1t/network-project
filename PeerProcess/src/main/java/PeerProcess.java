@@ -17,7 +17,6 @@ public class PeerProcess {
 
         try {
             BufferedReader in = new BufferedReader(new FileReader(Helpers.pathToResourcesFolder + "PeerInfo.cfg"));
-            int i = 0;
             while((st = in.readLine()) != null) {
                 String[] tokens = st.split("\\s+");
 
@@ -35,9 +34,11 @@ public class PeerProcess {
 
             // create the config
             PeerInfoConfig.init(peerInfoVector);
+            PeerInfoConfig.getInstance().debugPrint();
         }
         catch (Exception ex) {
             System.out.println(ex.toString());
+            ex.printStackTrace();
         }
     }
 
@@ -61,7 +62,6 @@ public class PeerProcess {
                     Integer.parseInt(values.elementAt(4)),
                     Integer.parseInt(values.elementAt(5))
             );
-
         }
         catch (Exception ex) {
             System.out.println(ex.toString());

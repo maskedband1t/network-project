@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -5,31 +7,29 @@ public class PeerInfo {
     private int peerId;
     private String hostname;
     private int port;
-    private final AtomicBoolean _interested;
+    private AtomicBoolean _interested;
     private AtomicInteger _downloadRate;
-     // should we add bitfield here?
     private Bitfield _bitfield;
-    private AtomicBoolean _file_complete;
+    private AtomicBoolean _file_complete = new AtomicBoolean(false);;
 
+    // Construct a default PeerInfo
     public PeerInfo() {
-        peerId = -1;
-        hostname = "";
-        port = -1;
-        _interested = new AtomicBoolean (false);
-        _downloadRate = new AtomicInteger(0);
-        this._bitfield = null;
-        _file_complete = new AtomicBoolean(false);
+        this.peerId = -1;
+        this.hostname = "";
+        this.port = -1;
+        this._interested = new AtomicBoolean (false);
+        this._downloadRate = new AtomicInteger(0);
+        this._bitfield = new Bitfield(false);
     }
 
     public PeerInfo(int peerId, String hostname, int port, boolean file_complete) {
         this.peerId = peerId;
         this.hostname = hostname;
         this.port = port;
-        _interested = new AtomicBoolean (false);
-        _downloadRate = new AtomicInteger(0);
-        
+        this._interested = new AtomicBoolean (false);
+        this._downloadRate = new AtomicInteger(0);
         this._file_complete.set(file_complete);
-        this._bitfield = new Bitfield(this._file_complete.get());
+        this._bitfield = new Bitfield(file_complete);
     }
 
     public boolean is_file_complete() { return this._file_complete.get(); }
@@ -39,9 +39,12 @@ public class PeerInfo {
     public AtomicInteger get_download_rate_atomic() { return this._downloadRate; }
     public void set_download_rate(int rate) { this._downloadRate.set(rate); }
 
-    public void initBitfield() { _bitfield = new Bitfield(this.is_file_complete.get());}
-
-    public Bitfield getBitfield() { return _bitfield; }
+    public void initBitfield() {
+        if (this._file_complete != null)
+            _bitfield = new Bitfield(this._file_complete.get());
+        else
+            _bitfield = new Bitfield(false);
+    }
 
     public void setBitfield(Bitfield b){_bitfield = b;} // setter
 
@@ -53,38 +56,57 @@ public class PeerInfo {
         else{_interested.set(false);}
     }
 
+    // Get the peer id
     public int getId() {
         return peerId;
     }
 
+    // Get the host name
     public String getHost() {
         return hostname;
     }
 
+    // Get the port
     public int getPort() {
         return port;
     }
 
+    // Get the bitfield
+    public Bitfield getBitfield() { return _bitfield; }
+
+    // Get the file complete bool
+    public boolean getFileComplete() {
+        if (_file_complete != null)
+            return _file_complete.get();
+        return false;
+    }
+
+    // Set the peer id
     public void setId(int peerId) {
         this.peerId = peerId;
     }
 
+    // Set the host name
     public void setHost(String hostname) {
         this.hostname = hostname;
     }
 
+    // Set the port
     public void setPort(int port) {
         this.port = port;
     }
+
     // get list of pure peerIds
-    public static List<Integer> toIdList(List<PeerInfo> peerInfoList){
-       List<PeerInfo> ids = new ArrayList<>();
+    public static List<Integer> toIdList(Collection<PeerInfo> peerInfoList) {
+       List<Integer> ids = new ArrayList<Integer>();
        for(PeerInfo peer : peerInfoList){
            ids.add(peer.getId());
        }
+       return ids;
     }
 
+    // Debugging purposes, print this peer's info
     public void debugPrint() {
-        System.out.println(getId() + " " + getHost() + " " + getPort() + " " + getHasFile());
+        System.out.println(getId() + " " + getHost() + " " + getPort() + " " + getFileComplete());
     }
 }

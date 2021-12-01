@@ -32,15 +32,20 @@ public class Bitfield {
         debugPrint();*/
     }
 
-    public Bitfield clone(){ // provides clone capabilties for Bitfield using underlying bitset clone
-        bits[] new_bitset = this.getBits().clone();
+    public Bitfield(BitSet set) {
+        bits = set;
+    }
+
+    public Bitfield clone(){ // provides clone capabilities for Bitfield using underlying bitset clone
+        BitSet new_bitset = (BitSet)this.getBits().clone();
         Bitfield new_bitfield = new Bitfield(new_bitset);
         return new_bitfield;
     }
-    public Bitfield andNot(Bitfield b){ // provides andNot capabilties for Bitfield using underlying bitset andNot
-        Bitset new_bitset = this.getBits().andNot(b.getBits());
-        Bitfield new_bitfield = new Bitfield(new_bitset);
-        return new_bitfield;
+
+    public Bitfield andNot(Bitfield b){ // provides andNot capabilities for Bitfield using underlying bitset andNot
+        BitSet new_bitset = (BitSet) getBits().clone();
+        new_bitset.andNot(b.getBits());
+        return new Bitfield(new_bitset);
     }
 
     public byte[] toByteArray() {
