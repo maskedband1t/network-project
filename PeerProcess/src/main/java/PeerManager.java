@@ -1,6 +1,7 @@
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class PeerManager implements Runnable {
 
@@ -43,23 +44,24 @@ public class PeerManager implements Runnable {
     }
 
     public Collection<PeerInfo> _preferredPeers = new HashSet<>();
-    private final List<PeerInfo> _peers = new ArrayList<>();
+    private List<PeerInfo> _peers = new ArrayList<>();
     private final OptimisticUnchoker _optimisticUnchoker;
     private int _unchokingInterval;
     private int _num_Preffered_Neighbors;
     private final AtomicBoolean _fileDone = new AtomicBoolean(false);
     CommonConfig config = CommonConfig.getInstance();
 
-    public PeerManager(int peerId, List<PeerInfo> peers) {
+    public PeerManager(int peerId) {
         _optimisticUnchoker = new OptimisticUnchoker();
         _unchokingInterval = config.unchokingInterval;
         _num_Preffered_Neighbors = config.numPrefNeighbors;
-        _peers.addAll(peers);
+        // our peers are everyone but usa
+        _peers = _peers.stream().filter(ele -> ele.getId() != peerId).collect(Collectors.toList());
     }
 
-    synchronized boolean canUploadToPeer(PeerInfo info) {
-        return (_preferredPeers.contains(info.getId()) ||
-                _optimisticUnchoker._optimisticallyUnchokedPeers.contains(info.getId()));
+    synchronized boolean canUploadToPeer(int peerId) {
+        return (_preferredPeers.contains(peerId) ||
+                _optimisticUnchoker._optimisticallyUnchokedPeers.contains(peerId));
     }
 
     synchronized void addPeerInterested(int peerId) {

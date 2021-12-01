@@ -186,8 +186,8 @@ public class MessageHandler {
         // Add piece to file
         _fileManager.addPiece(pieceIdx, pieceContent);
 
-        // Mark that we receieved piece
-        _peerManager.receivedPiece(_remotePeerId, pieceContentLength);
+        // Mark that we received piece
+        _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
 
         // Log
         Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
