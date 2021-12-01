@@ -128,6 +128,14 @@ public class PeerManager implements Runnable {
         _fileDone.set(true);
     }
     public void handleBitfield(int remotePeerId, Bitfield bitfield) {
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    peer.setBitfield(bitfield);
+                }
+                download_finished();
+            }
+        } 
     }
 
     public void handleHave(int peerId, int pieceIdx) {

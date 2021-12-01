@@ -43,6 +43,8 @@ public class PeerInfo {
 
     public Bitfield getBitfield() { return _bitfield; }
 
+    public void setBitfield(Bitfield b){_bitfield = b;} // setter
+
     public boolean isInterested() {
         return _interested.get();
     }
