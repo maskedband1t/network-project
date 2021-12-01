@@ -3,7 +3,7 @@ import java.util.List;
 
 public class PeerInfoConfig {
     private static PeerInfoConfig instance = null;
-    List<PeerTrackerInfo> peerTrackerInfo;
+    List<PeerInfo> peerInfos;
 
     public static PeerInfoConfig getInstance() {
         if (instance == null) {
@@ -12,29 +12,34 @@ public class PeerInfoConfig {
         return instance;
     }
 
-    public static void init(List<PeerTrackerInfo> peerTrackerInfo) {
+    public static void init(List<PeerInfo> infos) {
         if (instance != null) {
             throw new AssertionError("PeerInfoConfig is already initialized!");
         }
-        instance = new PeerInfoConfig(peerTrackerInfo);
+        instance = new PeerInfoConfig(infos);
     }
 
-    public PeerInfoConfig(List<PeerTrackerInfo> peerTrackerInfo) {
-        this.peerTrackerInfo = peerTrackerInfo;
+    public PeerInfoConfig(List<PeerInfo> infos) {
+        this.peerInfos = infos;
     }
 
-    public PeerInfo GetPeerInfo(String host, int port){
-        return peerTrackerInfo.stream()
-                .filter(info -> info.peerInfo.getHost() == host && info.peerInfo.getPort() == port)
-                .findFirst()
-                .get().peerInfo;
+    public boolean HasFile(int id) {
+        return peerInfos.stream().filter(info -> info.getId() == id).findFirst().get().getHasFile();
+    }
+
+    public PeerInfo GetPeerInfo(int id) {
+        return peerInfos.stream().filter(info -> info.getId() == id).findFirst().get();
+    }
+
+    public PeerInfo GetPeerInfo(String host, int port) {
+        return peerInfos.stream().filter(info -> info.getHost().equals(host) && info.getPort() == port).findFirst().get();
     }
 
     public List<PeerInfo> GetPeersToConnectToFor(int peerId) {
         List<PeerInfo> peersBefore = new ArrayList<PeerInfo>();
-        for (int i = 0; i < peerTrackerInfo.size(); i++) {
-            if (peerTrackerInfo.get(i).peerInfo.getId() != peerId)
-                peersBefore.add(peerTrackerInfo.get(i).peerInfo);
+        for (int i = 0; i < peerInfos.size(); i++) {
+            if (peerInfos.get(i).getId() != peerId)
+                peersBefore.add(peerInfos.get(i));
             else
                 return peersBefore;
         }
@@ -44,8 +49,8 @@ public class PeerInfoConfig {
     public void debugPrint() {
         System.out.println("Peer Info Config");
         System.out.println("----------------");
-        for (int i = 0; i < peerTrackerInfo.size(); i++) {
-            peerTrackerInfo.get(i).debugPrint();
+        for (int i = 0; i < peerInfos.size(); i++) {
+            peerInfos.get(i).debugPrint();
         }
     }
 }

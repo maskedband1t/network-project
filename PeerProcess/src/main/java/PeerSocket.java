@@ -35,9 +35,6 @@ public class PeerSocket implements SocketInterface{
 
 	public void write(byte[] b)
 	throws IOException{
-		if (os == null)
-			System.out.println("Outputstream is null");
-		System.out.println("Will be writing: " + b.toString() + " using the following output stream: " + os.toString());
 		os.write(b);
 		os.flush();
 	}

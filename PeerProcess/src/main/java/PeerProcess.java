@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -12,21 +13,23 @@ public class PeerProcess {
 
     public static void getPeerInfoConfig() {
         String st;
-        Vector<PeerTrackerInfo> peerInfoVector = new Vector<PeerTrackerInfo>();
+        Vector<PeerInfo> peerInfoVector = new Vector<PeerInfo>();
 
         try {
-            BufferedReader in = new BufferedReader(new FileReader("./../../../resources/main/PeerInfo.cfg"));
+            BufferedReader in = new BufferedReader(new FileReader(Helpers.pathToResourcesFolder + "PeerInfo.cfg"));
+            int i = 0;
             while((st = in.readLine()) != null) {
-
                 String[] tokens = st.split("\\s+");
 
-                peerInfoVector.addElement(new PeerTrackerInfo(
+                if (tokens.length != 4)
+                    throw new InputMismatchException("The given PeerInfo.cfg does not have the expected format <id> <hostname> <port> <hasFile>");
+
+                peerInfoVector.addElement(new PeerInfo(
                         Integer.parseInt(tokens[0]),
                         tokens[1],
                         Integer.parseInt(tokens[2]),
                         tokens[3].equals("1")
-                    )
-                );
+                ));
             }
             in.close();
 
@@ -43,7 +46,7 @@ public class PeerProcess {
         int i = 1;
         Vector<String> values = new Vector<String>();
         try {
-            BufferedReader in = new BufferedReader(new FileReader("./../../../resources/main/Common.cfg"));
+            BufferedReader in = new BufferedReader(new FileReader(Helpers.pathToResourcesFolder + "Common.cfg"));
             while((st = in.readLine()) != null) {
                 String[] tokens = st.split("\\s+");
                 values.add(tokens[1]);
@@ -65,59 +68,49 @@ public class PeerProcess {
         }
     }
 
-    public static void P2PApp(PeerInfo ourInfo, PeerInfo peerInfo) throws IOException {
+    public static void P2PApp(PeerInfo ourInfo) throws IOException {
         // initialize the process for this process
         Process peer = new Process(ourInfo);
 
+        // if we have the file, split it up into pieces
+        if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId()))
+            peer.splitFile();
+
         // build connections to its peers if it has any peers
-        if (peerInfo != null)
-            peer.buildPeers();
+        peer.buildPeers();
 
         (new Thread() {
             public void run() { peer.run();
             }}).start();
     }
 
-    // TODO: IMPORTANT: at the moment when you run peerProcess, it fails to connect because it tries to build
-    //  a socket connection to localhost:4001, but that socket is not up yet
-    //  The FIRST peer should only listen, THEN the second peer can connect to the first
-    // java peerProcess <peerId> <port> <isFirstPeer>
+    // java peerProcess <peerId>
     public static void main(String[] args) throws IOException
     {
-        if (args.length != 3) {
-            System.out.println("Insufficient arguments: java peerProcess <peerId> <port> <isFirstPeer>");
-            System.out.println("isFirstPeer is true if == 'y' or 'yes'");
+        if (args.length != 1) {
+            System.out.println("Insufficient arguments: java peerProcess <peerId>");
             return;
         }
 
         // parse inputs
         int peerId = Integer.parseInt(args[0]);
-        int port = Integer.parseInt(args[1]);
-        String isFirstPeer = args[2].toLowerCase(Locale.ROOT);
 
         // read/load config files
-        getPeerInfoConfig();
+        // common config must be loaded first, because we require a parameter in it for peer info loading
         getCommonConfig();
+        getPeerInfoConfig();
         debugPrintConfigs();
 
-        // TODO: use config files
+        // get our peer info
+        PeerInfo ourInfo = PeerInfoConfig.getInstance().GetPeerInfo(peerId);
 
-        // TODO: this info should come from config files
-        PeerInfo ourInfo = new PeerInfo(peerId, "localhost", port);
-
-        // if we are not the first peer, connect to the peer before us
-        // we expect them to have peerId = peerId+1 and port = port + 1
-        PeerInfo peerInfo = null;
-        if (!isFirstPeer.equals("yes") && !isFirstPeer.equals("y"))  {
-            // generate info of our peer from config file
-            peerInfo = new PeerInfo(peerId-1, "localhost", port-1);
-        }
+        // update bitfield for only us
+        ourInfo.initBitfield();
 
         // initialize logger
         Logger.init(peerId);
 
         // start the application
-        // TODO: pass in a list of peerInfos instead of a single peerInfo
-        P2PApp(ourInfo, peerInfo);
+        P2PApp(ourInfo);
     }
 }

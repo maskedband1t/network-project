@@ -1,5 +1,3 @@
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,12 +11,9 @@ public class Process implements Runnable {
     // list of connections per peers
     // we do not map to id because we do not know their id at this scope level
     List<ConnectionHandler> _connHandlers = new ArrayList<ConnectionHandler>();
-    // list of bitfields per peer
-    Hashtable<Integer, Bitfield> peerBitfields = new Hashtable<Integer, Bitfield>();
 
     // our info && bitfield && manager objects for files and peers
     private PeerInfo peerInfo;
-    private Bitfield bitfield;
     private FileManager fileManager;
     private PeerManager peerManager;
 
@@ -28,38 +23,42 @@ public class Process implements Runnable {
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
-        this.bitfield = new Bitfield(CommonConfig.getInstance().fileSize, CommonConfig.getInstance().pieceSize);
 
         // TODO: Need to add more to fileMgr and peerMgr constructors
-        this.fileManager = new FileManager();
-        this.peerManager = new PeerManager();
+        this.fileManager = new FileManager(peerInfo.getId());
+        this.peerManager = new PeerManager(peerInfo.getId());
     }
 
     // TODO: do we need this func?
     public List<Message> sendToPeer(String peerid, String msgtype,
                                     String msgdata) {
         // TODO: send to an existing peer
-        throw new NotImplementedException();
+        return new ArrayList<Message>();
     }
 
     // TODO: do we need this func?
     public List<Message> connectAndSend(PeerInfo peerInfo, String msgtype,
                                             String msgdata) {
         // TODO: connect to peer and send them a message
-        throw new NotImplementedException();
+        return new ArrayList<Message>();
+    }
+
+    public void splitFile() {
+        fileManager.splitFileIntoPieces();
     }
 
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
-        addConnectionHandler(new ConnectionHandler(peerInfo.getId(), c, fileManager, peerManager, info.getId(), true));
+        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info.getId(), true));
     }
 
     public void buildPeers() throws IOException {
         List<PeerInfo> ourPeers = PeerInfoConfig.getInstance().GetPeersToConnectToFor(peerInfo.getId());
+        System.out.println(peerInfo.getId() + " will connect to ");
         for (PeerInfo peer : ourPeers) {
-            System.out.println(peerInfo.getId() + " will connect to " + peer.getId());
+            System.out.print(peer.getId() + ",");
         }
 
         // init connection handler for each peer
@@ -68,7 +67,7 @@ public class Process implements Runnable {
         }
     }
 
-    private boolean addConnectionHandler(ConnectionHandler connHdlr) {
+    synchronized private boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
             new Thread(connHdlr).start();
@@ -93,13 +92,11 @@ public class Process implements Runnable {
                     Socket c = s.accept();
                     c.setSoTimeout(0);
 
-                    // Log
-                    Logger.getInstance().receivedConnectionFrom(peerInfo.getId());
-
-                    // Add connection
+                    // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
+                    // we use a default peer info since we haven't identified who they are yet
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
-                    addConnectionHandler(new ConnectionHandler(peerInfo.getId(), conn, fileManager, peerManager));
+                    addConnectionHandler(new ConnectionHandler(peerInfo, conn, fileManager, peerManager));
                 }
                 catch (Exception e) {
                     System.out.println(e);

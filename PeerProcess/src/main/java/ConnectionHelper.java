@@ -21,12 +21,17 @@ public class ConnectionHelper extends Thread {
                 // validate not null
                 if (msg == null) continue;
 
-                if (msg.getType() == Helpers.CHOKE)
-                    remoteChoked = true;
-                else if (msg.getType() == Helpers.UNCHOKE)
-                    remoteChoked = false;
+                // we only want to accept msg if we know their id
+                if (conn.GetInfo().getId() != -1) {
+                    if (msg.getType() == Helpers.CHOKE)
+                        remoteChoked = true;
+                    else if (msg.getType() == Helpers.UNCHOKE)
+                        remoteChoked = false;
+                }
+                else
+                    System.out.println("Cannot send messages yet - we have not handshaked");
 
-                byte[] lengthAsArr = Helpers.intToByte(msg.getLength(), 4);
+                // send the actual msg
                 conn.send(msg);
             }
             catch (Exception e) {

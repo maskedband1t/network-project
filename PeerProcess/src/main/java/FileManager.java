@@ -1,39 +1,90 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
 public class FileManager {
-    public FileManager() {
+    int peerId;
+    Bitfield receivedPieces;
+    Bitfield requestedPieces;
 
+    public FileManager(int peerId) {
+        this.peerId = peerId;
+        this.receivedPieces = new Bitfield();
+        this.requestedPieces = new Bitfield();
+
+        // create pieces dir if necessary
+        File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
+        piecesDir.mkdirs();
     }
 
-    public byte[] GetPiece(byte[] pieceIndex) {
-        int index = ByteBuffer.wrap(pieceIndex).getInt();
-        File dir = new File("./peer_" + pieceIndex + "/files/parts/thefile");
-        // make dir if not made
-        dir.mkdirs();
-        File file = new File(dir.getAbsolutePath() + "/" + index);
-        return getByteArrayFromFile(file);
+    public boolean addPiece(int pieceIndex, byte[] piece) {
+        // output piece as a file piece
+        File file = new File(getPathForPieceIndex(pieceIndex));
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(file);
+            fos.write(piece);
+            fos.flush();
+            fos.close();
+        } catch(Exception e) {
+            System.out.println(e);
+            return false;
+        }
+
+        // success
+        return true;
     }
 
-    private byte[] getByteArrayFromFile(File file){
+    // We are going to return a copy of receivedPieces, because we are using logical operations on the clone
+    public BitSet getReceivedPieces() {
+        return (BitSet)receivedPieces.getBits().clone();
+    }
+
+    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
+        BitSet availablePieces = getReceivedPieces();
+        availablePieces.andNot(piecesNotRequested);
+        return availablePieces;
+    }
+
+    public int getPieceToRequest(BitSet piecesNotRequested) {
+        BitSet availablePieces = getAvailablePiecesToRequest(piecesNotRequested);
+
+        // determine which piece to request based off of which ones we haven't requested yet,
+        // and which ones are available from the remote peer
+        return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
+    }
+
+    public byte[] getPiece(int pieceIndex) {
+        String path = getPathForPieceIndex(pieceIndex);
+        return getFile(path);
+    }
+
+    public byte[] getFile(String path){
+        File file = new File(path);
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int fileLength = (int)file.length();
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(file);
-            byte[] fileBytes = new byte[(int) file.length()];
-            int bytesRead = fis.read(fileBytes, 0, (int) file.length());
+            byte[] bytes = new byte[fileLength];
+            fis.read(bytes, 0, fileLength);
             fis.close();
-            return fileBytes;
-        } catch (FileNotFoundException e) {
-            //LogHelper.getLogger().warning(e);
-        } catch (IOException e) {
-            //LogHelper.getLogger().warning(e);
+            return bytes;
+        } catch (Exception e) {
+            System.out.println(e);
         }
+        // make sure close stream
         finally {
-            // make sure to close if not done yet
             if (fis != null) {
                 try {
                     fis.close();
@@ -44,18 +95,22 @@ public class FileManager {
         return null;
     }
 
-    public BitSet getReceivedPieces() {
-        return null;
+    private String getPathForPieceIndex(int pieceIndex) {
+        return Helpers.pathToResourcesFolder + peerId + "/pieces/" + pieceIndex;
     }
 
-    public byte[] getPiece(int pieceIndexFromByteArray) {
-        return null;
-    }
-
-    public void addPiece(int pieceIdx, byte[] pieceContent) {
-    }
-
-    public int getPieceToRequest(BitSet receivedPieces) {
-        return -1;
+    public void splitFileIntoPieces() {
+        // get the file
+        String wholeFilePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
+        byte[] wholeFile = getFile(wholeFilePath);
+        byte[] currPieceBytes;
+        int size = (int)CommonConfig.getInstance().pieceSize;
+        int fileSize = (int)CommonConfig.getInstance().fileSize;
+        for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
+            int start = size * i;
+            int end = Math.min(start + size, fileSize);
+            byte[] pieceSubset = Helpers.getByteSubset(wholeFile, start, end);
+            addPiece(i, pieceSubset);
+        }
     }
 }

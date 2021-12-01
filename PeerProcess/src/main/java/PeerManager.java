@@ -129,9 +129,11 @@ public class PeerManager implements Runnable {
     synchronized void fileCompleted() {
         _fileDone.set(true);
     }
+    public void handleBitfield(int remotePeerId, Bitfield bitfield) {
+    }
 
     public void handleHave(int peerId, int pieceIdx) {
-        
+
     }
 
     synchronized BitSet getReceivedPieces(int peerId) {

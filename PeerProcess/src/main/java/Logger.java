@@ -27,7 +27,11 @@ public class Logger {
     private Logger(int peerId) {
         this.peerId = peerId;
         try {
-            logFile = new File("log_peer_" + peerId + ".log");
+            logFile = new File(Helpers.pathToResourcesFolder + "log_peer_" + peerId + ".log");
+            if (logFile.exists()) {
+                System.out.println("log_peer_" + peerId + " exists, deleting it!");
+                logFile.delete();
+            }
             logFile.createNewFile();
         }
         catch (IOException e) {
@@ -52,12 +56,24 @@ public class Logger {
         return true;
     }
 
-    public boolean madeConnectionWith(int partnerId) {
-        return writeToLog("makes a connection to Peer " + partnerId + ".");
+    public boolean dangerouslyWrite(String text) {
+        try {
+            BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
+            bf.write(java.time.LocalDateTime.now() + ": " + text);
+            bf.newLine();
+            bf.close();
+        }
+        catch (IOException e) {
+            System.out.println("An IO error occurred");
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
-    public boolean receivedConnectionFrom(int partnerId) {
-        return writeToLog("is connected from Peer " + partnerId + ".");
+    public boolean connectedWith(int partnerId, boolean connectingPeer) {
+        if (connectingPeer) return writeToLog("makes a connection to Peer " + partnerId + ".");
+        else return writeToLog("is connected from Peer " + partnerId + ".");
     }
 
     public boolean preferredNeighbors(List<Integer> ids) {
@@ -97,6 +113,14 @@ public class Logger {
 
     public boolean receivedNotInterestedFrom(int partnerId) {
         return writeToLog("received the 'not interested' message from " + partnerId + ".");
+    }
+
+    public boolean receivedBitfieldFrom(int partnerId) {
+        return writeToLog("received the 'bitfield' message from " + partnerId + ".");
+    }
+
+    public boolean receivedRequestFrom(int partnerId, int pieceIndex) {
+        return writeToLog("received the 'request' message from " + partnerId + " for the piece " + pieceIndex + ".");
     }
 
     public boolean downloadedPiece(int partnerId, int pieceIndex, int pieceCount) {

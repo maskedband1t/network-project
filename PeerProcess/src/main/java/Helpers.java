@@ -6,8 +6,12 @@ public class Helpers {
     /*
     Helper functions
     */
-    public static byte[] intToByte(int i, int size) {
+    public static byte[] intToBytes(int i, int size) {
         return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
+    }
+
+    public static int bytesToInt(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getInt();
     }
 
     public static int getPieceIndexFromByteArray(byte[] payload) {
@@ -22,6 +26,18 @@ public class Helpers {
         return Arrays.copyOfRange(payload, 4, payload.length);
     }
 
+    public static byte[] getByteSubset(byte[] source, int srcBegin, int srcEnd) {
+        byte destination[] = new byte[srcEnd - srcBegin];
+        getBytes(source, srcBegin, srcEnd, destination, 0);
+
+        return destination;
+    }
+
+    public static void getBytes(byte[] source, int srcBegin, int srcEnd, byte[] destination,
+                                int dstBegin) {
+        System.arraycopy(source, srcBegin, destination, dstBegin, srcEnd - srcBegin);
+    }
+
     /* MESSAGE TYPES */
     public static final byte CHOKE = 0;
     public static final byte UNCHOKE = 1;
@@ -31,4 +47,6 @@ public class Helpers {
     public static final byte BITFIELD = 5;
     public static final byte REQUEST = 6;
     public static final byte PIECE = 7;
+
+    public static final String pathToResourcesFolder = "./../../../resources/main/";
 }

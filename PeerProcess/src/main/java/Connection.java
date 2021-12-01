@@ -1,8 +1,6 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Connection {
 	private PeerInfo _info;
@@ -16,24 +14,21 @@ public class Connection {
 		_socket = factory.buildSocket(_info.getHost(), _info.getPort());
 	}
 
-	// opens new connection to localhost peer for dev purposes
-	public Connection(int peerId, int port)
-			throws IOException, UnknownHostException {
-		_info = new PeerInfo(peerId, "localhost", port);
-		PeerSocketFactory factory = new PeerSocketFactory();
-		_socket = factory.buildSocket(_info.getHost(), _info.getPort());
-	}
-
 	// creates connection with pre-existing socket
 	public Connection(PeerInfo info, SocketInterface socket){
 		_info = info;
 		_socket = socket;
 	}
 
+	public void updatePeerInfo(PeerInfo info) {
+		_info = info;
+	}
+
 	public void sendHandshake(HandshakeMessage msg) throws IOException{
 		_socket.write("P2PFILESHARINGPROJ".getBytes());
 		_socket.write(new byte[10]);
-		_socket.write(msg.getPeerIdPayload());
+		System.out.println("Sending handshake with id" + msg.getPeerId());
+		_socket.write(Helpers.intToBytes(msg.getPeerId(), 4));
 	}
 
 	public HandshakeMessage receieveHandshake() throws IOException {
@@ -44,8 +39,10 @@ public class Connection {
 		try {
 			_socket.read(str);
 
-			if (!new String(str).equals("P2PFILESHARINGPROJ"))
+			if (!new String(str).equals("P2PFILESHARINGPROJ")) {
+				System.out.println("Did not receive handshake - expected handshake");
 				return null;
+			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);
@@ -55,8 +52,12 @@ public class Connection {
 		try {
 			_socket.read(zeros);
 
-			if (!new String(zeros).equals("0000000000"))
-				return null;
+			for (byte b : zeros) {
+				if (b != 0) {
+					System.out.println("Handshake header not followed by 10 zero bits");
+					return null;
+				}
+			}
 		}
 		catch(Exception ex) {
 			System.out.println(ex);
@@ -66,22 +67,21 @@ public class Connection {
 		try {
 			_socket.read(id);
 		}
-		catch(Exception ex) {
-			System.out.println(ex);
+		catch(Exception e) {
+			System.out.println(e);
 			return null;
 		}
 
-		return new HandshakeMessage(Helpers.getPieceIndexFromByteArray(id));
+		System.out.println("Received handshake with id " + Helpers.bytesToInt(id));
+		return new HandshakeMessage(Helpers.bytesToInt(id));
 	}
 
 	public void send(Message m)
 	throws IOException {
-		// TODO: implement logging here
-		// TODO: think about whether writing a message will also need its type passed
-		byte[] lengthAsArr = Helpers.intToByte(m.getLength(), 4);
+		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
-		_socket.write(m.getPayload()); // passed in byte[]
+		_socket.write(m.getPayload());
 	}
 
 	public Message receive()

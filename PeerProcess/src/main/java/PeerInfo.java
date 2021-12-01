@@ -81,4 +81,8 @@ public class PeerInfo {
            ids.add(peer.getId());
        }
     }
+
+    public void debugPrint() {
+        System.out.println(getId() + " " + getHost() + " " + getPort() + " " + getHasFile());
+    }
 }

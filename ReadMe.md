@@ -31,3 +31,10 @@ Allison Wu, Brian Koehler, Anurag Akkiraju
 - Here, the second peer with id 2 that listens at localhost:4001 connects to the peer at id 1 that listens at localhost:4001.
 
 ---
+
+## Running on Dungeon Computers (DEV)
+
+At Path "<Repo-Base>/PeerProcess/src/main/java", run: `rm -rf ../../../build mkdir ../../../build && javac -d ../../../build/classes/java/main *.java && cd ../../../build && mkdir resources && cd resources && mkdir main && cd main && cp ../../../src/main/resources/PeerInfo.cfg ./PeerInfo.cfg && cp ../../../src/main/resources/Common.cfg ./Common.cfg && cd ../../classes/java/main/`
+  
+Then run the project with: `java PeerProcess <peerid>`
+  - For the simplest scenario, we will use peerId=1001 & 1002
