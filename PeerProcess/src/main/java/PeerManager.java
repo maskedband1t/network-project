@@ -60,6 +60,9 @@ public class PeerManager implements Runnable {
     private final AtomicBoolean _fileDone = new AtomicBoolean(false);
     CommonConfig config = CommonConfig.getInstance();
 
+    Set<Integer> _chokedPeerIDs = new HashSet<>();
+    Set<Integer> _preferredPeerIDs = new HashSet<>(); 
+
     public PeerManager(int peerId, List<PeerInfo> peers) {
         _optimisticUnchoker = new OptimisticUnchoker();
         _unchokingInterval = config.unchokingInterval;
@@ -162,6 +165,25 @@ public class PeerManager implements Runnable {
         } 
     }
 
+    private synchronized void update_choked_peers(Set<Integer> c_peers){
+        Set<Integer> choked_peers = new HashSet<>();
+        choked_peers.addAll(c_peers);
+        _chokedPeerIDs = choked_peers;
+    }
+
+    private synchronized void update_preferred_peers(Set<Integer> c_peers){
+        Set<Integer> preferred_peers = new HashSet<>();
+        preferred_peers.addAll(c_peers);
+        _preferredPeerIDs = preferred_peers;
+    }
+
+    synchronized Set<Integer> get_choked_peer_ids(){
+        return _chokedPeerIDs;
+    }
+    synchronized Set<Integer> get_preferred_peer_ids(){
+        return _preferredPeerIDs;
+    }
+
     synchronized BitSet getReceivedPieces(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getPeerId() == peerId) {
@@ -173,6 +195,8 @@ public class PeerManager implements Runnable {
         }
         return new BitSet();
     }
+
+    
 
     @Override
     public void run(){
@@ -239,6 +263,8 @@ public class PeerManager implements Runnable {
             // anything helpful/needed to log every thread run
 
             // TODO: hand chokedPeerIds and preferredPeerIds to process
+            update_choked_peers(chokedPeerIDs);
+            update_preferred_peers(preferredPeerIDs);
 
             if(optimistically_unchokable_peers != null){
                 _optimisticUnchoker.setChokedPeers(optimistically_unchokable_peers); // pass new unchokable peers to unchoker
