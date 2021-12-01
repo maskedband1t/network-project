@@ -133,7 +133,27 @@ public class PeerManager implements Runnable {
     }
 
     public void handleHave(int peerId, int pieceIdx) {
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    peer.getBitfield().getBits().set(pieceIdx);
+                }
+                download_finished();
+            }
+        } 
+    }
 
+    synchronized download_finished(){
+        for (PeerInfo peer : _peers) {
+            if (peer.getPeerId() == peerId) {
+                if(peer != null){
+                    if(peer.getBitfield().getBits().cardinality() < _numPieces){
+                        // log that a neighbor hasnt finished
+                        return;
+                    }
+                }
+            }
+        } 
     }
 
     synchronized BitSet getReceivedPieces(int peerId) {
