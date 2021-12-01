@@ -43,6 +43,7 @@ public class PeerManager implements Runnable {
         }
     }
 
+    private int _peerId;
     public Collection<PeerInfo> _preferredPeers = new HashSet<>();
     private List<PeerInfo> _peers = new ArrayList<>();
     private final OptimisticUnchoker _optimisticUnchoker;
@@ -55,6 +56,7 @@ public class PeerManager implements Runnable {
     Set<Integer> _preferredPeerIDs = new HashSet<>();
 
     public PeerManager(int peerId) {
+        _peerId = peerId;
         _optimisticUnchoker = new OptimisticUnchoker();
         _unchokingInterval = config.unchokingInterval;
         _num_Preffered_Neighbors = config.numPrefNeighbors;
@@ -125,7 +127,7 @@ public class PeerManager implements Runnable {
 
     public void handleBitfield(int remotePeerId, Bitfield bitfield) {
         for (PeerInfo peer : _peers) {
-            if (peer.getPeerId() == peerId) {
+            if (peer.getId() == remotePeerId) {
                 if(peer != null){
                     peer.setBitfield(bitfield);
                 }
@@ -136,7 +138,7 @@ public class PeerManager implements Runnable {
 
     public void handleHave(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
-            if (peer.getPeerId() == peerId) {
+            if (peer.getId() == peerId) {
                 if(peer != null){
                     peer.getBitfield().getBits().set(pieceIdx);
                 }
@@ -145,9 +147,9 @@ public class PeerManager implements Runnable {
         } 
     }
 
-    synchronized download_finished(){
+    synchronized void download_finished(){
         for (PeerInfo peer : _peers) {
-            if (peer.getPeerId() == peerId) {
+            if (peer.getId() == _peerId) {
                 if(peer != null){
                     if(peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
                         // log that a neighbor hasnt finished
