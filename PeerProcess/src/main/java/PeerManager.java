@@ -131,6 +131,7 @@ public class PeerManager implements Runnable {
     }
 
     public void handleHave(int peerId, int pieceIdx) {
+        
     }
 
     synchronized BitSet getReceivedPieces(int peerId) {
