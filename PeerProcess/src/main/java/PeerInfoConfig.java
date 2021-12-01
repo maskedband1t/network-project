@@ -4,7 +4,7 @@ import java.util.List;
 public class PeerInfoConfig {
     private static PeerInfoConfig instance = null;
     List<PeerInfo> peerInfos;
-
+    
     public static PeerInfoConfig getInstance() {
         if (instance == null) {
             throw new AssertionError("PeerInfoConfig not yet initialized. Try PeerInfoConfig.init(List<PeerTrackerInfo>).");
