@@ -24,7 +24,6 @@ public class FileManager {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            System.out.println(e);
             e.printStackTrace();
         }
 
@@ -36,7 +35,6 @@ public class FileManager {
             fos.flush();
             fos.close();
         } catch(Exception e) {
-            System.out.println(e);
             e.printStackTrace();
             return false;
         }
@@ -98,7 +96,6 @@ public class FileManager {
             if (!file.exists())
                 throw new IOException("File doesn't exist");
         } catch (IOException e) {
-            System.out.println(e);
             e.printStackTrace();
         }
 
@@ -112,7 +109,6 @@ public class FileManager {
             fis.close();
             return bytes;
         } catch (Exception e) {
-            System.out.println(e);
             e.printStackTrace();
         }
 
@@ -123,7 +119,6 @@ public class FileManager {
                     fis.close();
                 }
                 catch (IOException e) {
-                    System.out.println(e);
                     e.printStackTrace();
                 }
             }

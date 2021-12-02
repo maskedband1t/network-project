@@ -36,7 +36,6 @@ public class ConnectionHelper extends Thread {
                 conn.send(msg);
             }
             catch (Exception e) {
-                System.out.println(e);
                 e.printStackTrace();
             }
         }

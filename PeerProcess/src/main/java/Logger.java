@@ -38,7 +38,7 @@ public class Logger {
             logFile.createNewFile();
         }
         catch (IOException e) {
-            System.out.println("An IO error occurred.");
+            System.err.println("An IO error occurred.");
             e.printStackTrace();
         }
     }
@@ -53,7 +53,7 @@ public class Logger {
             bf.close();
         }
         catch (IOException e) {
-            System.out.println("An IO error occurred.");
+            System.err.println("An IO error occurred.");
             e.printStackTrace();
             return false;
         }
@@ -69,7 +69,7 @@ public class Logger {
             bf.close();
         }
         catch (IOException e) {
-            System.out.println("An IO error occurred");
+            System.err.println("An IO error occurred");
             e.printStackTrace();
             return false;
         }
@@ -92,7 +92,7 @@ public class Logger {
             return writeToLog("has the preferred neighbors " + idsString + ".");
         }
         catch (StringIndexOutOfBoundsException e) {
-            System.out.println("An indexing error occurred.");
+            System.err.println("An indexing error occurred.");
             e.printStackTrace();
             return false;
         }

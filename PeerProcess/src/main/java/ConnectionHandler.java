@@ -80,13 +80,11 @@ public class ConnectionHandler implements Runnable{
                     msgHandler.handle(_conn.receive());
                 }
                 catch (Exception e) {
-                    System.out.println(e);
                     e.printStackTrace();
                 }
             }
         }
         catch (Exception e) {
-            System.out.println(e);
             e.printStackTrace();
         }
         finally {

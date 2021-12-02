@@ -49,7 +49,6 @@ public class Connection {
 			}
 		}
 		catch(Exception e) {
-			System.out.println(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -65,7 +64,6 @@ public class Connection {
 			}
 		}
 		catch(Exception e) {
-			System.out.println(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -75,7 +73,6 @@ public class Connection {
 			_socket.read(id);
 		}
 		catch(Exception e) {
-			System.out.println(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -105,7 +102,6 @@ public class Connection {
 		try{
 			_socket.read(msg_length, 4);
 		} catch (IOException e) {
-			System.out.println(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -117,7 +113,6 @@ public class Connection {
 			if(type == -1)
 				throw new IOException("End of stream reached.");
 		} catch (IOException e) {
-			System.out.println(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -129,7 +124,6 @@ public class Connection {
 		try {
 			_socket.read(msg,ml);
 		} catch (IOException e) {
-			System.out.println(e);
 			e.printStackTrace();
 			return null;
 		}
@@ -144,7 +138,6 @@ public class Connection {
 			try {
 				_socket.close();
 			} catch (IOException e) {
-				System.out.println(e);
 				e.printStackTrace();
 			}
 			_socket = null; //reset
