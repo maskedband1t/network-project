@@ -9,7 +9,7 @@ public class PeerSocket implements SocketInterface{
 	private InputStream is = null;
 	private OutputStream os = null;
 
-	//constructor for PeerSocket, uses params to create Java API Socket
+	// Constructor for PeerSocket, uses params to create Java API Socket
 	public PeerSocket(String host, int port)
 	throws IOException, UnknownHostException {
 		s = new Socket(host,port);
@@ -17,7 +17,7 @@ public class PeerSocket implements SocketInterface{
 		os = s.getOutputStream();
 	}
 
-	// above constructor gets thrown into this one for instantiation
+	// Constructor with an existing Socket
 	public PeerSocket(Socket socket)
 	throws IOException {
 		s = socket;
@@ -25,7 +25,7 @@ public class PeerSocket implements SocketInterface{
 		os = s.getOutputStream();
 	}
 
-	//close socket
+	// Close socket
 	public void close()
 	throws IOException {
 		is.close();
@@ -33,22 +33,26 @@ public class PeerSocket implements SocketInterface{
 		s.close();
 	}
 
+	// Write to socket
 	public void write(byte[] b)
 	throws IOException{
 		os.write(b);
 		os.flush();
 	}
 
+	// Read next byte from socket
 	public int read()
 	throws IOException {
 		return is.read();
 	}
 
+	// Read determined amount from socket
 	public int read(byte[] b, int len) throws IOException {
 		// set default offset to 0
 		return is.read(b, 0, len);
 	}
 
+	// Read fully from socket
 	public int read(byte[] b) throws IOException {
 		return is.read(b);
 	}

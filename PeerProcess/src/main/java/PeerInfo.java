@@ -22,6 +22,7 @@ public class PeerInfo {
         this._bitfield = new Bitfield(false);
     }
 
+    // Construct PeerInfo with all of it's values populated
     public PeerInfo(int peerId, String hostname, int port, boolean file_complete) {
         this.peerId = peerId;
         this.hostname = hostname;
@@ -32,29 +33,14 @@ public class PeerInfo {
         this._bitfield = new Bitfield(file_complete);
     }
 
+    // Get _file_complete
     public boolean is_file_complete() { return this._file_complete.get(); }
-    public void set_file_complete(boolean is_complete) { this._file_complete.set(is_complete); }
 
+    // Get _downloadRate
     public int get_download_rate() { return this._downloadRate.get(); }
+
+    // Get _downloadRate as an Atomic
     public AtomicInteger get_download_rate_atomic() { return this._downloadRate; }
-    public void set_download_rate(int rate) { this._downloadRate.set(rate); }
-
-    public void initBitfield() {
-        if (this._file_complete != null)
-            _bitfield = new Bitfield(this._file_complete.get());
-        else
-            _bitfield = new Bitfield(false);
-    }
-
-    public void setBitfield(Bitfield b){_bitfield = b;} // setter
-
-    public boolean isInterested() {
-        return _interested.get();
-    }
-    public void setIfInterested(boolean isInterested) {
-        if(isInterested){_interested.set (true);}
-        else{_interested.set(false);}
-    }
 
     // Get the peer id
     public int getId() {
@@ -74,11 +60,31 @@ public class PeerInfo {
     // Get the bitfield
     public Bitfield getBitfield() { return _bitfield; }
 
-    // Get the file complete bool
+    // Get _file_complete
     public boolean getFileComplete() {
         if (_file_complete != null)
             return _file_complete.get();
         return false;
+    }
+
+    // Get _interested
+    public boolean isInterested() {
+        return _interested.get();
+    }
+
+    // Set _file_complete
+    public void set_file_complete(boolean is_complete) { this._file_complete.set(is_complete); }
+
+    // Set _downloadRate
+    public void set_download_rate(int rate) { this._downloadRate.set(rate); }
+
+    // Set _bitfield
+    public void setBitfield(Bitfield b){ _bitfield = b; }
+
+    // Set _interested
+    public void setIfInterested(boolean isInterested) {
+        if(isInterested){_interested.set (true);}
+        else{_interested.set(false);}
     }
 
     // Set the peer id
@@ -96,7 +102,15 @@ public class PeerInfo {
         this.port = port;
     }
 
-    // get list of pure peerIds
+    // Init the bitfield object
+    public void initBitfield() {
+        if (this._file_complete != null)
+            _bitfield = new Bitfield(this._file_complete.get());
+        else
+            _bitfield = new Bitfield(false);
+    }
+
+    // Get list of peerIds
     public static List<Integer> toIdList(Collection<PeerInfo> peerInfoList) {
        List<Integer> ids = new ArrayList<Integer>();
        for(PeerInfo peer : peerInfoList){
