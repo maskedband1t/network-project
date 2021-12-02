@@ -4,6 +4,7 @@ public class MessageHandler {
     private FileManager _fileManager;
     private PeerManager _peerManager;
 
+    // Construct the Message Handler with the remote peer we are handling messages for
     MessageHandler(int remotePeerId, FileManager fileManager, PeerManager peerManager) {
         _choked = true;
         _remotePeerId = remotePeerId;
@@ -11,17 +12,11 @@ public class MessageHandler {
         _peerManager = peerManager;
     }
 
-/*    public Message handle(HandshakeMessage msg) {
-        BitSet bitset = _fileManager.getReceivedPieces();
-        if (!bitset.isEmpty()) {
-            return (new Message(Helpers.BITFIELD, bitset.toByteArray()));
-        }
-        return null;
-    }
-*/
-
+    // Handle an incoming message
     public Message handle(Message msg) {
         System.out.println("Handling message of type: " + msg.getType());
+
+        // Handle depending on message type
         switch (msg.getType()) {
             case Helpers.CHOKE: {
                 handleChokeMsg(msg);
@@ -54,6 +49,7 @@ public class MessageHandler {
         return null;
     }
 
+    // Handle a message of type Choke
     private void handleChokeMsg(Message msg) {
         // NO packet payload
 
@@ -64,6 +60,7 @@ public class MessageHandler {
         Logger.getInstance().chokedBy(_remotePeerId);
     }
 
+    // Handle a message of type Unchoke
     private Message handleUnchokedMsg(Message msg) {
         // NO packet payload
 
@@ -84,6 +81,7 @@ public class MessageHandler {
         return null;
     }
 
+    // Handle a message of type Interested
     private void handleInterestedMsg(Message msg) {
         // NO packet payload
 
@@ -94,6 +92,7 @@ public class MessageHandler {
         Logger.getInstance().receivedInterestedFrom(_remotePeerId);
     }
 
+    // Handle a message of type NotInterested
     private void handleNotInterestedMsg(Message msg) {
         // NO packet payload
 
@@ -104,6 +103,7 @@ public class MessageHandler {
         Logger.getInstance().receivedNotInterestedFrom(_remotePeerId);
     }
 
+    // Handle a message of type Have
     private Message handleHaveMsg(Message msg) {
         // HAS packet payload: 4 byte piece index field
 
@@ -123,6 +123,7 @@ public class MessageHandler {
             return new Message(Helpers.INTERESTED, new byte[]{});
     }
 
+    // Handle a message of type Bitfield
     private Message handleBitfieldMsg(Message msg) {
         // HAS packet payload: bitfield structure, which tracks the pieces of the file the peer has
         // Ex: If there are 32 pieces of the file, and the peer has all of them, it will send a payload of 32 bits
@@ -149,6 +150,7 @@ public class MessageHandler {
             return new Message(Helpers.INTERESTED, new byte[]{});
     }
 
+    // Handle a message of type Request
     private Message handleRequestMsg(Message msg) {
         // HAS packet payload: 4 byte piece index field
         // Ex: The peer has requested for us to send the piece corresponding to the 4 byte piece index field in the payload
@@ -172,6 +174,7 @@ public class MessageHandler {
         return null;
     }
 
+    // Handle a message of type Piece
     private Message handlePieceMsg(Message msg) {
         // HAS packet payload: 4 byte piece index field AND piece content
         // Ex: The peer sent the whole piece including its index field
@@ -185,8 +188,8 @@ public class MessageHandler {
             byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
             int pieceContentLength = pieceContent.length;
 
-            // Add piece to file
-            _fileManager.addPiece(pieceIdx, pieceContent);
+            // Mark that we received piece
+            _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
 
             // Mark that we received piece
             _peerManager.receivedPiece(_remotePeerId, pieceContentLength);

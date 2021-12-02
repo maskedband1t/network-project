@@ -11,8 +11,6 @@ public class Process implements Runnable {
     // list of connections per peers
     // we do not map to id because we do not know their id at this scope level
     List<ConnectionHandler> _connHandlers = new ArrayList<ConnectionHandler>();
-    // list of bitfields per peer
-    Hashtable<Integer, Bitfield> peerBitfields = new Hashtable<Integer, Bitfield>();
 
     // our info && bitfield && manager objects for files and peers
     private PeerInfo peerInfo;
