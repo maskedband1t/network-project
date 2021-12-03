@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Process implements Runnable {
     // list of connections per peers
@@ -15,7 +16,7 @@ public class Process implements Runnable {
     private PeerManager peerManager;
 
     // whether we should shutdown the program
-    private boolean shutdown;
+    public static boolean shutdown;
 
     // Constructs the Process
     public Process(PeerInfo peerInfo) {
@@ -30,12 +31,25 @@ public class Process implements Runnable {
         fileManager.splitFileIntoPieces();
     }
 
+    // Initialize PeerManager
+    public void initPeerManager() {
+        // Run the peer manager on a thread
+        if (this.peerManager != null) {
+            (new Thread() {
+                public void run() {
+                    peerManager.run();
+                }
+            }).start();
+            this.peerManager.registerProcess(this);
+        }
+    }
+
     // Builds Connection to peer
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
-        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info.getId(), true));
+        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true));
     }
 
     // Builds Connections to all peers
@@ -67,6 +81,25 @@ public class Process implements Runnable {
             }
         }
         return true;
+    }
+
+    // choke peers
+    synchronized void choke_peers(Set<Integer> peers) throws IOException{
+        for (ConnectionHandler ch : _connHandlers)
+            if (peers.contains(ch.getRemotePeerId())) {
+                System.out.println("Choking: " + ch.getRemotePeerId());
+                ch.send(new Message(Helpers.CHOKE, new byte[]{}));
+            }
+    }
+
+    // unchoke peers
+    synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
+        for (ConnectionHandler ch : _connHandlers) {
+            if (peers.contains(ch.getRemotePeerId())) {
+                System.out.println("Unchoking: " + ch.getRemotePeerId());
+                ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
+            }
+        }
     }
 
     // The entry point for this thread

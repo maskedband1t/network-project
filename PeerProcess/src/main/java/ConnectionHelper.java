@@ -14,7 +14,7 @@ public class ConnectionHelper extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (!Process.shutdown) {
             try {
                 // Handle the messages in queue
                 Message msg = queue.take();

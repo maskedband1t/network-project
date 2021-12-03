@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -6,6 +7,7 @@ public class ConnectionHandler implements Runnable{
     private Connection _conn;
     private FileManager _fileManager;
     private PeerManager _peerManager;
+    private PeerInfo _remotePeerInfo;
     private int _remotePeerId;
     private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
     private boolean _connectingPeer;
@@ -14,20 +16,33 @@ public class ConnectionHandler implements Runnable{
     public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager) {
         _info = in;
         _conn = conn;
-        _remotePeerId = -1;
+        _remotePeerInfo = new PeerInfo();
+        _remotePeerId = _remotePeerInfo.getId();
         _fileManager = fileManager;
         _peerManager = peerManager;
         _connectingPeer = false;
     }
 
     // Constructs a ConnectionHandler for a known remote peer
-    public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager, int remoteId, boolean connectingPeer) {
+    public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager, PeerInfo remoteInfo, boolean connectingPeer) {
         _info = in;
         _conn = conn;
-        _remotePeerId = remoteId;
+        _remotePeerInfo = remoteInfo;
+        _remotePeerId = _remotePeerInfo.getId();
         _fileManager = fileManager;
         _peerManager = peerManager;
         _connectingPeer = connectingPeer;
+    }
+
+    // Get remote peer id
+    public int getRemotePeerId() { return _remotePeerId; }
+
+    // Get peer id
+    public int getPeerId() { return _info.getId(); }
+
+    // Send message
+    public void send(Message msg) throws IOException {
+        _conn.send(msg);
     }
 
     @Override
@@ -75,7 +90,7 @@ public class ConnectionHandler implements Runnable{
             MessageHandler msgHandler = new MessageHandler(_remotePeerId, _fileManager, _peerManager);
 
             // Handle the connection, this is the server portion of our peer
-            while (true) {
+            while (!Process.shutdown) {
                 try {
                     msgHandler.handle(_conn.receive());
                 }

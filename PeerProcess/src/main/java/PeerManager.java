@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +29,7 @@ public class PeerManager implements Runnable {
         // The entry point for this thread
         @Override
         public void run(){
-            while(true){
+            while(!Process.shutdown){
                 try {
                     // constantly sleeping for interval and reshuffling once out
                     Thread.sleep(_optimistic_unchoking_interval);
@@ -65,6 +66,8 @@ public class PeerManager implements Runnable {
 
     Set<Integer> _chokedPeerIDs = new HashSet<>();
     Set<Integer> _preferredPeerIDs = new HashSet<>();
+
+    private Process _process = null;
 
     // Construct the PeerManager for peerId
     public PeerManager(int peerId) {
@@ -233,6 +236,24 @@ public class PeerManager implements Runnable {
         }
     }
 
+    // register the process
+    void registerProcess(Process proc) {
+        this._process = proc;
+    }
+
+    // choke peers
+    synchronized void choke_peers(Set<Integer> peers) throws IOException {
+        if (this._process != null)
+            this._process.choke_peers(peers);
+    }
+
+    // unchoke peers
+    synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
+        if (this._process != null) {
+            this._process.unchoke_peers(peers);
+        }
+    }
+
     // The entry point for this thread
     @Override
     public void run(){
@@ -304,6 +325,15 @@ public class PeerManager implements Runnable {
             // TODO: hand chokedPeerIds and preferredPeerIds to process
             update_choked_peers(chokedPeerIDs);
             update_preferred_peers(preferredPeerIDs);
+
+            // choke/unchoke peers
+            try {
+                choke_peers(chokedPeerIDs);
+                unchoke_peers(preferredPeerIDs);
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
 
             if(optimistically_unchokable_peers != null)
                 _optimisticUnchoker.setChokedPeers(optimistically_unchokable_peers); // pass new unchokable peers to unchoker

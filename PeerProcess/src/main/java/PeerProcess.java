@@ -81,6 +81,9 @@ public class PeerProcess {
         if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId()))
             peer.splitFile();
 
+        // Run the peer manager
+        peer.initPeerManager();
+
         // Build connections to its peers if it has any peers
         peer.buildPeers();
 
