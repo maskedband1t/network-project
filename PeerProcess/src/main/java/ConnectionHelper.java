@@ -6,6 +6,7 @@ public class ConnectionHelper extends Thread {
     private BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
     private Connection conn;
 
+    // Construct the ConnectionHelper
     public ConnectionHelper(BlockingQueue<Message> q, Connection c) {
         q = queue;
         conn = c;
@@ -15,13 +16,13 @@ public class ConnectionHelper extends Thread {
     public void run() {
         while (true) {
             try {
-                // handle the messages in queue
+                // Handle the messages in queue
                 Message msg = queue.take();
 
-                // validate not null
+                // Validate not null
                 if (msg == null) continue;
 
-                // we only want to accept msg if we know their id
+                // We only want to accept msg if we know their id
                 if (conn.GetInfo().getId() != -1) {
                     if (msg.getType() == Helpers.CHOKE)
                         remoteChoked = true;
@@ -31,11 +32,11 @@ public class ConnectionHelper extends Thread {
                 else
                     System.out.println("Cannot send messages yet - we have not handshaked");
 
-                // send the actual msg
+                // Send the actual msg
                 conn.send(msg);
             }
             catch (Exception e) {
-                System.out.println(e);
+                e.printStackTrace();
             }
         }
     }

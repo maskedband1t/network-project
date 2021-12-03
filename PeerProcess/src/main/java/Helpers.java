@@ -3,42 +3,44 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class Helpers {
-    /*
-    Helper functions
-    */
+    // Get an int as a byte array
     public static byte[] intToBytes(int i, int size) {
         return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
     }
 
+    // Get a byte array as an int
     public static int bytesToInt(byte[] bytes) {
         return ByteBuffer.wrap(bytes).getInt();
     }
 
+    // Get a piece index field from a byte array
     public static int getPieceIndexFromByteArray(byte[] payload) {
         return ByteBuffer.wrap(Arrays.copyOfRange(payload, 0, 4)).order(ByteOrder.BIG_ENDIAN).getInt();
     }
 
+    // Get piece content from a byte array
     public static byte[] getPieceContentFromByteArray(byte[] payload) {
-        // null check
+        // Validate not null
         if (payload == null || payload.length <= 4)
             return null;
 
         return Arrays.copyOfRange(payload, 4, payload.length);
     }
 
-    public static byte[] getByteSubset(byte[] source, int srcBegin, int srcEnd) {
-        byte destination[] = new byte[srcEnd - srcBegin];
-        getBytes(source, srcBegin, srcEnd, destination, 0);
-
-        return destination;
-    }
-
-    public static void getBytes(byte[] source, int srcBegin, int srcEnd, byte[] destination,
-                                int dstBegin) {
+    // Copy a byte array into another
+    public static void copyBytes(byte[] source, int srcBegin, int srcEnd, byte[] destination,
+                                 int dstBegin) {
         System.arraycopy(source, srcBegin, destination, dstBegin, srcEnd - srcBegin);
     }
 
-    /* MESSAGE TYPES */
+    // Get a subset of a byte array
+    public static byte[] getByteSubset(byte[] source, int srcBegin, int srcEnd) {
+        byte destination[] = new byte[srcEnd - srcBegin];
+        copyBytes(source, srcBegin, srcEnd, destination, 0);
+        return destination;
+    }
+
+    // Message Types
     public static final byte CHOKE = 0;
     public static final byte UNCHOKE = 1;
     public static final byte INTERESTED = 2;
@@ -48,5 +50,6 @@ public class Helpers {
     public static final byte REQUEST = 6;
     public static final byte PIECE = 7;
 
+    // Relative string path to where the built resources file is
     public static final String pathToResourcesFolder = "./../../../resources/main/";
 }

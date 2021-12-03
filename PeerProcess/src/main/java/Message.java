@@ -9,17 +9,22 @@ public class Message {
     private byte type;
     private byte[] payload;
 
+    // Construct a message with a type and payload
     public Message(byte type, byte[] data) {
         this.length = (data == null ? 0 : data.length) + 1;
         this.type = type;
-        this.payload = (byte[])data.clone();
+        if (data != null)
+            this.payload = data.clone();
     }
 
+    // Get the length of the payload
     public int getLength() { return length; }
 
+    // Get the type of the message
     public byte getType() { return type; }
 
+    // Get the payload
     public byte[] getPayload() {
-        return (byte[])payload.clone();
+        return payload.clone();
     }
 }

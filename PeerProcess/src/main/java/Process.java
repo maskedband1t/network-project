@@ -1,10 +1,7 @@
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 public class Process implements Runnable {
@@ -20,33 +17,20 @@ public class Process implements Runnable {
     // whether we should shutdown the program
     private boolean shutdown;
 
+    // Constructs the Process
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
-
-        // TODO: Need to add more to fileMgr and peerMgr constructors
         this.fileManager = new FileManager(peerInfo.getId());
         this.peerManager = new PeerManager(peerInfo.getId());
     }
 
-    // TODO: do we need this func?
-    public List<Message> sendToPeer(String peerid, String msgtype,
-                                    String msgdata) {
-        // TODO: send to an existing peer
-        return new ArrayList<Message>();
-    }
-
-    // TODO: do we need this func?
-    public List<Message> connectAndSend(PeerInfo peerInfo, String msgtype,
-                                            String msgdata) {
-        // TODO: connect to peer and send them a message
-        return new ArrayList<Message>();
-    }
-
+    // Split the file into pieces
     public void splitFile() {
         fileManager.splitFileIntoPieces();
     }
 
+    // Builds Connection to peer
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Socket s = new Socket(info.getHost(), info.getPort());
@@ -54,38 +38,48 @@ public class Process implements Runnable {
         addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info.getId(), true));
     }
 
+    // Builds Connections to all peers
     public void buildPeers() throws IOException {
+        // Gets all peers to connect to
         List<PeerInfo> ourPeers = PeerInfoConfig.getInstance().GetPeersToConnectToFor(peerInfo.getId());
+
+        // Debugging print statement
         System.out.println(peerInfo.getId() + " will connect to ");
         for (PeerInfo peer : ourPeers) {
             System.out.print(peer.getId() + ",");
         }
 
-        // init connection handler for each peer
+        // Build connection to each peer
         for (PeerInfo peer : ourPeers) {
             buildPeer(peer);
         }
     }
 
+    // Adds a ConnectionHandler for a remote peer
     synchronized private boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
-            new Thread(connHdlr).start();
+            new Thread(connHdlr).start(); // start handling connection on another thread
             try {
                 wait(10);
             } catch (InterruptedException e) {
+                e.printStackTrace();;
             }
         }
         return true;
     }
 
+    // The entry point for this thread
+    @Override
     public void run() {
         try {
-            // listens for other peers to connect to us
+            // Create a Server Socket listener
             ServerSocket s = new ServerSocket(peerInfo.getPort());
 
+            // Debugging print statement
             System.out.println("Peer " + peerInfo.getId() + " is listening on " + peerInfo.getHost() + ":" + peerInfo.getPort());
 
+            // While we are not in shutdown mode (not everyone has the file completed)
             while (!shutdown) {
                 try {
                     // Every time a peer connects to us, we handle their connection with Handler
@@ -94,17 +88,18 @@ public class Process implements Runnable {
 
                     // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
-                    // we use a default peer info since we haven't identified who they are yet
+
+                    // We use a default peer info since we haven't identified who they are yet
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
                     addConnectionHandler(new ConnectionHandler(peerInfo, conn, fileManager, peerManager));
                 }
                 catch (Exception e) {
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
             }
         }
         catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         finally {
             System.out.println("Shutting Down");
