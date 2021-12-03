@@ -19,12 +19,12 @@ public class FileManager {
     }
 
     // Registers process
-    public void registerProcess(Process proc) {
+    public synchronized  void registerProcess(Process proc) {
         this.process = proc;
     }
 
     // Adds the piece to the pieces directory
-    public boolean addPiece(int pieceIndex, byte[] piece) {
+    public synchronized  boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
 

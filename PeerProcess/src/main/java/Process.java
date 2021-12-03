@@ -81,7 +81,7 @@ public class Process implements Runnable {
     }
 
     // Adds a ConnectionHandler for a remote peer
-    synchronized private boolean addConnectionHandler(ConnectionHandler connHdlr) {
+    private synchronized boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
             new Thread(connHdlr).start(); // start handling connection on another thread
@@ -95,7 +95,7 @@ public class Process implements Runnable {
     }
 
     // choke peers
-    synchronized void choke_peers(Set<Integer> peers) throws IOException{
+    public synchronized void choke_peers(Set<Integer> peers) throws IOException{
         for (ConnectionHandler ch : _connHandlers)
             if (peers.contains(ch.getRemotePeerId())) {
                 System.out.println("Choking: " + ch.getRemotePeerId());
@@ -104,7 +104,7 @@ public class Process implements Runnable {
     }
 
     // unchoke peers
-    synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
+    public synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {
             if (peers.contains(ch.getRemotePeerId())) {
                 System.out.println("Unchoking: " + ch.getRemotePeerId());
@@ -132,7 +132,7 @@ public class Process implements Runnable {
     }
 
     // Handle when the file is complete
-    public void complete() {
+    public synchronized void complete() {
         Logger.getInstance().completedDownload();
         peerInfo.set_file_complete(true);
         if (peerInfo.getFileComplete() && _peers_file_complete.get()) {

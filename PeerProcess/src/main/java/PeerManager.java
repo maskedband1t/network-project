@@ -150,7 +150,7 @@ public class PeerManager implements Runnable {
     }
 
     // Initializes the bitfield for remote peer with id peerId
-    public void handleBitfield(int peerId, Bitfield bitfield) {
+    public synchronized  void handleBitfield(int peerId, Bitfield bitfield) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -162,7 +162,7 @@ public class PeerManager implements Runnable {
     }
 
     // Updates the bitfield at index pieceIdx to 1 for remote peer with id peerId
-    public void handleHave(int peerId, int pieceIdx) {
+    public synchronized  void handleHave(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -237,7 +237,7 @@ public class PeerManager implements Runnable {
     }
 
     // register the process
-    void registerProcess(Process proc) {
+    synchronized void registerProcess(Process proc) {
         this._process = proc;
     }
 
