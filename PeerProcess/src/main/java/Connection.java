@@ -22,12 +22,12 @@ public class Connection {
 
 	// Updates the PeerInfo for the Connection
 	// This is used when we have an anonymous connection that identifies themself via. handshaking
-	public void updatePeerInfo(PeerInfo info) {
+	synchronized public void updatePeerInfo(PeerInfo info) {
 		_info = info;
 	}
 
 	// Sends a handshake message
-	public void sendHandshake(HandshakeMessage msg) throws IOException{
+	synchronized public void sendHandshake(HandshakeMessage msg) throws IOException{
 		_socket.write("P2PFILESHARINGPROJ".getBytes());
 		_socket.write(new byte[10]);
 		System.out.println("Sending handshake with id" + msg.getPeerId());
@@ -35,7 +35,7 @@ public class Connection {
 	}
 
 	// Receives a handshake message
-	public HandshakeMessage receiveHandshake() throws IOException {
+	synchronized public HandshakeMessage receiveHandshake() throws IOException {
 		byte[] str = new byte[18];
 		byte[] zeros = new byte[10];
 		byte[] id = new byte[4];
@@ -84,7 +84,7 @@ public class Connection {
 	}
 
 	// Sends a message to remote peer
-	public void send(Message m)
+	synchronized public void send(Message m)
 	throws IOException {
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		_socket.write(lengthAsArr);
@@ -93,7 +93,7 @@ public class Connection {
 	}
 
 	// Receives a message from remote peer
-	public Message receive()
+	synchronized public Message receive()
 	throws IOException {
 		byte[] msg_length = new byte[4];
 		Byte type = -1;
@@ -133,7 +133,7 @@ public class Connection {
 	}
 
 	// Closes the socket of this Connection
-	public void close(){
+	synchronized public void close(){
 		if( _socket != null){
 			try {
 				_socket.close();
@@ -145,7 +145,7 @@ public class Connection {
 	}
 
 	// Get the PeerInfo
-	public PeerInfo GetInfo() {
+	synchronized public PeerInfo GetInfo() {
 		return _info;
 	}
 }
