@@ -5,6 +5,7 @@ public class FileManager {
     int peerId;
     Bitfield receivedPieces;
     Bitfield requestedPieces;
+    private Process process = null;
 
     // Construct the FileManager
     public FileManager(int peerId) {
@@ -17,40 +18,69 @@ public class FileManager {
         piecesDir.mkdirs();
     }
 
+    // Registers process
+    public void registerProcess(Process proc) {
+        this.process = proc;
+    }
+
     // Adds the piece to the pieces directory
     public boolean addPiece(int pieceIndex, byte[] piece) {
-        // Create the file if necessary
-        File file = new File(getPathForPieceIndex(pieceIndex));
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
+        // True if we do not have this piece
+        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+
+        if (isNewPiece) {
+            // Create the file if necessary
+            File file = new File(getPathForPieceIndex(pieceIndex));
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Write the piece contents to the file
+            FileOutputStream fos;
+            try {
+                fos = new FileOutputStream(file);
+                fos.write(piece);
+                fos.flush();
+                fos.close();
+
+                // if successful, let process know we got this piece successfully
+                process.receivedPiece(pieceIndex);
+            } catch(Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
 
-        // Write the piece contents to the file
-        FileOutputStream fos;
-        try {
-            fos = new FileOutputStream(file);
-            fos.write(piece);
-            fos.flush();
-            fos.close();
-        } catch(Exception e) {
-            e.printStackTrace();
-            return false;
+        // Check if we are done
+        if (haveAllPieces()) {
+            process.complete();
         }
 
         // Return success
         return true;
     }
 
+    // Checks if we have all pieces
+    private boolean haveAllPieces() {
+        BitSet set = receivedPieces.getBits();
+        for (int i = 0; i < set.size(); i++) {
+            if (!set.get(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Get a copy of receivedPieces, because we are using logical operations on the clone
-    public BitSet getReceivedPieces() {
-        return (BitSet)receivedPieces.getBits().clone();
+    public Bitfield getReceivedPieces() {
+        return (Bitfield)receivedPieces.clone();
     }
 
     // Get pieces that are available to request
     public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
-        BitSet availablePieces = getReceivedPieces();
+        BitSet availablePieces = getReceivedPieces().getBits();
         availablePieces.andNot(piecesNotRequested);
         return availablePieces;
     }

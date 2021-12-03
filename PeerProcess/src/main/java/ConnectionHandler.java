@@ -47,15 +47,13 @@ public class ConnectionHandler implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("Handling connection for peer " + _info.getId() + " with unknown peer");
-
         // Acts as the first layer of our ConnectionHandler, handling choke information
         new ConnectionHelper(_queue, _conn).start();
 
         try {
             // If we are the connector, we send -> receive
-            if (_connectingPeer)
-                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            //if (_connectingPeer)
+            _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // Receive handshake, we now identified remote peer
             HandshakeMessage rcvHandshake = _conn.receiveHandshake();
@@ -65,8 +63,8 @@ public class ConnectionHandler implements Runnable{
             _conn.updatePeerInfo(PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId));
 
             // If we aren't the connector, we receive -> send
-            if (!_connectingPeer)
-                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            //if (!_connectingPeer)
+            //    _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // After handshake send bitfield message if we have any pieces
             System.out.println("Checking if we have any set bits in our bitfield...");

@@ -66,7 +66,6 @@ public class PeerManager implements Runnable {
 
     Set<Integer> _chokedPeerIDs = new HashSet<>();
     Set<Integer> _preferredPeerIDs = new HashSet<>();
-
     private Process _process = null;
 
     // Construct the PeerManager for peerId
@@ -185,7 +184,8 @@ public class PeerManager implements Runnable {
                     }
                 }
             }
-        } 
+        }
+        _process.neighborsComplete();
     }
 
     // Set _chokedPeerIds

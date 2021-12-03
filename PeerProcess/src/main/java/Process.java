@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Process implements Runnable {
     // list of connections per peers
@@ -18,12 +19,16 @@ public class Process implements Runnable {
     // whether we should shutdown the program
     public static boolean shutdown;
 
+    // whether neighbors are done
+    private AtomicBoolean _peers_file_complete;
+
     // Constructs the Process
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
         this.fileManager = new FileManager(peerInfo.getId());
         this.peerManager = new PeerManager(peerInfo.getId());
+        this._peers_file_complete = new AtomicBoolean(false);
     }
 
     // Split the file into pieces
@@ -42,6 +47,12 @@ public class Process implements Runnable {
             }).start();
             this.peerManager.registerProcess(this);
         }
+    }
+
+    // Initialize FileManager
+    public void initFileManager() {
+        if (this.fileManager != null)
+            this.fileManager.registerProcess(this);
     }
 
     // Builds Connection to peer
@@ -99,6 +110,34 @@ public class Process implements Runnable {
                 System.out.println("Unchoking: " + ch.getRemotePeerId());
                 ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
             }
+        }
+    }
+
+    // Handle when a piece arrives
+    public synchronized void receivedPiece(int pieceIndex) throws IOException {
+        for (ConnectionHandler ch : _connHandlers) {
+            ch.send(new Message(Helpers.HAVE, Helpers.intToBytes(pieceIndex, 4)));
+            if (!peerManager.isPeerInteresting(ch.getRemotePeerId(), fileManager.getReceivedPieces())) {
+                ch.send(new Message(Helpers.NOTINTERESTED, new byte[]{}));
+            }
+        }
+    }
+
+    public void neighborsComplete() {
+        _peers_file_complete.set(true);
+        if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+            shutdown = true;
+            System.exit(0);
+        }
+    }
+
+    // Handle when the file is complete
+    public void complete() {
+        Logger.getInstance().completedDownload();
+        peerInfo.set_file_complete(true);
+        if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+            shutdown = true;
+            System.exit(0);
         }
     }
 

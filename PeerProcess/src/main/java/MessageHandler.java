@@ -117,7 +117,7 @@ public class MessageHandler {
         _peerManager.handleHave(_remotePeerId, pieceIdx);
 
         // Send message back based on whether or not bitfield has this piece
-        if (_fileManager.getReceivedPieces().get(pieceIdx))
+        if (_fileManager.getReceivedPieces().getBits().get(pieceIdx))
             return new Message(Helpers.NOTINTERESTED, new byte[]{});
         else
             return new Message(Helpers.INTERESTED, new byte[]{});
@@ -141,7 +141,7 @@ public class MessageHandler {
         bf.debugPrint();
 
         // Clears all bits that are set
-        bf.getBits().andNot(_fileManager.getReceivedPieces());
+        bf.getBits().andNot(_fileManager.getReceivedPieces().getBits());
 
         // Send message back based on whether or not bitfield has this piece
         if (bf.empty())
