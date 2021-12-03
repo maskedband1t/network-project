@@ -60,7 +60,7 @@ public class PeerManager implements Runnable {
     private List<PeerInfo> _peers = new ArrayList<>();
     private final OptimisticUnchoker _optimisticUnchoker;
     private int _unchokingInterval;
-    private int _num_Preffered_Neighbors;
+    private int _num_Preferred_Neighbors;
     private final AtomicBoolean _fileDone = new AtomicBoolean(false);
     CommonConfig config = CommonConfig.getInstance();
 
@@ -73,7 +73,7 @@ public class PeerManager implements Runnable {
         _peerId = peerId;
         _optimisticUnchoker = new OptimisticUnchoker();
         _unchokingInterval = config.unchokingInterval;
-        _num_Preffered_Neighbors = config.numPrefNeighbors;
+        _num_Preferred_Neighbors = config.numPrefNeighbors;
         // our peers are everyone but us
         _peers = _peers.stream().filter(ele -> ele.getId() != peerId).collect(Collectors.toList());
     }
@@ -300,7 +300,7 @@ public class PeerManager implements Runnable {
 
                 // Select highest ranked peers
                 _preferredPeers.clear();
-                _preferredPeers.addAll(_interestedPeers.subList(0, Math.min(_num_Preffered_Neighbors, _interestedPeers.size())));
+                _preferredPeers.addAll(_interestedPeers.subList(0, Math.min(_num_Preferred_Neighbors, _interestedPeers.size())));
                 if(_preferredPeers.size() > 0){
                     // logs
                 }
@@ -309,10 +309,10 @@ public class PeerManager implements Runnable {
                 _choked_peers.removeAll(_preferredPeers); // remove unchoked ones
                 chokedPeerIDs.addAll(PeerInfo.toIdList(_choked_peers));
 
-                if(_num_Preffered_Neighbors >= _interestedPeers.size())
+                if(_num_Preferred_Neighbors >= _interestedPeers.size())
                     optimistically_unchokable_peers = new ArrayList<PeerInfo>();
                 else
-                    optimistically_unchokable_peers = _interestedPeers.subList(_num_Preffered_Neighbors , _interestedPeers.size());
+                    optimistically_unchokable_peers = _interestedPeers.subList(_num_Preferred_Neighbors, _interestedPeers.size());
 
                 preferredPeerIDs.addAll(PeerInfo.toIdList(_preferredPeers));
             }
