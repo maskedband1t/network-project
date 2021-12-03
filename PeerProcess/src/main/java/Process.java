@@ -58,8 +58,8 @@ public class Process implements Runnable {
     // Builds Connection to peer
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
-        Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
+        System.out.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
         addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true));
     }
 
@@ -156,13 +156,13 @@ public class Process implements Runnable {
                 try {
                     // Every time a peer connects to us, we handle their connection with Handler
                     Socket c = s.accept();
-                    c.setSoTimeout(0);
 
                     // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
 
                     // We use a default peer info since we haven't identified who they are yet
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
+                    System.out.println("ADDING CONNECTION HANDLER [DETECTED NEW CONNECTION]");
                     addConnectionHandler(new ConnectionHandler(peerInfo, conn, fileManager, peerManager));
                 }
                 catch (Exception e) {

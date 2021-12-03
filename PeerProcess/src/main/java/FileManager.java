@@ -19,12 +19,12 @@ public class FileManager {
     }
 
     // Registers process
-    public synchronized  void registerProcess(Process proc) {
+    public synchronized void registerProcess(Process proc) {
         this.process = proc;
     }
 
     // Adds the piece to the pieces directory
-    public synchronized  boolean addPiece(int pieceIndex, byte[] piece) {
+    public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
 
@@ -63,7 +63,7 @@ public class FileManager {
     }
 
     // Checks if we have all pieces
-    private boolean haveAllPieces() {
+    private synchronized boolean haveAllPieces() {
         BitSet set = receivedPieces.getBits();
         for (int i = 0; i < set.size(); i++) {
             if (!set.get(i)) {
@@ -74,31 +74,31 @@ public class FileManager {
     }
 
     // Get a copy of receivedPieces, because we are using logical operations on the clone
-    public Bitfield getReceivedPieces() {
+    public synchronized Bitfield getReceivedPieces() {
         return (Bitfield)receivedPieces.clone();
     }
 
     // Get pieces that are available to request
-    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
+    public synchronized BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
         BitSet availablePieces = getReceivedPieces().getBits();
         availablePieces.andNot(piecesNotRequested);
         return availablePieces;
     }
 
     // Get the index of the next piece to request
-    public int getPieceToRequest(BitSet piecesNotRequested) {
+    public synchronized int getPieceToRequest(BitSet piecesNotRequested) {
         // Determine which piece to request
         return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
     }
 
     // Get the byte array of the piece at an index
-    public byte[] getPiece(int pieceIndex) {
+    public synchronized byte[] getPiece(int pieceIndex) {
         String path = getPathForPieceIndex(pieceIndex);
         return getFile(path);
     }
 
     // Split the file into pieces
-    public void splitFileIntoPieces() {
+    public synchronized void splitFileIntoPieces() {
         // Get the file
         String wholeFilePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
         byte[] wholeFile = getFile(wholeFilePath);
@@ -117,7 +117,7 @@ public class FileManager {
 
     // Helper function
     // Get the byte array of a file at a path
-    private byte[] getFile(String path){
+    private synchronized byte[] getFile(String path){
         // Get the file at the given path
         File file = new File(path);
 

@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -11,6 +13,7 @@ public class ConnectionHandler implements Runnable{
     private int _remotePeerId;
     private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
     private boolean _connectingPeer;
+    private UUID _uuid;
 
     // Constructs a ConnectionHandler for an anonymous remote peer
     public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager) {
@@ -21,6 +24,8 @@ public class ConnectionHandler implements Runnable{
         _fileManager = fileManager;
         _peerManager = peerManager;
         _connectingPeer = false;
+        _uuid = java.util.UUID.randomUUID();
+        System.out.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
     }
 
     // Constructs a ConnectionHandler for a known remote peer
@@ -32,7 +37,8 @@ public class ConnectionHandler implements Runnable{
         _fileManager = fileManager;
         _peerManager = peerManager;
         _connectingPeer = connectingPeer;
-    }
+        _uuid = java.util.UUID.randomUUID();
+        System.out.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());}
 
     // Get remote peer id
     public int getRemotePeerId() { return _remotePeerId; }
@@ -48,7 +54,49 @@ public class ConnectionHandler implements Runnable{
     @Override
     public void run() {
         // Acts as the first layer of our ConnectionHandler, handling choke information
-        new ConnectionHelper(_queue, _conn).start();
+        new Thread() {
+private boolean _remoteChoked = true;
+            @Override
+            public void run() {
+                while (!Process.shutdown) {
+                    try {
+                        // Handle the messages in queue
+                        Message msg = _queue.take();
+
+                        // Validate not null
+                        if (msg == null) continue;
+
+                        // We only want to accept msg if we know their id
+                        if (_conn.GetInfo().getId() != -1) {
+                            if (msg.getType() == Helpers.CHOKE && !_remoteChoked){
+                                _remoteChoked = true;
+                                // Send the actual msg
+                                _conn.send(msg);
+                            }
+                            else if (msg.getType() == Helpers.UNCHOKE && _remoteChoked) {
+                                _remoteChoked = false;
+                                // Send the actual msg
+                                _conn.send(msg);
+                            }
+                            else if ((msg.getType() == Helpers.CHOKE && _remoteChoked)
+                                || (msg.getType() == Helpers.UNCHOKE && !_remoteChoked)) {
+                                continue;
+                            }
+                            else {
+                                _conn.send(msg);
+                            }
+                        }
+                        else
+                            System.out.println("Cannot send messages yet - we have not handshaked");
+
+
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
 
         try {
             // If we are the connector, we send -> receive
@@ -60,7 +108,11 @@ public class ConnectionHandler implements Runnable{
             _remotePeerId = rcvHandshake.getPeerId();
 
             // Based off of their id, fill connection's peerinfo properly
-            _conn.updatePeerInfo(PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId));
+            PeerInfo remoteInfo = PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId);
+            _conn.updatePeerInfo(remoteInfo);
+            _remotePeerInfo = remoteInfo;
+            System.out.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
+
 
             // If we aren't the connector, we receive -> send
             //if (!_connectingPeer)
@@ -90,7 +142,9 @@ public class ConnectionHandler implements Runnable{
             // Handle the connection, this is the server portion of our peer
             while (!Process.shutdown) {
                 try {
-                    msgHandler.handle(_conn.receive());
+                    Message msgToReturn = msgHandler.handle(_conn.receive());
+                    if (msgToReturn != null)
+                        _queue.add(msgToReturn);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
