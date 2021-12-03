@@ -145,7 +145,7 @@ public class Connection {
 	}
 
 	// Get the PeerInfo
-	synchronized public PeerInfo GetInfo() {
+	public PeerInfo GetInfo() {
 		return _info;
 	}
 }

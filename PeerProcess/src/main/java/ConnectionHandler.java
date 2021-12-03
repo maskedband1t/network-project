@@ -54,49 +54,7 @@ public class ConnectionHandler implements Runnable{
     @Override
     public void run() {
         // Acts as the first layer of our ConnectionHandler, handling choke information
-        new Thread() {
-private boolean _remoteChoked = true;
-            @Override
-            public void run() {
-                while (!Process.shutdown) {
-                    try {
-                        // Handle the messages in queue
-                        Message msg = _queue.take();
-
-                        // Validate not null
-                        if (msg == null) continue;
-
-                        // We only want to accept msg if we know their id
-                        if (_conn.GetInfo().getId() != -1) {
-                            if (msg.getType() == Helpers.CHOKE && !_remoteChoked){
-                                _remoteChoked = true;
-                                // Send the actual msg
-                                _conn.send(msg);
-                            }
-                            else if (msg.getType() == Helpers.UNCHOKE && _remoteChoked) {
-                                _remoteChoked = false;
-                                // Send the actual msg
-                                _conn.send(msg);
-                            }
-                            else if ((msg.getType() == Helpers.CHOKE && _remoteChoked)
-                                || (msg.getType() == Helpers.UNCHOKE && !_remoteChoked)) {
-                                continue;
-                            }
-                            else {
-                                _conn.send(msg);
-                            }
-                        }
-                        else
-                            System.out.println("Cannot send messages yet - we have not handshaked");
-
-
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
+        new ConnectionHelper(_queue, _conn  ).start();
 
         try {
             // If we are the connector, we send -> receive
@@ -112,7 +70,6 @@ private boolean _remoteChoked = true;
             _conn.updatePeerInfo(remoteInfo);
             _remotePeerInfo = remoteInfo;
             System.out.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
-
 
             // If we aren't the connector, we receive -> send
             //if (!_connectingPeer)
@@ -142,9 +99,13 @@ private boolean _remoteChoked = true;
             // Handle the connection, this is the server portion of our peer
             while (!Process.shutdown) {
                 try {
-                    Message msgToReturn = msgHandler.handle(_conn.receive());
-                    if (msgToReturn != null)
-                        _queue.add(msgToReturn);
+                    Message msgReceived = _conn.receive();
+                    if (msgReceived != null) {
+                        System.out.println("Received a message of type " + msgReceived.getType());
+                        Message msgToReturn = msgHandler.handle(msgReceived);
+                        if (msgToReturn != null)
+                            _queue.add(msgToReturn);
+                    }
                 }
                 catch (Exception e) {
                     e.printStackTrace();

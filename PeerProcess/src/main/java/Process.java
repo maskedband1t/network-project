@@ -157,6 +157,8 @@ public class Process implements Runnable {
                     // Every time a peer connects to us, we handle their connection with Handler
                     Socket c = s.accept();
 
+                    System.out.println("We received a new socket connection on the server!");
+
                     // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
 
