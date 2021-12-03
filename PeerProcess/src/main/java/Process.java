@@ -33,7 +33,6 @@ public class Process implements Runnable {
     // Builds Connection to peer
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
-        Socket s = new Socket(info.getHost(), info.getPort());
         Connection c = new Connection(info);
         addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info.getId(), true));
     }
