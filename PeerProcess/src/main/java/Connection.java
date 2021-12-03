@@ -95,21 +95,24 @@ public class Connection {
 	// Receives a message from remote peer
 	synchronized public Message receive()
 	throws IOException {
+		System.out.println("Attempting to receive...");
 		byte[] msg_length = new byte[4];
 		Byte type = -1;
 
 		// Read message length
 		try{
 			_socket.read(msg_length, 4);
+			System.out.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		int ml = ByteBuffer.wrap(msg_length).getInt();
+		int ml = Helpers.bytesToInt(msg_length);
 
 		// Read message type
 		try {
 			type = (byte)_socket.read();
+			System.out.println("Read type: " + type);
 			if(type == -1)
 				throw new IOException("End of stream reached.");
 		} catch (IOException e) {
@@ -121,11 +124,17 @@ public class Connection {
 		byte[] msg = new byte[ml];
 
 		// Read message payload
-		try {
-			_socket.read(msg,ml);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+		if (ml > 1) {
+			try {
+				_socket.read(msg,ml);
+				System.out.println("Read msg: " + Helpers.bytesToInt(msg));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else {
+			System.out.println("No payload, not reading");
 		}
 
 		// Returns the message

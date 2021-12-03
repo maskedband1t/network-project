@@ -39,6 +39,7 @@ public class ConnectionHelper extends Thread {
                     }
                     else if ((msg.getType() == Helpers.CHOKE && _remoteChoked)
                             || (msg.getType() == Helpers.UNCHOKE && !_remoteChoked)) {
+                        System.out.println("NOT sending message over connection");
                         continue;
                     }
                     else {

@@ -48,7 +48,8 @@ public class ConnectionHandler implements Runnable{
 
     // Send message
     public void send(Message msg) throws IOException {
-        _conn.send(msg);
+        //_conn.send(msg);
+        _queue.add(msg);
     }
 
     @Override
@@ -104,7 +105,8 @@ public class ConnectionHandler implements Runnable{
                         System.out.println("Received a message of type " + msgReceived.getType());
                         Message msgToReturn = msgHandler.handle(msgReceived);
                         if (msgToReturn != null)
-                            _queue.add(msgToReturn);
+                            //_queue.add(msgToReturn);
+                            _conn.send(msgToReturn);
                     }
                 }
                 catch (Exception e) {
