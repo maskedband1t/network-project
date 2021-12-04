@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -55,7 +54,9 @@ public class ConnectionHandler implements Runnable{
     @Override
     public void run() {
         // Acts as the first layer of our ConnectionHandler, handling choke information
-        new ConnectionHelper(_queue, _conn  ).start();
+        ConnectionHelper helper = new ConnectionHelper(_queue, _conn);
+        helper.registerHandler(this);
+        helper.start();
 
         try {
             // If we are the connector, we send -> receive
@@ -111,6 +112,7 @@ public class ConnectionHandler implements Runnable{
                 }
                 catch (Exception e) {
                     e.printStackTrace();
+                    System.exit(0);
                 }
             }
         }

@@ -273,9 +273,10 @@ public class PeerManager implements Runnable {
             List<PeerInfo> _interestedPeers = getInterestedPeers();
 
             if (_interestedPeers.size() > 0) {
-                System.out.println("Interested Peers: ");
+                System.out.print("Interested Peers: ");
                 for(PeerInfo p : _interestedPeers)
                     System.out.print(p.getId() + ",");
+                System.out.println();
             }
 
             // Here we randomly shuffle neighbors
