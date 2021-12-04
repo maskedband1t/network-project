@@ -40,12 +40,12 @@ public class Process implements Runnable {
     public void initPeerManager() {
         // Run the peer manager on a thread
         if (this.peerManager != null) {
+            this.peerManager.registerProcess(this);
             (new Thread() {
                 public void run() {
                     peerManager.run();
                 }
             }).start();
-            this.peerManager.registerProcess(this);
         }
     }
 

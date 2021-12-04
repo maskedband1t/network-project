@@ -75,7 +75,11 @@ public class PeerManager implements Runnable {
         _unchokingInterval = config.unchokingInterval;
         _num_Preferred_Neighbors = config.numPrefNeighbors;
         // our peers are everyone but us
-        _peers = _peers.stream().filter(ele -> ele.getId() != peerId).collect(Collectors.toList());
+        _peers = PeerInfoConfig.getInstance().peerInfos.stream().filter(ele -> ele.getId() != peerId).collect(Collectors.toList());
+        System.out.println("Peers: ");
+        for (PeerInfo p : _peers)
+            System.out.print(p.getBitfield() + ",");
+        System.out.println();
     }
 
     // Checks if we can upload to remote peer with peerId
@@ -85,12 +89,10 @@ public class PeerManager implements Runnable {
     }
 
     // Checks if we are interested in remote peer with @peerId
-    synchronized void addPeerInterested(int peerId) {
+     public void addPeerInterested(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
-                if(peer != null){
-                    peer.setIfInterested(true);
-                }
+                peer.setIfInterested(true);
             }
         }
     }
@@ -134,7 +136,7 @@ public class PeerManager implements Runnable {
 
     // Get list of peers we are interested in
     synchronized List<PeerInfo> getInterestedPeers(){
-        List<PeerInfo> interestedPeers = new ArrayList<>();
+        List<PeerInfo> interestedPeers = new ArrayList<PeerInfo>();
 
         for(PeerInfo peer : _peers){
             if(peer.isInterested()){
@@ -260,7 +262,7 @@ public class PeerManager implements Runnable {
         // Start the optimisticUnchoker on its own thread
         _optimisticUnchoker.start();
 
-        while(true){
+        while(!Process.shutdown){
             try {
                 Thread.sleep(_unchokingInterval);
             } catch (InterruptedException e) {
@@ -269,6 +271,12 @@ public class PeerManager implements Runnable {
             }
 
             List<PeerInfo> _interestedPeers = getInterestedPeers();
+
+            if (_interestedPeers.size() > 0) {
+                System.out.println("Interested Peers: ");
+                for(PeerInfo p : _interestedPeers)
+                    System.out.print(p.getId() + ",");
+            }
 
             // Here we randomly shuffle neighbors
             if(_fileDone.get()){
