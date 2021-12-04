@@ -74,6 +74,7 @@ public class MessageHandler {
         if (!_choked) {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
+            System.out.println("We want piece with index: " + newPieceIdx);
             if (newPieceIdx >= 0)
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
@@ -117,7 +118,7 @@ public class MessageHandler {
         _peerManager.handleHave(_remotePeerId, pieceIdx);
 
         // Send message back based on whether or not bitfield has this piece
-        if (_fileManager.getReceivedPieces().get(pieceIdx))
+        if (_fileManager.getReceivedPieces().getBits().get(pieceIdx))
             return new Message(Helpers.NOTINTERESTED, new byte[]{});
         else
             return new Message(Helpers.INTERESTED, new byte[]{});
@@ -141,7 +142,7 @@ public class MessageHandler {
         bf.debugPrint();
 
         // Clears all bits that are set
-        bf.getBits().andNot(_fileManager.getReceivedPieces());
+        bf.getBits().andNot(_fileManager.getReceivedPieces().getBits());
 
         // Send message back based on whether or not bitfield has this piece
         if (bf.empty())
@@ -163,8 +164,11 @@ public class MessageHandler {
 
         // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
+            System.out.println("We can upload piece " + pieceIdx + " to peer " + _remotePeerId);
             // Get the piece
             byte[] piece = _fileManager.getPiece(pieceIdx);
+
+            System.out.println(piece);
 
             // Send the piece
             if (piece != null)

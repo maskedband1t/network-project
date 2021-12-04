@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -6,52 +8,74 @@ public class ConnectionHandler implements Runnable{
     private Connection _conn;
     private FileManager _fileManager;
     private PeerManager _peerManager;
+    private PeerInfo _remotePeerInfo;
     private int _remotePeerId;
     private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
     private boolean _connectingPeer;
+    private UUID _uuid;
 
     // Constructs a ConnectionHandler for an anonymous remote peer
     public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager) {
         _info = in;
         _conn = conn;
-        _remotePeerId = -1;
+        _remotePeerInfo = new PeerInfo();
+        _remotePeerId = _remotePeerInfo.getId();
         _fileManager = fileManager;
         _peerManager = peerManager;
         _connectingPeer = false;
+        _uuid = java.util.UUID.randomUUID();
+        System.out.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
     }
 
     // Constructs a ConnectionHandler for a known remote peer
-    public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager, int remoteId, boolean connectingPeer) {
+    public ConnectionHandler(PeerInfo in, Connection conn, FileManager fileManager, PeerManager peerManager, PeerInfo remoteInfo, boolean connectingPeer) {
         _info = in;
         _conn = conn;
-        _remotePeerId = remoteId;
+        _remotePeerInfo = remoteInfo;
+        _remotePeerId = _remotePeerInfo.getId();
         _fileManager = fileManager;
         _peerManager = peerManager;
         _connectingPeer = connectingPeer;
+        _uuid = java.util.UUID.randomUUID();
+        System.out.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());}
+
+    // Get remote peer id
+    public int getRemotePeerId() { return _remotePeerId; }
+
+    // Get peer id
+    public int getPeerId() { return _info.getId(); }
+
+    // Send message
+    public void send(Message msg) throws IOException {
+        //_conn.send(msg);
+        _queue.add(msg);
     }
 
     @Override
     public void run() {
-        System.out.println("Handling connection for peer " + _info.getId() + " with unknown peer");
-
         // Acts as the first layer of our ConnectionHandler, handling choke information
-        new ConnectionHelper(_queue, _conn).start();
+        ConnectionHelper helper = new ConnectionHelper(_queue, _conn);
+        helper.registerHandler(this);
+        helper.start();
 
         try {
             // If we are the connector, we send -> receive
-            if (_connectingPeer)
-                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            //if (_connectingPeer)
+            _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // Receive handshake, we now identified remote peer
             HandshakeMessage rcvHandshake = _conn.receiveHandshake();
             _remotePeerId = rcvHandshake.getPeerId();
 
             // Based off of their id, fill connection's peerinfo properly
-            _conn.updatePeerInfo(PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId));
+            PeerInfo remoteInfo = PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId);
+            _conn.updatePeerInfo(remoteInfo);
+            _remotePeerInfo = remoteInfo;
+            System.out.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
 
             // If we aren't the connector, we receive -> send
-            if (!_connectingPeer)
-                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            //if (!_connectingPeer)
+            //    _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // After handshake send bitfield message if we have any pieces
             System.out.println("Checking if we have any set bits in our bitfield...");
@@ -75,12 +99,21 @@ public class ConnectionHandler implements Runnable{
             MessageHandler msgHandler = new MessageHandler(_remotePeerId, _fileManager, _peerManager);
 
             // Handle the connection, this is the server portion of our peer
-            while (true) {
+            while (!Process.shutdown) {
                 try {
-                    msgHandler.handle(_conn.receive());
+                    Message msgReceived = _conn.receive();
+                    if (msgReceived != null) {
+                        System.out.println("Received a message of type " + msgReceived.getType());
+                        Message msgToReturn = msgHandler.handle(msgReceived);
+                        if (msgToReturn != null) {
+                            _conn.send(msgToReturn);
+                            System.out.println("We are returning a message with type " + msgToReturn.getType());
+                        }
+                    }
                 }
                 catch (Exception e) {
                     e.printStackTrace();
+                    System.exit(0);
                 }
             }
         }

@@ -3,6 +3,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Process implements Runnable {
     // list of connections per peers
@@ -15,7 +17,10 @@ public class Process implements Runnable {
     private PeerManager peerManager;
 
     // whether we should shutdown the program
-    private boolean shutdown;
+    public static boolean shutdown;
+
+    // whether neighbors are done
+    private AtomicBoolean _peers_file_complete;
 
     // Constructs the Process
     public Process(PeerInfo peerInfo) {
@@ -23,6 +28,7 @@ public class Process implements Runnable {
         this.shutdown = false;
         this.fileManager = new FileManager(peerInfo.getId());
         this.peerManager = new PeerManager(peerInfo.getId());
+        this._peers_file_complete = new AtomicBoolean(false);
     }
 
     // Split the file into pieces
@@ -30,11 +36,31 @@ public class Process implements Runnable {
         fileManager.splitFileIntoPieces();
     }
 
+    // Initialize PeerManager
+    public void initPeerManager() {
+        // Run the peer manager on a thread
+        if (this.peerManager != null) {
+            this.peerManager.registerProcess(this);
+            (new Thread() {
+                public void run() {
+                    peerManager.run();
+                }
+            }).start();
+        }
+    }
+
+    // Initialize FileManager
+    public void initFileManager() {
+        if (this.fileManager != null)
+            this.fileManager.registerProcess(this);
+    }
+
     // Builds Connection to peer
     public void buildPeer(PeerInfo info) throws IOException {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Connection c = new Connection(info);
-        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info.getId(), true));
+        System.out.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
+        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true));
     }
 
     // Builds Connections to all peers
@@ -55,7 +81,7 @@ public class Process implements Runnable {
     }
 
     // Adds a ConnectionHandler for a remote peer
-    synchronized private boolean addConnectionHandler(ConnectionHandler connHdlr) {
+    private synchronized boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
             new Thread(connHdlr).start(); // start handling connection on another thread
@@ -66,6 +92,53 @@ public class Process implements Runnable {
             }
         }
         return true;
+    }
+
+    // choke peers
+    public synchronized void choke_peers(Set<Integer> peers) throws IOException{
+        for (ConnectionHandler ch : _connHandlers)
+            if (peers.contains(ch.getRemotePeerId())) {
+                //System.out.println("Choking: " + ch.getRemotePeerId());
+                ch.send(new Message(Helpers.CHOKE, new byte[]{}));
+            }
+    }
+
+    // unchoke peers
+    public synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
+        for (ConnectionHandler ch : _connHandlers) {
+            if (peers.contains(ch.getRemotePeerId())) {
+                //System.out.println("Unchoking: " + ch.getRemotePeerId());
+                ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
+            }
+        }
+    }
+
+    // Handle when a piece arrives
+    public synchronized void receivedPiece(int pieceIndex) throws IOException {
+        for (ConnectionHandler ch : _connHandlers) {
+            ch.send(new Message(Helpers.HAVE, Helpers.intToBytes(pieceIndex, 4)));
+            if (!peerManager.isPeerInteresting(ch.getRemotePeerId(), fileManager.getReceivedPieces())) {
+                ch.send(new Message(Helpers.NOTINTERESTED, new byte[]{}));
+            }
+        }
+    }
+
+    public void neighborsComplete() {
+        _peers_file_complete.set(true);
+        if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+            shutdown = true;
+            System.exit(0);
+        }
+    }
+
+    // Handle when the file is complete
+    public synchronized void complete() {
+        Logger.getInstance().completedDownload();
+        peerInfo.set_file_complete(true);
+        if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+            shutdown = true;
+            System.exit(0);
+        }
     }
 
     // The entry point for this thread
@@ -83,13 +156,13 @@ public class Process implements Runnable {
                 try {
                     // Every time a peer connects to us, we handle their connection with Handler
                     Socket c = s.accept();
-                    c.setSoTimeout(0);
 
                     // Add connection - the handler will handle this on a separate thread
                     PeerSocket peerSocket = new PeerSocket(c);
 
                     // We use a default peer info since we haven't identified who they are yet
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
+                    System.out.println("ADDING CONNECTION HANDLER [DETECTED NEW CONNECTION]");
                     addConnectionHandler(new ConnectionHandler(peerInfo, conn, fileManager, peerManager));
                 }
                 catch (Exception e) {

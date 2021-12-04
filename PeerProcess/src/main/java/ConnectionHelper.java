@@ -2,52 +2,69 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ConnectionHelper extends Thread {
-    private boolean remoteChoked = true;
-    private BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
-    private Connection conn;
+    private boolean _remoteChoked = true;
+    private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
+    private Connection _conn;
+
+    private ConnectionHandler ch;
 
     // Construct the ConnectionHelper
     public ConnectionHelper(BlockingQueue<Message> q, Connection c) {
-        q = queue;
-        conn = c;
+        _queue = q;
+        _conn = c;
+        System.out.println("ConnectionHelper has access to connection for" + _conn.GetInfo().getId());
+    }
+
+    public void registerHandler(ConnectionHandler hand) {
+        ch = hand;
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (!Process.shutdown) {
             try {
                 // Handle the messages in queue
-                Message msg = queue.take();
+                Message msg = _queue.take();
+
+                // Debugging print statement
+                System.out.println("Took a message with type" + msg.getType() + ", the queue now has the following messages: ");
+                for(Object m : _queue.toArray()) {
+                    System.out.println("> " + ((Message)m).getType());
+                }
 
                 // Validate not null
-                if (msg == null) continue;
+                if (msg == null) {
+                    System.out.println("Connection helper: msg is null :(");
+                    continue;
+                }
 
                 // We only want to accept msg if we know their id
-                if (conn.GetInfo().getId() != -1) {
-                    if (msg.getType() == Helpers.CHOKE && !remoteChoked){
-                        remoteChoked = true;
+                if (_conn.GetInfo().getId() != -1) {
+                    //System.out.println("We have a valid connection to " + _conn.GetInfo().getId());
+                    if (msg.getType() == Helpers.CHOKE && !_remoteChoked){
+                        System.out.println("Choking and Sending message over connection");
+                        _remoteChoked = true;
                         // Send the actual msg
-                        conn.send(msg);
+                        _conn.send(msg);
                     }
-                    else if (msg.getType() == Helpers.UNCHOKE && remoteChoked) {
-                        remoteChoked = false;
+                    else if (msg.getType() == Helpers.UNCHOKE && _remoteChoked) {
+                        System.out.println("Unchoking and Sending message over connection");
+                        _remoteChoked = false;
                         // Send the actual msg
-                        conn.send(msg);
+                        _conn.send(msg);
                     }
-                    else if (msg.getType() == Helpers.CHOKE && remoteChoked) {
-                        remoteChoked = true;
+                    else if ((msg.getType() == Helpers.CHOKE && _remoteChoked)
+                            || (msg.getType() == Helpers.UNCHOKE && !_remoteChoked)) {
+                        System.out.println("NOT sending message over connection");
+                        continue;
                     }
-                    else if (msg.getType() == Helpers.UNCHOKE && !remoteChoked) {
-                        remoteChoked = false;
-                    }
-                    else{
-                        conn.send(msg);
+                    else {
+                        System.out.println("Sending message over connection");
+                        _conn.send(msg);
                     }
                 }
                 else
                     System.out.println("Cannot send messages yet - we have not handshaked");
-
-
             }
             catch (Exception e) {
                 e.printStackTrace();

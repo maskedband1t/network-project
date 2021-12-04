@@ -1,5 +1,6 @@
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class Helpers {
@@ -52,4 +53,7 @@ public class Helpers {
 
     // Relative string path to where the built resources file is
     public static final String pathToResourcesFolder = "./../../../resources/main/";
+
+    // Debugging purposes
+    public static SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 }

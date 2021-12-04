@@ -5,6 +5,7 @@ public class FileManager {
     int peerId;
     Bitfield receivedPieces;
     Bitfield requestedPieces;
+    private Process process = null;
 
     // Construct the FileManager
     public FileManager(int peerId) {
@@ -17,58 +18,87 @@ public class FileManager {
         piecesDir.mkdirs();
     }
 
+    // Registers process
+    public synchronized void registerProcess(Process proc) {
+        this.process = proc;
+    }
+
     // Adds the piece to the pieces directory
-    public boolean addPiece(int pieceIndex, byte[] piece) {
-        // Create the file if necessary
-        File file = new File(getPathForPieceIndex(pieceIndex));
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
+        // True if we do not have this piece
+        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+
+        if (isNewPiece) {
+            // Create the file if necessary
+            File file = new File(getPathForPieceIndex(pieceIndex));
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Write the piece contents to the file
+            FileOutputStream fos;
+            try {
+                fos = new FileOutputStream(file);
+                fos.write(piece);
+                fos.flush();
+                fos.close();
+
+                // if successful, let process know we got this piece successfully
+                process.receivedPiece(pieceIndex);
+            } catch(Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
 
-        // Write the piece contents to the file
-        FileOutputStream fos;
-        try {
-            fos = new FileOutputStream(file);
-            fos.write(piece);
-            fos.flush();
-            fos.close();
-        } catch(Exception e) {
-            e.printStackTrace();
-            return false;
+        // Check if we are done
+        if (haveAllPieces()) {
+            process.complete();
         }
 
         // Return success
         return true;
     }
 
+    // Checks if we have all pieces
+    private synchronized boolean haveAllPieces() {
+        BitSet set = receivedPieces.getBits();
+        for (int i = 0; i < set.size(); i++) {
+            if (!set.get(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Get a copy of receivedPieces, because we are using logical operations on the clone
-    public BitSet getReceivedPieces() {
-        return (BitSet)receivedPieces.getBits().clone();
+    public synchronized Bitfield getReceivedPieces() {
+        return (Bitfield)receivedPieces.clone();
     }
 
     // Get pieces that are available to request
-    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
-        BitSet availablePieces = getReceivedPieces();
+    public synchronized BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
+        BitSet availablePieces = getReceivedPieces().getBits();
         availablePieces.andNot(piecesNotRequested);
         return availablePieces;
     }
 
     // Get the index of the next piece to request
-    public int getPieceToRequest(BitSet piecesNotRequested) {
+    public synchronized int getPieceToRequest(BitSet piecesNotRequested) {
         // Determine which piece to request
         return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
     }
 
     // Get the byte array of the piece at an index
-    public byte[] getPiece(int pieceIndex) {
+    public synchronized byte[] getPiece(int pieceIndex) {
         String path = getPathForPieceIndex(pieceIndex);
         return getFile(path);
     }
 
     // Split the file into pieces
-    public void splitFileIntoPieces() {
+    public synchronized void splitFileIntoPieces() {
         // Get the file
         String wholeFilePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
         byte[] wholeFile = getFile(wholeFilePath);
@@ -87,7 +117,7 @@ public class FileManager {
 
     // Helper function
     // Get the byte array of a file at a path
-    private byte[] getFile(String path){
+    private synchronized byte[] getFile(String path){
         // Get the file at the given path
         File file = new File(path);
 

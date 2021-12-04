@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 
 public class Connection {
 	private PeerInfo _info;
@@ -84,32 +83,52 @@ public class Connection {
 	}
 
 	// Sends a message to remote peer
-	synchronized public void send(Message m)
+	public  void send(Message m)
 	throws IOException {
+		if (m.getType() == 1)
+			System.out.println("SENDING UNCHOKE MSG TO: " + _info.getId());
+
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
-		_socket.write(m.getPayload());
+
+		// Send message payload
+		if (m.getLength() > 1) {
+			try {
+				_socket.write(m.getPayload());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			System.out.println("No payload, not sending");
+		}
+
+		if (m.getType() == 1)
+			System.out.println("SUCCESS UNCHOKE MSG TO: " + _info.getId());
 	}
 
 	// Receives a message from remote peer
 	synchronized public Message receive()
 	throws IOException {
+		System.out.println("Attempting to receive...");
 		byte[] msg_length = new byte[4];
 		Byte type = -1;
 
 		// Read message length
 		try{
 			_socket.read(msg_length, 4);
+			System.out.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		int ml = ByteBuffer.wrap(msg_length).getInt();
+		int ml = Helpers.bytesToInt(msg_length);
 
 		// Read message type
 		try {
 			type = (byte)_socket.read();
+			System.out.println("Read type: " + type);
 			if(type == -1)
 				throw new IOException("End of stream reached.");
 		} catch (IOException e) {
@@ -121,11 +140,17 @@ public class Connection {
 		byte[] msg = new byte[ml];
 
 		// Read message payload
-		try {
-			_socket.read(msg,ml);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+		if (ml > 1) {
+			try {
+				_socket.read(msg,ml);
+				System.out.println("Read msg: " + Helpers.bytesToInt(msg));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else {
+			System.out.println("No payload, not reading");
 		}
 
 		// Returns the message
@@ -145,7 +170,7 @@ public class Connection {
 	}
 
 	// Get the PeerInfo
-	synchronized public PeerInfo GetInfo() {
+	public PeerInfo GetInfo() {
 		return _info;
 	}
 }

@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +29,7 @@ public class PeerManager implements Runnable {
         // The entry point for this thread
         @Override
         public void run(){
-            while(true){
+            while(!Process.shutdown){
                 try {
                     // constantly sleeping for interval and reshuffling once out
                     Thread.sleep(_optimistic_unchoking_interval);
@@ -65,6 +66,7 @@ public class PeerManager implements Runnable {
 
     Set<Integer> _chokedPeerIDs = new HashSet<>();
     Set<Integer> _preferredPeerIDs = new HashSet<>();
+    private Process _process = null;
 
     // Construct the PeerManager for peerId
     public PeerManager(int peerId) {
@@ -73,22 +75,27 @@ public class PeerManager implements Runnable {
         _unchokingInterval = config.unchokingInterval;
         _num_Preferred_Neighbors = config.numPrefNeighbors;
         // our peers are everyone but us
-        _peers = _peers.stream().filter(ele -> ele.getId() != peerId).collect(Collectors.toList());
+        _peers = PeerInfoConfig.getInstance().peerInfos.stream().filter(ele -> ele.getId() != peerId).collect(Collectors.toList());
+        System.out.println("Peers: ");
+        for (PeerInfo p : _peers)
+            System.out.print(p.getBitfield() + ",");
+        System.out.println();
     }
 
     // Checks if we can upload to remote peer with peerId
     synchronized boolean canUploadToPeer(int peerId) {
-        return (_preferredPeers.contains(peerId) ||
-                _optimisticUnchoker._optimisticallyUnchokedPeers.contains(peerId));
+        List<Integer> opt = _optimisticUnchoker._optimisticallyUnchokedPeers.stream().map(p -> p.getId()).collect(Collectors.toList());
+        boolean x = _preferredPeerIDs.contains(peerId) ||
+                opt.contains(peerId);
+        System.out.println("Peer " + peerId + " is preferred or opt unchoke: " + x);
+        return x;
     }
 
     // Checks if we are interested in remote peer with @peerId
-    synchronized void addPeerInterested(int peerId) {
+     public void addPeerInterested(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
-                if(peer != null){
-                    peer.setIfInterested(true);
-                }
+                peer.setIfInterested(true);
             }
         }
     }
@@ -132,7 +139,7 @@ public class PeerManager implements Runnable {
 
     // Get list of peers we are interested in
     synchronized List<PeerInfo> getInterestedPeers(){
-        List<PeerInfo> interestedPeers = new ArrayList<>();
+        List<PeerInfo> interestedPeers = new ArrayList<PeerInfo>();
 
         for(PeerInfo peer : _peers){
             if(peer.isInterested()){
@@ -148,7 +155,7 @@ public class PeerManager implements Runnable {
     }
 
     // Initializes the bitfield for remote peer with id peerId
-    synchronized public void handleBitfield(int peerId, Bitfield bitfield) {
+    public synchronized  void handleBitfield(int peerId, Bitfield bitfield) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -160,7 +167,7 @@ public class PeerManager implements Runnable {
     }
 
     // Updates the bitfield at index pieceIdx to 1 for remote peer with id peerId
-    synchronized public void handleHave(int peerId, int pieceIdx) {
+    public synchronized  void handleHave(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -182,7 +189,8 @@ public class PeerManager implements Runnable {
                     }
                 }
             }
-        } 
+        }
+        _process.neighborsComplete();
     }
 
     // Set _chokedPeerIds
@@ -233,13 +241,31 @@ public class PeerManager implements Runnable {
         }
     }
 
+    // register the process
+    synchronized void registerProcess(Process proc) {
+        this._process = proc;
+    }
+
+    // choke peers
+    synchronized void choke_peers(Set<Integer> peers) throws IOException {
+        if (this._process != null)
+            this._process.choke_peers(peers);
+    }
+
+    // unchoke peers
+    synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
+        if (this._process != null) {
+            this._process.unchoke_peers(peers);
+        }
+    }
+
     // The entry point for this thread
     @Override
     public void run(){
         // Start the optimisticUnchoker on its own thread
         _optimisticUnchoker.start();
 
-        while(true){
+        while(!Process.shutdown){
             try {
                 Thread.sleep(_unchokingInterval);
             } catch (InterruptedException e) {
@@ -248,6 +274,15 @@ public class PeerManager implements Runnable {
             }
 
             List<PeerInfo> _interestedPeers = getInterestedPeers();
+
+            /*
+            // Debugging purposes
+            if (_interestedPeers.size() > 0) {
+                System.out.print("Interested Peers: ");
+                for(PeerInfo p : _interestedPeers)
+                    System.out.print(p.getId() + ",");
+                System.out.println();
+            }*/
 
             // Here we randomly shuffle neighbors
             if(_fileDone.get()){
@@ -294,6 +329,11 @@ public class PeerManager implements Runnable {
                     optimistically_unchokable_peers = _interestedPeers.subList(_num_Preferred_Neighbors, _interestedPeers.size());
 
                 preferredPeerIDs.addAll(PeerInfo.toIdList(_preferredPeers));
+
+                System.out.print("Preferred peers: ");
+                for(int id:preferredPeerIDs)
+                    System.out.print(id);
+                System.out.println();
             }
 
             // could log here the state of every peer if helpful
@@ -304,6 +344,15 @@ public class PeerManager implements Runnable {
             // TODO: hand chokedPeerIds and preferredPeerIds to process
             update_choked_peers(chokedPeerIDs);
             update_preferred_peers(preferredPeerIDs);
+
+            // choke/unchoke peers
+            try {
+                choke_peers(chokedPeerIDs);
+                unchoke_peers(preferredPeerIDs);
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
 
             if(optimistically_unchokable_peers != null)
                 _optimisticUnchoker.setChokedPeers(optimistically_unchokable_peers); // pass new unchokable peers to unchoker

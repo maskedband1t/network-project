@@ -77,6 +77,10 @@ public class PeerProcess {
         // Initialize the process for this process
         Process peer = new Process(ourInfo);
 
+        // Run/Init the manager
+        peer.initPeerManager();
+        peer.initFileManager();
+        
         // If we have the file, split it up into pieces
         if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId()))
             peer.splitFile();

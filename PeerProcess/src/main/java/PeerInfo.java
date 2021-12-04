@@ -83,8 +83,8 @@ public class PeerInfo {
 
     // Set _interested
     public void setIfInterested(boolean isInterested) {
-        if(isInterested){_interested.set (true);}
-        else{_interested.set(false);}
+        System.out.println("Setting interested to " + isInterested + " for " + peerId);
+        _interested.set(isInterested);
     }
 
     // Set the peer id
