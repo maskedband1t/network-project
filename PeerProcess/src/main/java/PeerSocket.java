@@ -48,12 +48,24 @@ public class PeerSocket implements SocketInterface{
 
 	// Read determined amount from socket
 	public int read(byte[] b, int len) throws IOException {
-		// set default offset to 0
-		return is.read(b, 0, len);
+		try {
+			// set default offset to 0
+			return is.read(b, 0, len);
+		}
+		catch (Exception e) {
+			System.exit(-1);
+			return -1;
+		}
 	}
 
 	// Read fully from socket
 	public int read(byte[] b) throws IOException {
+		try {
 		return is.read(b);
+		}
+		catch (Exception e) {
+			System.exit(-1);
+			return -1;
+		}
 	}
 }

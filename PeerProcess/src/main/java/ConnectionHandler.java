@@ -105,9 +105,10 @@ public class ConnectionHandler implements Runnable{
                     if (msgReceived != null) {
                         System.out.println("Received a message of type " + msgReceived.getType());
                         Message msgToReturn = msgHandler.handle(msgReceived);
-                        if (msgToReturn != null)
-                            //_queue.add(msgToReturn);
+                        if (msgToReturn != null) {
                             _conn.send(msgToReturn);
+                            System.out.println("We are returning a message with type " + msgToReturn.getType());
+                        }
                     }
                 }
                 catch (Exception e) {

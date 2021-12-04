@@ -98,7 +98,7 @@ public class Process implements Runnable {
     public synchronized void choke_peers(Set<Integer> peers) throws IOException{
         for (ConnectionHandler ch : _connHandlers)
             if (peers.contains(ch.getRemotePeerId())) {
-                System.out.println("Choking: " + ch.getRemotePeerId());
+                //System.out.println("Choking: " + ch.getRemotePeerId());
                 ch.send(new Message(Helpers.CHOKE, new byte[]{}));
             }
     }
@@ -107,7 +107,7 @@ public class Process implements Runnable {
     public synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {
             if (peers.contains(ch.getRemotePeerId())) {
-                System.out.println("Unchoking: " + ch.getRemotePeerId());
+                //System.out.println("Unchoking: " + ch.getRemotePeerId());
                 ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
             }
         }

@@ -74,6 +74,7 @@ public class MessageHandler {
         if (!_choked) {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
+            System.out.println("We want piece with index: " + newPieceIdx);
             if (newPieceIdx >= 0)
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
@@ -163,8 +164,11 @@ public class MessageHandler {
 
         // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
+            System.out.println("We can upload piece " + pieceIdx + " to peer " + _remotePeerId);
             // Get the piece
             byte[] piece = _fileManager.getPiece(pieceIdx);
+
+            System.out.println(piece);
 
             // Send the piece
             if (piece != null)

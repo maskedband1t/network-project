@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 
 public class Connection {
 	private PeerInfo _info;
@@ -84,12 +83,29 @@ public class Connection {
 	}
 
 	// Sends a message to remote peer
-	synchronized public void send(Message m)
+	public  void send(Message m)
 	throws IOException {
+		if (m.getType() == 1)
+			System.out.println("SENDING UNCHOKE MSG TO: " + _info.getId());
+
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
-		_socket.write(m.getPayload());
+
+		// Send message payload
+		if (m.getLength() > 1) {
+			try {
+				_socket.write(m.getPayload());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			System.out.println("No payload, not sending");
+		}
+
+		if (m.getType() == 1)
+			System.out.println("SUCCESS UNCHOKE MSG TO: " + _info.getId());
 	}
 
 	// Receives a message from remote peer
