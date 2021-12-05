@@ -159,6 +159,7 @@ public class MessageHandler {
         // Get piece index field
         int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
 
+
         // Log
         Logger.getInstance().receivedRequestFrom(_remotePeerId, pieceIdx);
 
@@ -168,11 +169,16 @@ public class MessageHandler {
             // Get the piece
             byte[] piece = _fileManager.getPiece(pieceIdx);
 
-            System.out.println(piece);
+            byte[] concat = new byte[4 + (piece == null ? 0 : piece.length)];
+            System.arraycopy( Helpers.intToBytes(pieceIdx,4), 0, concat, 0, 4);
+            System.arraycopy(piece, 0, concat, 4, piece.length);
+
+
+            //System.out.println(piece);
 
             // Send the piece
-            if (piece != null)
-                return new Message(Helpers.PIECE, piece);
+            if (concat != null)
+                return new Message(Helpers.PIECE, concat);
         }
 
         return null;
@@ -187,6 +193,7 @@ public class MessageHandler {
         if (!_choked) {
             // Get piece index field
             int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
+            System.out.println("THE PIECE INDEX is " + pieceIdx);
 
             // Get piece content
             byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
