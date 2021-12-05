@@ -192,6 +192,9 @@ public class MessageHandler {
             byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
             int pieceContentLength = pieceContent.length;
 
+            // Add piece content to pieces directory
+            _fileManager.addPiece(pieceIdx, pieceContent);
+
             // Mark that we received piece
             _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
 
@@ -202,10 +205,10 @@ public class MessageHandler {
             Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
 
             // Return Request msg if applicable
-                int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
-                byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
-                if (newPieceIdx >= 0)
-                    return new Message(Helpers.REQUEST, newPieceIdxByteArray);
+            int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
+            byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
+            if (newPieceIdx >= 0)
+                return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
 
         return null;

@@ -181,13 +181,9 @@ public class PeerManager implements Runnable {
     // Handles logic for finishing the file if necessary
     synchronized void download_finished(){
         for (PeerInfo peer : _peers) {
-            if (peer.getId() == _peerId) {
-                if(peer != null){
-                    if(peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
-                        // log that a neighbor hasnt finished
-                        return;
-                    }
-                }
+            if (peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
+                // log that a neighbor hasnt finished
+                return;
             }
         }
         _process.neighborsComplete();
