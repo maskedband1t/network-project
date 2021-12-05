@@ -26,7 +26,7 @@ public class Process implements Runnable {
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
-        this.fileManager = new FileManager(peerInfo.getId());
+        this.fileManager = new FileManager(peerInfo);
         this.peerManager = new PeerManager(peerInfo.getId());
         this._peers_file_complete = new AtomicBoolean(false);
     }

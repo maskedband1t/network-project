@@ -3,14 +3,16 @@ import java.util.BitSet;
 
 public class FileManager {
     int peerId;
+    PeerInfo peerInfo;
     Bitfield receivedPieces;
     Bitfield requestedPieces;
     private Process process = null;
 
     // Construct the FileManager
-    public FileManager(int peerId) {
-        this.peerId = peerId;
-        this.receivedPieces = new Bitfield();
+    public FileManager(PeerInfo peerInfo) {
+        this.peerInfo = peerInfo;
+        this.peerId = peerInfo.getId();
+        this.receivedPieces = peerInfo.getBitfield();
         this.requestedPieces = new Bitfield();
 
         // Create pieces directory if necessary
