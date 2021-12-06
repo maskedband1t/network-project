@@ -150,7 +150,7 @@ public class PeerManager implements Runnable {
     }
 
     // Sets _fileDone to true
-    synchronized void fileCompleted() {
+    public synchronized void fileCompleted() {
         _fileDone.set(true);
     }
 
@@ -227,7 +227,7 @@ public class PeerManager implements Runnable {
     }
 
     // Sets bit at pieceIdx of BitSet of remote peer with id peerId to 1
-    synchronized void receivedPiece(int peerId, int pieceIdx) {
+    synchronized void we(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){

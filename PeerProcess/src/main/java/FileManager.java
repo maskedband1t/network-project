@@ -4,7 +4,7 @@ import java.util.BitSet;
 public class FileManager {
     int peerId;
     PeerInfo peerInfo;
-    Bitfield receivedPieces;
+    //Bitfield peerInfo.getBitfield();
     Bitfield requestedPieces;
     private Process process = null;
 
@@ -12,7 +12,7 @@ public class FileManager {
     public FileManager(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.peerId = peerInfo.getId();
-        this.receivedPieces = peerInfo.getBitfield();
+        //this.peerInfo.getBitfield() = peerInfo.getBitfield();
         this.requestedPieces = new Bitfield();
 
         // Reset pieces directory if necessary
@@ -74,18 +74,13 @@ public class FileManager {
     // Adds the piece to the pieces directory
     public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
-        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+        final boolean isNewPiece = !peerInfo.getBitfield().getBits().get(pieceIndex);
         Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
+        peerInfo.getBitfield().getBits().set(pieceIndex);
 
         if (isNewPiece) {
             Logger.getInstance().dangerouslyWrite("(1.2) Adding " + pieceIndex);
             addPieceBytes(pieceIndex, piece);
-        }
-
-        // Check if we are done
-        if (haveAllPieces()) {
-            Logger.getInstance().dangerouslyWrite("(1.3) We have all pieces");
-            process.complete();
         }
 
         // Return success
@@ -95,7 +90,8 @@ public class FileManager {
     // Adds the piece to the pieces directory, with force ability
     public synchronized boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
         // True if we do not have this piece
-        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+        final boolean isNewPiece = !peerInfo.getBitfield().getBits().get(pieceIndex);
+        peerInfo.getBitfield().getBits().set(pieceIndex);
 
         if (force || isNewPiece) {
             addPieceBytes(pieceIndex, piece);
@@ -110,21 +106,32 @@ public class FileManager {
         return true;
     }
 
+    // Checks and handles completion
+    public void handleDone() {
+        // Check if we are done
+        if (haveAllPieces()) {
+            process.complete();
+        }
+    }
+
     // Checks if we have all pieces
     private boolean haveAllPieces() {
-        BitSet set = receivedPieces.getBits();
-        for (int i = 0; i < set.size(); i++) {
-            if (!set.get(i)) {
-                return false;
+        if (!peerInfo.is_file_complete()) {
+            BitSet set = peerInfo.getBitfield().getBits();
+            for (int i = 0; i < set.size()-1; i++) {
+                if (!set.get(i)) {
+                    Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + peerInfo.getBitfield().toString());
+                    return false;
+                }
             }
+            return true;
         }
-        Logger.getInstance().dangerouslyWrite("ALL PIECES HAD");
         return true;
     }
 
-    // Get a copy of receivedPieces, because we are using logical operations on the clone
+    // Get a copy of peerInfo.getBitfield(), because we are using logical operations on the clone
     public synchronized Bitfield getReceivedPieces() {
-        return (Bitfield)receivedPieces.clone();
+        return (Bitfield)peerInfo.getBitfield().clone();
     }
 
     // Get pieces that are available to request
@@ -143,7 +150,7 @@ public class FileManager {
     }
 
     public synchronized boolean hasPiece(int pieceIndex) {
-        return receivedPieces.getBits().get(pieceIndex);
+        return peerInfo.getBitfield().getBits().get(pieceIndex);
     }
 
     // Get the byte array of the piece at an index

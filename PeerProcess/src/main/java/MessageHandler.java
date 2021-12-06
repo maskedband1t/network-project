@@ -172,7 +172,7 @@ public class MessageHandler {
             byte[] piece = _fileManager.getPiece(pieceIdx);
 
             byte[] concat = new byte[4 + (piece == null ? 0 : piece.length)];
-            System.arraycopy( Helpers.intToBytes(pieceIdx,4), 0, concat, 0, 4);
+            System.arraycopy(Helpers.intToBytes(pieceIdx,4), 0, concat, 0, 4);
             System.arraycopy(piece, 0, concat, 4, piece.length);
 
 
@@ -217,18 +217,21 @@ public class MessageHandler {
 
             Logger.getInstance().dangerouslyWrite("UPDATED DOWNLOAD RATE");
 
-            // Mark that we received piece
-            _peerManager.receivedPiece(_remotePeerId, pieceIdx);
-            Logger.getInstance().dangerouslyWrite("(3) Marking Piece as Received");
+
+
+            // Handle if we're done
+            Logger.getInstance().dangerouslyWrite("(4) Checking and handling if we're done");
+            _fileManager.handleDone();
 
             // Log
+            Logger.getInstance().dangerouslyWrite("(5)");
             Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, _info.getBitfield().getBits().cardinality());
 
             // Return Request msg if applicable
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0) {
-                Logger.getInstance().dangerouslyWrite("(5) Decided to request piece: " + newPieceIdx);
+                Logger.getInstance().dangerouslyWrite("(6) Decided to request piece: " + newPieceIdx);
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
             }
             else

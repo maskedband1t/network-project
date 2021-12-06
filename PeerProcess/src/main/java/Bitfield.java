@@ -45,7 +45,10 @@ public class Bitfield {
 
     // Get bits as a string
     public String toString() {
-        return bits.toString();
+        String str = "";
+        for (int i = 0; i < bits.size(); i++)
+            str += bits.get(i) + ",";
+        return str;
     }
 
     // Get bits
@@ -138,7 +141,7 @@ public class Bitfield {
             return pieceIndex;
         }
         // default
-        System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!Sending ");
+        System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!");
         return -1;
     }
 

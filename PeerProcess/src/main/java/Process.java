@@ -14,7 +14,7 @@ public class Process implements Runnable {
     // our info && bitfield && manager objects for files and peers
     private PeerInfo peerInfo;
     private FileManager fileManager;
-    private PeerManager peerManager;
+    public PeerManager peerManager;
 
     // whether we should shutdown the program
     public static boolean shutdown;
@@ -126,7 +126,7 @@ public class Process implements Runnable {
 
     public void neighborsComplete() {
         _peers_file_complete.set(true);
-        if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+        if (peerInfo.getFileComplete()) {
             Logger.getInstance().completedDownload();
             shutdown = true;
             System.exit(0);
@@ -135,9 +135,8 @@ public class Process implements Runnable {
 
     // Handle when the file is complete
     public synchronized void complete() {
-        Logger.getInstance().completedDownload();
         peerInfo.set_file_complete(true);
-        if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+        if (_peers_file_complete.get()) {
             Logger.getInstance().completedDownload();
             shutdown = true;
             System.exit(0);
