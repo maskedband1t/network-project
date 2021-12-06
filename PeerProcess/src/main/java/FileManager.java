@@ -15,9 +15,26 @@ public class FileManager {
         this.receivedPieces = peerInfo.getBitfield();
         this.requestedPieces = new Bitfield();
 
-        // Create pieces directory if necessary
+        // Reset pieces directory if necessary
         File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
+        if (piecesDir.exists())
+            deleteFolder(piecesDir);
         piecesDir.mkdirs();
+    }
+
+    // Delete folder
+    public static void deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if(files!=null) { //some JVMs return null for empty dirs
+            for(File f: files) {
+                if(f.isDirectory()) {
+                    deleteFolder(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        folder.delete();
     }
 
     // Registers process
@@ -116,6 +133,10 @@ public class FileManager {
         int test = requestedPieces.getPieceIndexToRequest(piecesNotRequested);
         Logger.getInstance().dangerouslyWrite("REQUESTING " + test);
         return test;
+    }
+
+    public synchronized boolean hasPiece(int pieceIndex) {
+        return receivedPieces.getBits().get(pieceIndex);
     }
 
     // Get the byte array of the piece at an index

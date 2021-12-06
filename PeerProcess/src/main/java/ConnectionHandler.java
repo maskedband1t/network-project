@@ -54,7 +54,7 @@ public class ConnectionHandler implements Runnable{
     @Override
     public void run() {
         // Acts as the first layer of our ConnectionHandler, handling choke information
-        ConnectionHelper helper = new ConnectionHelper(_queue, _conn);
+        ConnectionHelper helper = new ConnectionHelper(_queue, _conn, _fileManager, _peerManager, _remotePeerId);
         helper.registerHandler(this);
         helper.start();
 
