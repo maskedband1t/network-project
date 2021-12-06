@@ -43,10 +43,11 @@ public class FileManager {
     }
 
     // Actually writes piece to a piece file
-    public synchronized void addPieceBytes(int pieceIndex, byte[] piece) {
+    public void addPieceBytes(int pieceIndex, byte[] piece) {
         // Create the file if necessary
         File file = new File(getPathForPieceIndex(pieceIndex));
         try {
+            Logger.getInstance().dangerouslyWrite("(1.2.1) Creating file for " + pieceIndex + " if necessary.");
             file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,6 +60,7 @@ public class FileManager {
             fos.write(piece);
             fos.flush();
             fos.close();
+            Logger.getInstance().dangerouslyWrite("(1.2.2) Wrote to file for " + pieceIndex + ".");
 
             // if successful, let process know we got this piece successfully
             process.receivedPiece(pieceIndex);
@@ -68,16 +70,19 @@ public class FileManager {
     }
 
     // Adds the piece to the pieces directory
-    public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
+    public boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+        Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
 
         if (isNewPiece) {
+            Logger.getInstance().dangerouslyWrite("(1.2) Adding " + pieceIndex);
             addPieceBytes(pieceIndex, piece);
         }
 
         // Check if we are done
         if (haveAllPieces()) {
+            Logger.getInstance().dangerouslyWrite("(1.3) We have all pieces");
             process.complete();
         }
 
