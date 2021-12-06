@@ -138,6 +138,7 @@ public class Bitfield {
             return pieceIndex;
         }
         // default
+        System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!Sending ");
         return -1;
     }
 

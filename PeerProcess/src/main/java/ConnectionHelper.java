@@ -27,9 +27,12 @@ public class ConnectionHelper extends Thread {
                 Message msg = _queue.take();
 
                 // Debugging print statement
-                System.out.println("Dequeued a send message with type " + Helpers.GetMessageType(msg.getType()) + ", the queue now has the following messages: ");
-                for(Object m : _queue.toArray()) {
-                    System.out.println("> " + ((Message)m).getType());
+                // For now, don't print for CHOKE and UNCHOKE msgs
+                if (msg.getType() != 1 && msg.getType() != 0) {
+                    System.out.println("Dequeued a send message with type " + Helpers.GetMessageType(msg.getType()) + ", the queue now has the following messages: ");
+                    for (Object m : _queue.toArray()) {
+                        System.out.println("> " + ((Message) m).getType());
+                    }
                 }
 
                 // Validate not null
