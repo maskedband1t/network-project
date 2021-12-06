@@ -178,7 +178,7 @@ public class MessageHandler {
 
             //System.out.println(piece);
 
-            Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx);
+            Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);
 
             // Send the piece
             if (concat != null)
