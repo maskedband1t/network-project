@@ -21,7 +21,7 @@ public class PeerManager implements Runnable {
         }
 
         // Set _chokedPeers
-        synchronized void setChokedPeers(Collection<PeerInfo> chokedPeers) { // shouldn't be able to access this while running
+        void setChokedPeers(Collection<PeerInfo> chokedPeers) { // shouldn't be able to access this while running
             _chokedPeers.clear();
             _chokedPeers.addAll(chokedPeers);
         }
@@ -92,7 +92,7 @@ public class PeerManager implements Runnable {
     }
 
     // Checks if we are interested in remote peer with @peerId
-     public void addPeerInterested(int peerId) {
+     public synchronized void addPeerInterested(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 peer.setIfInterested(true);
@@ -112,7 +112,7 @@ public class PeerManager implements Runnable {
     }
 
     // Increment download_rate of remote peer with peerId by size
-    synchronized void updateDownloadRate(int peerId, int size){
+    void updateDownloadRate(int peerId, int size){
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -155,7 +155,7 @@ public class PeerManager implements Runnable {
     }
 
     // Initializes the bitfield for remote peer with id peerId
-    public synchronized  void handleBitfield(int peerId, Bitfield bitfield) {
+    public synchronized void handleBitfield(int peerId, Bitfield bitfield) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -167,7 +167,7 @@ public class PeerManager implements Runnable {
     }
 
     // Updates the bitfield at index pieceIdx to 1 for remote peer with id peerId
-    public synchronized  void handleHave(int peerId, int pieceIdx) {
+    public synchronized void handleHave(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
@@ -204,12 +204,12 @@ public class PeerManager implements Runnable {
     }
 
     // Get _chokedPeerIDs
-    synchronized Set<Integer> get_choked_peer_ids(){
+    Set<Integer> get_choked_peer_ids(){
         return _chokedPeerIDs;
     }
 
     // Set _preferredPeerIDs
-    synchronized Set<Integer> get_preferred_peer_ids(){
+    Set<Integer> get_preferred_peer_ids(){
         return _preferredPeerIDs;
     }
 
@@ -243,13 +243,13 @@ public class PeerManager implements Runnable {
     }
 
     // choke peers
-    synchronized void choke_peers(Set<Integer> peers) throws IOException {
+    void choke_peers(Set<Integer> peers) throws IOException {
         if (this._process != null)
             this._process.choke_peers(peers);
     }
 
     // unchoke peers
-    synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
+    void unchoke_peers(Set<Integer> peers) throws IOException {
         if (this._process != null) {
             this._process.unchoke_peers(peers);
         }

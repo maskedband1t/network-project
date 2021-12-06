@@ -40,7 +40,7 @@ public class FileManager {
     }
 
     // Registers process
-    public synchronized void registerProcess(Process proc) {
+    public void registerProcess(Process proc) {
         this.process = proc;
     }
 
@@ -72,7 +72,7 @@ public class FileManager {
     }
 
     // Adds the piece to the pieces directory
-    public boolean addPiece(int pieceIndex, byte[] piece) {
+    public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
         Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
@@ -93,7 +93,7 @@ public class FileManager {
     }
 
     // Adds the piece to the pieces directory, with force ability
-    public boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
+    public synchronized boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
 
@@ -111,7 +111,7 @@ public class FileManager {
     }
 
     // Checks if we have all pieces
-    private synchronized boolean haveAllPieces() {
+    private boolean haveAllPieces() {
         BitSet set = receivedPieces.getBits();
         for (int i = 0; i < set.size(); i++) {
             if (!set.get(i)) {
@@ -128,7 +128,7 @@ public class FileManager {
     }
 
     // Get pieces that are available to request
-    public synchronized BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
+    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
         BitSet availablePieces = getReceivedPieces().getBits();
         availablePieces.andNot(piecesNotRequested);
         return availablePieces;
@@ -147,13 +147,13 @@ public class FileManager {
     }
 
     // Get the byte array of the piece at an index
-    public synchronized byte[] getPiece(int pieceIndex) {
+    public byte[] getPiece(int pieceIndex) {
         String path = getPathForPieceIndex(pieceIndex);
         return getFile(path);
     }
 
     // Split the file into pieces
-    public synchronized void splitFileIntoPieces() {
+    public void splitFileIntoPieces() {
         // Get the file
         String wholeFilePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
         byte[] wholeFile = getFile(wholeFilePath);
@@ -172,7 +172,7 @@ public class FileManager {
 
     // Helper function
     // Get the byte array of a file at a path
-    private synchronized byte[] getFile(String path){
+    private byte[] getFile(String path){
         // Get the file at the given path
         File file = new File(path);
 

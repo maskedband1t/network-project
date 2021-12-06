@@ -13,7 +13,7 @@ public class PeerProcess {
 
     // Parse and store the PeerInfoConfig
     // IMPORTANT: we expect the configurations to be in the relative path: ../../../resources/main/
-    public static void getPeerInfoConfig() {
+    public synchronized static void getPeerInfoConfig() {
         String st;
         Vector<PeerInfo> peerInfoVector = new Vector<PeerInfo>();
 
@@ -45,7 +45,7 @@ public class PeerProcess {
 
     // Parse and store the COmmonConfig
     // IMPORTANT: we expect the configurations to be in the relative path: ../../../resources/main/
-    public static void getCommonConfig() {
+    public synchronized static void getCommonConfig() {
         String st;
         int i = 1;
         Vector<String> values = new Vector<String>();
