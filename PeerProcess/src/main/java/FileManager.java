@@ -25,34 +25,56 @@ public class FileManager {
         this.process = proc;
     }
 
+    // Actually writes piece to a piece file
+    public synchronized void addPieceBytes(int pieceIndex, byte[] piece) {
+        // Create the file if necessary
+        File file = new File(getPathForPieceIndex(pieceIndex));
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Write the piece contents to the file
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(file);
+            fos.write(piece);
+            fos.flush();
+            fos.close();
+
+            // if successful, let process know we got this piece successfully
+            process.receivedPiece(pieceIndex);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // Adds the piece to the pieces directory
     public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
 
         if (isNewPiece) {
-            // Create the file if necessary
-            File file = new File(getPathForPieceIndex(pieceIndex));
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            addPieceBytes(pieceIndex, piece);
+        }
 
-            // Write the piece contents to the file
-            FileOutputStream fos;
-            try {
-                fos = new FileOutputStream(file);
-                fos.write(piece);
-                fos.flush();
-                fos.close();
+        // Check if we are done
+        if (haveAllPieces()) {
+            process.complete();
+        }
 
-                // if successful, let process know we got this piece successfully
-                process.receivedPiece(pieceIndex);
-            } catch(Exception e) {
-                e.printStackTrace();
-                return false;
-            }
+        // Return success
+        return true;
+    }
+
+    // Adds the piece to the pieces directory, with force ability
+    public synchronized boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
+        // True if we do not have this piece
+        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+
+        if (force || isNewPiece) {
+            addPieceBytes(pieceIndex, piece);
         }
 
         // Check if we are done
@@ -113,7 +135,7 @@ public class FileManager {
             int start = size * i;
             int end = Math.min(start + size, fileSize);
             byte[] pieceSubset = Helpers.getByteSubset(wholeFile, start, end);
-            addPiece(i, pieceSubset);
+            addPiece(i, pieceSubset, true);
         }
     }
 

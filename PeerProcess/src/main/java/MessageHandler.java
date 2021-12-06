@@ -14,7 +14,7 @@ public class MessageHandler {
 
     // Handle an incoming message
     public Message handle(Message msg) {
-        System.out.println("Handling message of type: " + msg.getType());
+        System.out.println("Handling message of type: " + Helpers.GetMessageType(msg.getType()));
 
         // Handle depending on message type
         switch (msg.getType()) {
@@ -138,8 +138,8 @@ public class MessageHandler {
         Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
 
         // TODO: Debug print - can remove later
-        System.out.println("Setting Bitfield for peer " + _remotePeerId + " to: ");
-        bf.debugPrint();
+        System.out.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
+        //bf.debugPrint();
 
         // Clears all bits that are set
         bf.getBits().andNot(_fileManager.getReceivedPieces().getBits());
@@ -216,6 +216,8 @@ public class MessageHandler {
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0)
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
+            else
+                Logger.getInstance().dangerouslyWrite("We could not find a new piece to request (after receiving a piece).");
         }
 
         return null;

@@ -6,7 +6,7 @@ import java.util.Arrays;
 public class Helpers {
     // Get an int as a byte array
     public static byte[] intToBytes(int i, int size) {
-        return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN).putInt(i).array();
+        return ByteBuffer.allocate(size).putInt(i).array();
     }
 
     // Get a byte array as an int
@@ -39,6 +39,30 @@ public class Helpers {
         byte destination[] = new byte[srcEnd - srcBegin];
         copyBytes(source, srcBegin, srcEnd, destination, 0);
         return destination;
+    }
+
+    // Translate Message Types to friendly name
+    public static String GetMessageType(byte b) {
+        switch(b) {
+            case 0:
+                return "CHOKE";
+            case 1:
+                return "UNCHOKE";
+            case 2:
+                return "INTERESTED";
+            case 3:
+                return "NOTINTERESTED";
+            case 4:
+                return "HAVE";
+            case 5:
+                return "BITFIELD";
+            case 6:
+                return "REQUEST";
+            case 7:
+                return "PIECE";
+            default:
+                return "";
+        }
     }
 
     // Message Types

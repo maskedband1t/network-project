@@ -82,8 +82,10 @@ public class PeerProcess {
         peer.initFileManager();
         
         // If we have the file, split it up into pieces
-        if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId()))
+        if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId())) {
+            System.out.println("SPLIT");
             peer.splitFile();
+        }
 
         // Build connections to its peers if it has any peers
         peer.buildPeers();

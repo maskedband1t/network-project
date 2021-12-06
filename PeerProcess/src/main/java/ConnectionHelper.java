@@ -27,7 +27,7 @@ public class ConnectionHelper extends Thread {
                 Message msg = _queue.take();
 
                 // Debugging print statement
-                System.out.println("Took a message with type" + msg.getType() + ", the queue now has the following messages: ");
+                System.out.println("Dequeued a send message with type " + Helpers.GetMessageType(msg.getType()) + ", the queue now has the following messages: ");
                 for(Object m : _queue.toArray()) {
                     System.out.println("> " + ((Message)m).getType());
                 }
@@ -43,20 +43,21 @@ public class ConnectionHelper extends Thread {
                     //System.out.println("We have a valid connection to " + _conn.GetInfo().getId());
                     if (msg.getType() == Helpers.CHOKE && !_remoteChoked){
                         System.out.println("Choking and Sending message over connection");
+                        Logger.getInstance().dangerouslyWrite("Choking and Sending message over connection");
                         _remoteChoked = true;
                         // Send the actual msg
                         _conn.send(msg);
                     }
                     else if (msg.getType() == Helpers.UNCHOKE && _remoteChoked) {
                         System.out.println("Unchoking and Sending message over connection");
+                        Logger.getInstance().dangerouslyWrite("Unchoking and Sending message over connection");
                         _remoteChoked = false;
                         // Send the actual msg
                         _conn.send(msg);
                     }
-                    else if ((msg.getType() == Helpers.CHOKE && _remoteChoked)
-                            || (msg.getType() == Helpers.UNCHOKE && !_remoteChoked)) {
+                    // Choke/Unchoke doesn't go through
+                    else if (msg.getType() == Helpers.CHOKE || msg.getType() == Helpers.UNCHOKE) {
                         System.out.println("NOT sending message over connection");
-                        continue;
                     }
                     else {
                         System.out.println("Sending message over connection");

@@ -326,10 +326,10 @@ public class PeerManager implements Runnable {
 
                 preferredPeerIDs.addAll(PeerInfo.toIdList(_preferredPeers));
 
-                System.out.print("Preferred peers: ");
+                /*System.out.print("Preferred peers: ");
                 for(int id:preferredPeerIDs)
                     System.out.print(id);
-                System.out.println();
+                System.out.println();*/
             }
 
             // could log here the state of every peer if helpful

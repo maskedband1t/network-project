@@ -82,8 +82,8 @@ public class ConnectionHandler implements Runnable{
             Bitfield field = _info.getBitfield();
             if (!field.empty()) {
                 // TODO: Debugging purposes, can remove
-                System.out.println("We do! Sending out bitfield too: ");
-                field.debugPrint();
+                System.out.println("We do! Sending out bitfield too");
+                //field.debugPrint();
 
                 // Send the bitfield message
                 Message msg = new Message(Helpers.BITFIELD, field.getBits().toByteArray());
@@ -103,11 +103,11 @@ public class ConnectionHandler implements Runnable{
                 try {
                     Message msgReceived = _conn.receive();
                     if (msgReceived != null) {
-                        System.out.println("Received a message of type " + msgReceived.getType());
+                        System.out.println("Received a message of type " + Helpers.GetMessageType(msgReceived.getType()));
                         Message msgToReturn = msgHandler.handle(msgReceived);
                         if (msgToReturn != null) {
                             _conn.send(msgToReturn);
-                            System.out.println("We are returning a message with type " + msgToReturn.getType());
+                            System.out.println("We are returning a message with type " + Helpers.GetMessageType(msgToReturn.getType()));
                         }
                     }
                 }

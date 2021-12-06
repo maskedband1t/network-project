@@ -85,15 +85,12 @@ public class Connection {
 	// Sends a message to remote peer
 	public  void send(Message m)
 	throws IOException {
-		if (m.getType() == 1)
-			System.out.println("SENDING UNCHOKE MSG TO: " + _info.getId());
-
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		_socket.write(lengthAsArr);
 		_socket.write(new byte[]{m.getType()});
 
 		// Send message payload
-		if (m.getLength() > 1) {
+		if (m.getLength()-1 > 0) {
 			try {
 				_socket.write(m.getPayload());
 			} catch (IOException e) {
@@ -101,29 +98,27 @@ public class Connection {
 			}
 		}
 		else {
-			System.out.println("No payload, not sending");
+			System.out.println("Sending " + Helpers.GetMessageType(m.getType()) + " message with no payload.");
 		}
-
-		if (m.getType() == 1)
-			System.out.println("SUCCESS UNCHOKE MSG TO: " + _info.getId());
 	}
 
 	// Receives a message from remote peer
-	synchronized public Message receive()
-	throws IOException {
+	public synchronized Message receive() throws IOException {
 		System.out.println("Attempting to receive...");
 		byte[] msg_length = new byte[4];
-		Byte type = -1;
+		byte type;
 
 		// Read message length
 		try{
+			System.out.println("Reading 4 bytes into msg_length");
 			_socket.read(msg_length, 4);
 			System.out.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		int ml = Helpers.bytesToInt(msg_length);
+		// ml is length of payload only (one was for type byte)
+		int ml = Helpers.bytesToInt(msg_length) - 1;
 
 		// Read message type
 		try {
@@ -140,9 +135,9 @@ public class Connection {
 		byte[] msg = new byte[ml];
 
 		// Read message payload
-		if (ml > 1) {
+		if (ml > 0) {
 			try {
-				_socket.read(msg,ml);
+				_socket.read(msg, ml);
 				System.out.println("Read msg: " + Helpers.bytesToInt(msg));
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -150,11 +145,12 @@ public class Connection {
 			}
 		}
 		else {
-			System.out.println("No payload, not reading");
+			//System.out.println("No payload, not reading");
 		}
 
 		// Returns the message
-		return new Message(type, msg);
+		Message returnMsg = ml > 0 ? new Message(type, msg) : new Message(type, new byte[]{});
+		return returnMsg;
 	}
 
 	// Closes the socket of this Connection

@@ -11,10 +11,11 @@ public class Message {
 
     // Construct a message with a type and payload
     public Message(byte type, byte[] data) {
-        this.length = (data == null ? 0 : data.length) + 1;
+        this.length = (data == null ? 0 : data.length) + 1; // 1 for type byte
         this.type = type;
         if (data != null)
             this.payload = data.clone();
+        //System.out.println("Created " + Helpers.GetMessageType(type) + " message with length: " + this.length + " and payload " + data);
     }
 
     // Get the length of the payload
