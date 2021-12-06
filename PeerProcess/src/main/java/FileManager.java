@@ -91,7 +91,7 @@ public class FileManager {
     }
 
     // Adds the piece to the pieces directory, with force ability
-    public synchronized boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
+    public boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
 
