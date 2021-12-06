@@ -94,6 +94,7 @@ public class FileManager {
                 return false;
             }
         }
+        Logger.getInstance().dangerouslyWrite("ALL PIECES HAD");
         return true;
     }
 
@@ -112,7 +113,9 @@ public class FileManager {
     // Get the index of the next piece to request
     public synchronized int getPieceToRequest(BitSet piecesNotRequested) {
         // Determine which piece to request
-        return requestedPieces.getPieceIndexToRequest(piecesNotRequested);
+        int test = requestedPieces.getPieceIndexToRequest(piecesNotRequested);
+        Logger.getInstance().dangerouslyWrite("REQUESTING " + test);
+        return test;
     }
 
     // Get the byte array of the piece at an index

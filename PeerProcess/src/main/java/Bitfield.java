@@ -109,26 +109,31 @@ public class Bitfield {
 
             // {1,0,1,1} -> "1,0,1,1"
             String str = piecesNotRequested.toString();
+
+            Logger.getInstance().dangerouslyWrite("PIECES NOT REQUESTED: " + str);
+
             // "1,0,1,1" -> ["1","0","1" "1"]
             String[] indexes = str.substring(1, str.length()-1).split(",");
             // Get random index, trim commas off, parse into int
             int pieceIndex = Integer.parseInt(indexes[(int)(Math.random()*(indexes.length-1))].trim());
 
+            Logger.getInstance().dangerouslyWrite("GOT PIECE TO REQUEST: " + pieceIndex);
+
             // since we're going to return this value, update that we will request this index
             bits.set(pieceIndex);
 
             // make the part requestable again in _timeoutInMillis
-            new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            synchronized (bits) {
-                                bits.clear(pieceIndex);
-                            }
-                        }
-                    },
-                    2
-            );
+//            new java.util.Timer().schedule(
+//                    new java.util.TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            synchronized (bits) {
+//                                bits.clear(pieceIndex);
+//                            }
+//                        }
+//                    },
+//                    2
+//            );
             // return the index of the piece to request
             return pieceIndex;
         }

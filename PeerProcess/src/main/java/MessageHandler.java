@@ -176,6 +176,8 @@ public class MessageHandler {
 
             //System.out.println(piece);
 
+            Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx);
+
             // Send the piece
             if (concat != null)
                 return new Message(Helpers.PIECE, concat);
@@ -199,14 +201,20 @@ public class MessageHandler {
             byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
             int pieceContentLength = pieceContent.length;
 
+            Logger.getInstance().dangerouslyWrite("STARTING TO ADD PIECE");
+
             // Add piece content to pieces directory
             _fileManager.addPiece(pieceIdx, pieceContent);
+
+            Logger.getInstance().dangerouslyWrite("ADDED PIECE");
 
             // Mark that we received piece
             _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
 
+            Logger.getInstance().dangerouslyWrite("UPDATED DOWNLOAD RATE");
+
             // Mark that we received piece
-            _peerManager.receivedPiece(_remotePeerId, pieceContentLength);
+            _peerManager.receivedPiece(_remotePeerId, pieceIdx);
 
             // Log
             Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
