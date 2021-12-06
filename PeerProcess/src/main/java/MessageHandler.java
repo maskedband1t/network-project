@@ -201,12 +201,15 @@ public class MessageHandler {
 
             // Add piece content to pieces directory
             _fileManager.addPiece(pieceIdx, pieceContent);
+            Logger.getInstance().dangerouslyWrite("(1) Added Piece");
 
             // Mark that we received piece
             _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
+            Logger.getInstance().dangerouslyWrite("(2) Updating Download Rate");
 
             // Mark that we received piece
             _peerManager.receivedPiece(_remotePeerId, pieceContentLength);
+            Logger.getInstance().dangerouslyWrite("(3) Marking Piece as Received");
 
             // Log
             Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
@@ -214,8 +217,10 @@ public class MessageHandler {
             // Return Request msg if applicable
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
-            if (newPieceIdx >= 0)
+            if (newPieceIdx >= 0) {
+                Logger.getInstance().dangerouslyWrite("(5) Decided to request piece: " + newPieceIdx);
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
+            }
             else
                 Logger.getInstance().dangerouslyWrite("We could not find a new piece to request (after receiving a piece).");
         }

@@ -1,22 +1,45 @@
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ConnectionHelper extends Thread {
     private boolean _remoteChoked = true;
     private BlockingQueue<Message> _queue = new LinkedBlockingQueue<>();
-    private Connection _conn;
+    private final FileManager _fileMgr;
+    private final PeerManager _peerMgr;
+    private final Connection _conn;
+    private final int _remotePeerId;
 
     private ConnectionHandler ch;
 
     // Construct the ConnectionHelper
-    public ConnectionHelper(BlockingQueue<Message> q, Connection c) {
+    public ConnectionHelper(BlockingQueue<Message> q, Connection c, FileManager fileMgr, PeerManager peerMgr, int remoteId) {
         _queue = q;
         _conn = c;
+        _fileMgr = fileMgr;
+        _peerMgr = peerMgr;
+        _remotePeerId = remoteId;
         System.out.println("ConnectionHelper has access to connection for" + _conn.GetInfo().getId());
     }
 
+    // Register the ConnectionHandler (parent)
     public void registerHandler(ConnectionHandler hand) {
         ch = hand;
+    }
+
+    // Ensures that all requests go through to remote peers
+    private synchronized void sendCheckRequest(Message msg) throws IOException {
+        if (msg != null) {
+            _conn.send(msg);
+            switch (msg.getType()) {
+                case Helpers.REQUEST: {
+                    new java.util.Timer().schedule(
+                            new RequestHandler(msg, _fileMgr, _peerMgr, _conn, _remotePeerId),
+                            CommonConfig.getInstance().optimisticUnchokingInterval * 2
+                    );
+                }
+            }
+        }
     }
 
     @Override
@@ -46,14 +69,14 @@ public class ConnectionHelper extends Thread {
                         Logger.getInstance().dangerouslyWrite("Choking and Sending message over connection");
                         _remoteChoked = true;
                         // Send the actual msg
-                        _conn.send(msg);
+                        sendCheckRequest(msg);
                     }
                     else if (msg.getType() == Helpers.UNCHOKE && _remoteChoked) {
                         System.out.println("Unchoking and Sending message over connection");
                         Logger.getInstance().dangerouslyWrite("Unchoking and Sending message over connection");
                         _remoteChoked = false;
                         // Send the actual msg
-                        _conn.send(msg);
+                        sendCheckRequest(msg);
                     }
                     // Choke/Unchoke doesn't go through
                     else if (msg.getType() == Helpers.CHOKE || msg.getType() == Helpers.UNCHOKE) {
@@ -61,7 +84,7 @@ public class ConnectionHelper extends Thread {
                     }
                     else {
                         System.out.println("Sending message over connection");
-                        _conn.send(msg);
+                        sendCheckRequest(msg);
                     }
                 }
                 else
