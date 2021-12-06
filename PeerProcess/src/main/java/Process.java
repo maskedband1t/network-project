@@ -127,6 +127,7 @@ public class Process implements Runnable {
     public void neighborsComplete() {
         _peers_file_complete.set(true);
         if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+            Logger.getInstance().completedDownload();
             shutdown = true;
             System.exit(0);
         }
@@ -137,6 +138,7 @@ public class Process implements Runnable {
         Logger.getInstance().completedDownload();
         peerInfo.set_file_complete(true);
         if (peerInfo.getFileComplete() && _peers_file_complete.get()) {
+            Logger.getInstance().completedDownload();
             shutdown = true;
             System.exit(0);
         }

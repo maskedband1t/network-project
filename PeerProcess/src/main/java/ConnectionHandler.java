@@ -96,7 +96,7 @@ public class ConnectionHandler implements Runnable{
             Logger.getInstance().connectedWith(_remotePeerId, _connectingPeer);
 
             // Start handling messages for this connection to the remote peer
-            MessageHandler msgHandler = new MessageHandler(_remotePeerId, _fileManager, _peerManager);
+            MessageHandler msgHandler = new MessageHandler(_remotePeerId, _info, _fileManager, _peerManager);
 
             // Handle the connection, this is the server portion of our peer
             while (!Process.shutdown) {

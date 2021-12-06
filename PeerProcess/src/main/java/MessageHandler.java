@@ -1,12 +1,14 @@
 public class MessageHandler {
     private boolean _choked;
+    private PeerInfo _info;
     private int _remotePeerId;
     private FileManager _fileManager;
     private PeerManager _peerManager;
 
     // Construct the Message Handler with the remote peer we are handling messages for
-    MessageHandler(int remotePeerId, FileManager fileManager, PeerManager peerManager) {
+    MessageHandler(int remotePeerId, PeerInfo info, FileManager fileManager, PeerManager peerManager) {
         _choked = true;
+        _info = info;
         _remotePeerId = remotePeerId;
         _fileManager = fileManager;
         _peerManager = peerManager;
@@ -220,7 +222,7 @@ public class MessageHandler {
             Logger.getInstance().dangerouslyWrite("(3) Marking Piece as Received");
 
             // Log
-            Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, pieceContentLength);
+            Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, _info.getBitfield().getBits().cardinality());
 
             // Return Request msg if applicable
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));

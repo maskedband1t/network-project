@@ -18,23 +18,25 @@ public class FileManager {
         // Reset pieces directory if necessary
         File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
         if (piecesDir.exists())
-            deleteFolder(piecesDir);
+            Logger.getInstance().dangerouslyWrite("Deleted " + deleteFolder(piecesDir, 0) + " pieces");
         piecesDir.mkdirs();
     }
 
     // Delete folder
-    public static void deleteFolder(File folder) {
+    public static int deleteFolder(File folder, int numDeleted) {
         File[] files = folder.listFiles();
-        if(files!=null) { //some JVMs return null for empty dirs
+        if(files != null) { //some JVMs return null for empty dirs
             for(File f: files) {
                 if(f.isDirectory()) {
-                    deleteFolder(f);
+                    numDeleted = deleteFolder(f, numDeleted+1);
                 } else {
                     f.delete();
+                    numDeleted += 1;
                 }
             }
         }
         folder.delete();
+        return numDeleted;
     }
 
     // Registers process
