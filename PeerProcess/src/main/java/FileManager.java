@@ -22,7 +22,7 @@ public class FileManager {
             File f = new File(Helpers.pathToResourcesFolder + peerId + CommonConfig.getInstance().fileName);
             if (f.exists()) {
                 f.delete();
-                Logger.getInstance().dangerouslyWrite("Deleted " + CommonConfig.getInstance().fileName);
+                //Logger.getInstance().dangerouslyWrite("Deleted " + CommonConfig.getInstance().fileName);
             }
         }
 
@@ -60,7 +60,7 @@ public class FileManager {
         // Create the file if necessary
         File file = new File(getPathForPieceIndex(pieceIndex));
         try {
-            Logger.getInstance().dangerouslyWrite("(1.2.1) Creating file for " + pieceIndex + " if necessary.");
+            //Logger.getInstance().dangerouslyWrite("(1.2.1) Creating file for " + pieceIndex + " if necessary.");
             file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -73,7 +73,7 @@ public class FileManager {
             fos.write(piece);
             fos.flush();
             fos.close();
-            Logger.getInstance().dangerouslyWrite("(1.2.2) Wrote to file for " + pieceIndex + ".");
+            //Logger.getInstance().dangerouslyWrite("(1.2.2) Wrote to file for " + pieceIndex + ".");
 
             // if successful, let process know we got this piece successfully
             process.receivedPiece(pieceIndex);
@@ -86,12 +86,22 @@ public class FileManager {
     public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
-        Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
+        //Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
 
         if (isNewPiece) {
             receivedPieces.getBits().set(pieceIndex);
-            Logger.getInstance().dangerouslyWrite("(1.2) Adding " + pieceIndex);
+            //Logger.getInstance().dangerouslyWrite("(1.2) Adding " + pieceIndex);
             addPieceBytes(pieceIndex, piece);
+        }
+
+        // Check if we are done
+        if (haveAllPieces()) {
+            try{
+                process.complete();
+            }
+            catch (IOException e){
+                Helpers.println("process.complete had some issues");
+            }
         }
 
         // Return success
@@ -106,16 +116,6 @@ public class FileManager {
         if (force || isNewPiece) {
             receivedPieces.getBits().set(pieceIndex);
             addPieceBytes(pieceIndex, piece);
-        }
-
-        // Check if we are done
-        if (haveAllPieces()) {
-            try{
-                process.complete();
-            }
-            catch (IOException e){
-                Helpers.println("process.complete had some issues");
-            }
         }
 
         // Return success
@@ -138,20 +138,13 @@ public class FileManager {
 
     // Checks if we have all pieces
     private boolean haveAllPieces() {
-        if (!peerInfo.is_file_complete()) {
+        if (!peerInfo.getFileComplete()) {
             BitSet set = receivedPieces.getBits();
-            if (set.length() < CommonConfig.getInstance().numPieces) {
+            if (set.cardinality() != CommonConfig.getInstance().numPieces) {
                 return false;
             }
             else
                 return true;
-            /*for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
-                if (!set.get(i)) {
-                    Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + receivedPieces.toString());
-                    return false;
-                }
-            }
-            return true;*/
         }
         return true;
     }
@@ -175,7 +168,7 @@ public class FileManager {
             //     of the pieces we do not have, and have not requested
 
             String str = remotePiecesBitset.toString();
-            Logger.getInstance().dangerouslyWrite("Request indices to choose from: " + str);
+            //Logger.getInstance().dangerouslyWrite("Request indices to choose from: " + str);
             Helpers.println("Request indices to choose from: " + str);
             Helpers.println("Their pieces: " + remotePieces.getBits().toString());
             Helpers.println("Our pieces: " + receivedPieces.getBits().toString());
@@ -186,7 +179,7 @@ public class FileManager {
             // Get random index, trim commas off, parse into int
             int pieceIndex = Integer.parseInt(indexes[(int)(Math.random()*(indexes.length-1))].trim());
 
-            Logger.getInstance().dangerouslyWrite("GOT PIECE TO REQUEST: " + pieceIndex);
+            //Logger.getInstance().dangerouslyWrite("GOT PIECE TO REQUEST: " + pieceIndex);
 
             // since we're going to return this value, update that we will request this index
             BitSet requestedPiecesBitset = requestedPieces.getBits();
@@ -200,7 +193,7 @@ public class FileManager {
                             synchronized (requestedPiecesBitset) {
                                 if (!receivedPieces.getBits().get(pieceIndex)) {
                                     requestedPiecesBitset.clear(pieceIndex);
-                                    Logger.getInstance().dangerouslyWrite("Reset request status for piece " + pieceIndex);
+                                    //Logger.getInstance().dangerouslyWrite("Reset request status for piece " + pieceIndex);
                                 }
                             }
                         }
@@ -209,7 +202,7 @@ public class FileManager {
             );
             // return the index of the piece to request
             Helpers.println("We choose index: " + pieceIndex);
-            Logger.getInstance().dangerouslyWrite("REQUESTING " + pieceIndex);
+            //Logger.getInstance().dangerouslyWrite("REQUESTING " + pieceIndex);
             return pieceIndex;
         }
         // default

@@ -111,10 +111,7 @@ public class MessageHandler {
         // HAS packet payload: 4 byte piece index field
 
         // Get piece index field
-        Logger.getInstance().dangerouslyWrite("(handleHaveMsg)");
         int pieceIdx = Helpers.bytesToInt(msg.getPayload()); //Helpers.getPieceIndexFromByteArray(msg.getPayload());
-        Logger.getInstance().dangerouslyWrite("(handleHaveMsg) Helpers.bytesToInt(msg.payload()): " + pieceIdx);
-
         // Log
         Logger.getInstance().receivedHaveFrom(_remotePeerId, pieceIdx);
 
@@ -144,7 +141,7 @@ public class MessageHandler {
         Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
 
         // TODO: Debug print - can remove later
-        Helpers.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
+        //Helpers.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
         //bf.debugPrint();
 
         // Clears all bits that are set
@@ -188,12 +185,12 @@ public class MessageHandler {
 
             // Send the piece
             if (concat != null) {
-                Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);
+                //Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);
                 return new Message(Helpers.PIECE, concat);
             }
         }
         else {
-            Logger.getInstance().dangerouslyWrite(_remotePeerId + " requested piece " + pieceIdx + ", but we cannot upload to them.");
+            //Logger.getInstance().dangerouslyWrite(_remotePeerId + " requested piece " + pieceIdx + ", but we cannot upload to them.");
         }
         return null;
     }
@@ -213,33 +210,33 @@ public class MessageHandler {
             byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());
             int pieceContentLength = pieceContent.length;
 
-            Logger.getInstance().dangerouslyWrite("STARTING TO ADD PIECE");
+            //Logger.getInstance().dangerouslyWrite("STARTING TO ADD PIECE");
 
             // Add piece content to pieces directory && send have message
             _fileManager.addPiece(pieceIdx, pieceContent);
-            Logger.getInstance().dangerouslyWrite("(1) Added Piece");
+            //Logger.getInstance().dangerouslyWrite("(1) Added Piece");
 
-            Logger.getInstance().dangerouslyWrite("ADDED PIECE");
+            //Logger.getInstance().dangerouslyWrite("ADDED PIECE");
 
             // Update the download rate from this remote peer
             _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
-            Logger.getInstance().dangerouslyWrite("(2) Updating Download Rate");
+            //Logger.getInstance().dangerouslyWrite("(2) Updating Download Rate");
 
-            Logger.getInstance().dangerouslyWrite("UPDATED DOWNLOAD RATE");
+            //Logger.getInstance().dangerouslyWrite("UPDATED DOWNLOAD RATE");
 
             // Log
-            Logger.getInstance().dangerouslyWrite("(3)");
+            //Logger.getInstance().dangerouslyWrite("(3)");
             Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, _info.getBitfield().getBits().cardinality());
 
             // Handle if we're done
-            Logger.getInstance().dangerouslyWrite("(4) Checking and handling if we're done");
+            //Logger.getInstance().dangerouslyWrite("(4) Checking and handling if we're done");
             _fileManager.handleDone();
 
             // Return Request msg if applicable
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
             if (newPieceIdx >= 0) {
-                Logger.getInstance().dangerouslyWrite("(6) Decided to request piece: " + newPieceIdx);
+                //Logger.getInstance().dangerouslyWrite("(6) Decided to request piece: " + newPieceIdx);
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
             }
             else

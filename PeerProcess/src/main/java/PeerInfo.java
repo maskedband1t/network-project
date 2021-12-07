@@ -33,9 +33,6 @@ public class PeerInfo {
         this._bitfield = new Bitfield(file_complete);
     }
 
-    // Get _file_complete
-    public boolean is_file_complete() { return this._file_complete.get(); }
-
     // Get _downloadRate
     public int get_download_rate() { return this._downloadRate.get(); }
 
@@ -79,7 +76,7 @@ public class PeerInfo {
     public void set_download_rate(int rate) { this._downloadRate.set(rate); }
 
     // Set _bitfield
-    public void setBitfield(Bitfield b){ _bitfield = b; }
+    public void setBitfield(Bitfield b){ _bitfield = b.clone(); }
 
     // Set _interested
     public void setIfInterested(boolean isInterested) {

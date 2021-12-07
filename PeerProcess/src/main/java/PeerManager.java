@@ -158,10 +158,10 @@ public class PeerManager implements Runnable {
     public synchronized void handleBitfield(int peerId, Bitfield bitfield) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
-                if(peer != null){
-                    peer.setBitfield(bitfield);
-                    Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
-                }
+                peer.setBitfield(bitfield);
+                if (bitfield.getBits().cardinality() == CommonConfig.getInstance().numPieces)
+                    peer.set_file_complete(true);
+                Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
                 download_finished();
             }
         } 
@@ -171,21 +171,22 @@ public class PeerManager implements Runnable {
     public synchronized void handleHave(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
-                if(peer != null){
+                if (!peer.getFileComplete())
                     peer.getBitfield().getBits().set(pieceIdx);
-                }
                 download_finished();
             }
         } 
     }
 
     // Handles logic for finishing the file if necessary
-    synchronized void download_finished(){
+    private synchronized void download_finished(){
         for (PeerInfo peer : _peers) {
             if (peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
-                // log that a neighbor hasnt finished
+                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
                 return;
             }
+            else
+                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
         }
         _process.neighborsComplete();
     }

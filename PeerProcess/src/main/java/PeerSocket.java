@@ -40,6 +40,12 @@ public class PeerSocket implements SocketInterface{
 		os.flush();
 	}
 
+	// Write byte to socket
+	public void write(byte b)
+			throws IOException{
+		os.write(b);
+	}
+
 	// Read next byte from socket
 	public int read() {
 		try {

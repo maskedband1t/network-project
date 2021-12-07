@@ -117,9 +117,9 @@ public class Process implements Runnable {
     }
 
     // Handle when a piece arrives
-    public void receivedPiece(int pieceIndex) throws IOException {
+    public synchronized void receivedPiece(int pieceIndex) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {
-            Logger.getInstance().dangerouslyWrite("(1.2.3) Letting " + ch.getRemotePeerId() + " know that we have piece " + pieceIndex);
+            //Logger.getInstance().dangerouslyWrite("(1.2.3) Letting " + ch.getRemotePeerId() + " know that we have piece " + pieceIndex);
             ch.send(new Message(Helpers.HAVE, Helpers.intToBytes(pieceIndex, 4)));
             if (!peerManager.isPeerInteresting(ch.getRemotePeerId(), fileManager.getReceivedPieces())) {
                 ch.send(new Message(Helpers.NOTINTERESTED, new byte[]{}));
@@ -128,10 +128,11 @@ public class Process implements Runnable {
     }
 
     // Handle when everyone else completes the file
-    public void neighborsComplete() {
+    public synchronized void neighborsComplete() {
         _peers_file_complete.set(true);
-        if (_peers_file_complete.get() && peerInfo.getFileComplete()) { // we are done && everyone else is done
-            Logger.getInstance().dangerouslyWrite("(HandleHave or HandleBitfield) Everyone else is done AND we are done.");
+        // we are done && everyone else is done
+        if (peerInfo.getFileComplete() || peerInfo.getBitfield().getBits().cardinality() == CommonConfig.getInstance().numPieces) {
+            //Logger.getInstance().dangerouslyWrite("(HandleHave or HandleBitfield) Everyone else is done AND we are done.");
             Logger.getInstance().completedDownload();
             fileManager.mergePiecesIntoFile();
             shutdown = true;
@@ -143,19 +144,27 @@ public class Process implements Runnable {
     public synchronized void complete() throws IOException {
         peerInfo.set_file_complete(true);
 
-        for(ConnectionHandler ch : _connHandlers){
-            Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
-            ch.send(new Message(Helpers.BITFIELD, peerInfo.getBitfield().getBits().toByteArray()));
+        // Send our completed bitfield to everyone else
+        Bitfield field = peerInfo.getBitfield();
+        if (!field.empty()) {
+            byte[] arr = field.getBits().toByteArray();
+            for (ConnectionHandler ch : _connHandlers) {
+                Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
+                ch.sendDirectly(new Message(Helpers.BITFIELD, arr));
+            }
         }
+        else
+            Logger.getInstance().dangerouslyWrite("Our bitfield is empty! Will not send it over.");
 
-        if (peerInfo.getFileComplete() && _peers_file_complete.get()) { // we are done && everyone else is done
+        // Handle shutdown
+        if (_peers_file_complete.get()) { // we are done && everyone else is done
             Logger.getInstance().dangerouslyWrite("(4.1.1) We are done AND everyone else is done.");
             Logger.getInstance().completedDownload();
             fileManager.mergePiecesIntoFile();
             shutdown = true;
             System.exit(0);
         }
-        else {
+        else { // Debug print why we didn't shut down
             Logger.getInstance().dangerouslyWrite("(4.1.1) Not everyone is done. Here are the pieces missing: ");
             // print for us
             BitSet pBits = (BitSet)peerInfo.getBitfield().getBits().clone();

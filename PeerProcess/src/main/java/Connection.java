@@ -84,11 +84,14 @@ public class Connection {
 	}
 
 	// Sends a message to remote peer
-	public void send(Message m)
+	public synchronized void send(Message m)
 	throws IOException {
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
+		System.out.println("Connection.send message length: " + m.getLength() + " for type: " + Helpers.GetMessageType(m.getType()));
+		if (_socket == null)
+			Logger.getInstance().dangerouslyWrite("SOCKET IS NULL D:");
 		_socket.write(lengthAsArr);
-		_socket.write(new byte[]{m.getType()});
+		_socket.write(m.getType());
 
 		// Send message payload
 		if (m.getLength()-1 > 0) {

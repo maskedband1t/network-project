@@ -46,16 +46,14 @@ public class ConnectionHandler implements Runnable{
     // Get peer id
     public int getPeerId() { return _info.getId(); }
 
-    // Send message
+    // Queue message
     public void send(Message msg) throws IOException {
-        //_conn.send(msg);
         _queue.add(msg);
     }
 
-    // Sends multiple messages
-    public void queueMessages(List<Message> msgs) {
-        for (Message m : msgs)
-            _queue.add(m);
+    // Send message
+    public synchronized void sendDirectly(Message msg) throws IOException {
+        _conn.send(msg);
     }
 
     @Override

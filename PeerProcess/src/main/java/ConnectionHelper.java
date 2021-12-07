@@ -35,7 +35,7 @@ public class ConnectionHelper extends Thread {
                 case Helpers.REQUEST: {
                     new java.util.Timer().schedule(
                             new RequestHandler(msg, _fileMgr, _peerMgr, _conn, _remotePeerId),
-                            CommonConfig.getInstance().optimisticUnchokingInterval * 2
+                            CommonConfig.getInstance().optimisticUnchokingInterval * 2000
                     );
                 }
             }
@@ -69,14 +69,14 @@ public class ConnectionHelper extends Thread {
                     //Helpers.println("We have a valid connection to " + _conn.GetInfo().getId());
                     if (msg.getType() == Helpers.CHOKE && !_remoteChoked){
                         Helpers.println("Choking and Sending message over connection");
-                        Logger.getInstance().dangerouslyWrite("Choking and Sending message over connection");
+                        //Logger.getInstance().dangerouslyWrite("Choking and Sending message over connection");
                         _remoteChoked = true;
                         // Send the actual msg
                         sendCheckRequest(msg);
                     }
                     else if (msg.getType() == Helpers.UNCHOKE && _remoteChoked) {
                         Helpers.println("Unchoking and Sending message over connection");
-                        Logger.getInstance().dangerouslyWrite("Unchoking and Sending message over connection");
+                        //Logger.getInstance().dangerouslyWrite("Unchoking and Sending message over connection");
                         _remoteChoked = false;
                         // Send the actual msg
                         sendCheckRequest(msg);
@@ -93,6 +93,7 @@ public class ConnectionHelper extends Thread {
                 else {
                     _queue.add(msg);
                     Helpers.println("Cannot send messages yet - we have not handshaked");
+                    //Logger.getInstance().dangerouslyWrite("ConnectionHelper remote id is -1, will readd msg to queue");
                 }
             }
             catch (Exception e) {

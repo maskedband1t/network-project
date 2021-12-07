@@ -7,6 +7,9 @@ public interface SocketInterface {
 	// Write bytes from byte array over to socket output stream
 	public void write(byte[] b) throws IOException;
 
+	// Writes single byte to socket output stream
+	public void write(byte b) throws IOException;
+
 	// Reads next byte from socket input stream
 	public int read() throws IOException;
 
