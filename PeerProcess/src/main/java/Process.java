@@ -117,7 +117,7 @@ public class Process implements Runnable {
     }
 
     // Handle when a piece arrives
-    public synchronized void receivedPiece(int pieceIndex) throws IOException {
+    public void receivedPiece(int pieceIndex) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {
             Logger.getInstance().dangerouslyWrite("(1.2.3) Letting " + ch.getRemotePeerId() + " know that we have piece " + pieceIndex);
             ch.send(new Message(Helpers.HAVE, Helpers.intToBytes(pieceIndex, 4)));
@@ -143,10 +143,9 @@ public class Process implements Runnable {
     public synchronized void complete() throws IOException {
         peerInfo.set_file_complete(true);
 
-        Bitfield our_bitfield = peerInfo.getBitfield();
-        Message bf_msg = new Message(Helpers.BITFIELD, our_bitfield.getBits().toByteArray());
         for(ConnectionHandler ch : _connHandlers){
-            ch.send(bf_msg);
+            Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
+            ch.send(new Message(Helpers.BITFIELD, peerInfo.getBitfield().getBits().toByteArray()));
         }
 
         if (peerInfo.getFileComplete() && _peers_file_complete.get()) { // we are done && everyone else is done

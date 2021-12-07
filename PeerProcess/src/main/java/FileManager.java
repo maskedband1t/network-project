@@ -1,5 +1,3 @@
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -116,7 +114,7 @@ public class FileManager {
                 process.complete();
             }
             catch (IOException e){
-                System.out.println("process.complete had some issues");
+                Helpers.println("process.complete had some issues");
             }
         }
 
@@ -133,7 +131,7 @@ public class FileManager {
                 process.complete();
             }
             catch(IOException e){
-                System.out.println("problem with process.complete via handleDone");
+                Helpers.println("problem with process.complete via handleDone");
             }
         }
     }
