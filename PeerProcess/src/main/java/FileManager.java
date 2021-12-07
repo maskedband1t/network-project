@@ -17,6 +17,16 @@ public class FileManager {
         this.receivedPieces = peerInfo.getBitfield();
         this.requestedPieces = new Bitfield();
 
+        // Delete file if necessary
+        if (!peerInfo.getFileComplete()) {
+            File f = new File(Helpers.pathToResourcesFolder + peerId + CommonConfig.getInstance().fileName);
+            if (f.exists()) {
+                f.delete();
+                Logger.getInstance().dangerouslyWrite("Deleted " + CommonConfig.getInstance().fileName);
+            }
+        }
+
+
         // Reset pieces directory if necessary
         File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
         if (piecesDir.exists())
@@ -112,6 +122,7 @@ public class FileManager {
     public void handleDone() {
         // Check if we are done
         if (haveAllPieces()) {
+            Logger.getInstance().dangerouslyWrite("(4.1) We are done!");
             process.complete();
         }
     }
@@ -120,7 +131,7 @@ public class FileManager {
     private boolean haveAllPieces() {
         if (!peerInfo.is_file_complete()) {
             BitSet set = receivedPieces.getBits();
-            for (int i = 0; i < set.length(); i++) {
+            for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
                 if (!set.get(i)) {
                     Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + receivedPieces.toString());
                     return false;
@@ -173,8 +184,10 @@ public class FileManager {
                         @Override
                         public void run() {
                             synchronized (requestedPiecesBitset) {
-                                requestedPiecesBitset.clear(pieceIndex);
-                                Logger.getInstance().dangerouslyWrite("Reset request status for piece " + pieceIndex);
+                                if (!receivedPieces.getBits().get(pieceIndex)) {
+                                    requestedPiecesBitset.clear(pieceIndex);
+                                    Logger.getInstance().dangerouslyWrite("Reset request status for piece " + pieceIndex);
+                                }
                             }
                         }
                     },

@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class Connection {
@@ -111,7 +112,16 @@ public class Connection {
 		// Read message length
 		try{
 			System.out.println("Reading 4 bytes into msg_length");
-			_socket.read(msg_length, 4);
+			for (int i = 0; i < 4; i++) {
+				try {
+					msg_length[i] = (byte)_socket.read();
+				}
+				catch (SocketException e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+			//_socket.read(msg_length, 4);
 			System.out.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -124,8 +134,10 @@ public class Connection {
 		try {
 			type = (byte)_socket.read();
 			System.out.println("Read type: " + type);
-			if(type == -1)
-				throw new IOException("End of stream reached.");
+			if(type == -1) {
+				return null;
+				//throw new IOException("End of stream reached.");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;

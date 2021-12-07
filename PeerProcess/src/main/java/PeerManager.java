@@ -57,7 +57,7 @@ public class PeerManager implements Runnable {
 
     private int _peerId;
     public Collection<PeerInfo> _preferredPeers = new HashSet<>();
-    private List<PeerInfo> _peers = new ArrayList<>();
+    public List<PeerInfo> _peers = new ArrayList<>();
     private final OptimisticUnchoker _optimisticUnchoker;
     private int _unchokingInterval;
     private int _num_Preferred_Neighbors;

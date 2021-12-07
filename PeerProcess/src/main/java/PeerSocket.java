@@ -41,9 +41,14 @@ public class PeerSocket implements SocketInterface{
 	}
 
 	// Read next byte from socket
-	public int read()
-	throws IOException {
-		return is.read();
+	public int read() {
+		try {
+			return is.read();
+		}
+		catch (Exception e) {
+			//e.printStackTrace();
+			return -1;
+		}
 	}
 
 	// Read determined amount from socket
@@ -53,7 +58,7 @@ public class PeerSocket implements SocketInterface{
 			return is.read(b, 0, len);
 		}
 		catch (Exception e) {
-			System.exit(-1);
+			//System.exit(-1);
 			return -1;
 		}
 	}
@@ -64,7 +69,7 @@ public class PeerSocket implements SocketInterface{
 		return is.read(b);
 		}
 		catch (Exception e) {
-			System.exit(-1);
+			//System.exit(-1);
 			return -1;
 		}
 	}

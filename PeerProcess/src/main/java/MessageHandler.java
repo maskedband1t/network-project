@@ -111,7 +111,7 @@ public class MessageHandler {
         // HAS packet payload: 4 byte piece index field
 
         // Get piece index field
-        int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
+        int pieceIdx = Helpers.bytesToInt(msg.getPayload()); //Helpers.getPieceIndexFromByteArray(msg.getPayload());
 
         // Log
         Logger.getInstance().receivedHaveFrom(_remotePeerId, pieceIdx);
@@ -211,13 +211,13 @@ public class MessageHandler {
 
             Logger.getInstance().dangerouslyWrite("STARTING TO ADD PIECE");
 
-            // Add piece content to pieces directory
+            // Add piece content to pieces directory && send have message
             _fileManager.addPiece(pieceIdx, pieceContent);
             Logger.getInstance().dangerouslyWrite("(1) Added Piece");
 
             Logger.getInstance().dangerouslyWrite("ADDED PIECE");
 
-            // Mark that we received piece
+            // Update the download rate from this remote peer
             _peerManager.updateDownloadRate(_remotePeerId, pieceContentLength);
             Logger.getInstance().dangerouslyWrite("(2) Updating Download Rate");
 

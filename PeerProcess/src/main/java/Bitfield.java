@@ -46,8 +46,8 @@ public class Bitfield {
     // Get bits as a string
     public String asString() {
         String str = "";
-        for (int i = 0; i < bits.length()-1; i++) {
-            str += i == bits.length() - 2 ? Helpers.boolToBit(bits.get(i)) : Helpers.boolToBit(bits.get(i)) + ",";
+        for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
+            str += i == CommonConfig.getInstance().numPieces - 2 ? Helpers.boolToBit(bits.get(i)) : Helpers.boolToBit(bits.get(i)) + ",";
         }
         return str;
     }
@@ -55,11 +55,6 @@ public class Bitfield {
     // Get bits
     public BitSet getBits() {
         return bits;
-    }
-
-    // Get number of bits
-    public int getSize() {
-        return bits.length();
     }
 
     // TODO: Can probably remove
@@ -105,7 +100,7 @@ public class Bitfield {
     public void debugPrint() {
         int[] arr = bits.stream().toArray();
         System.out.print("{");
-        for (int i = 0; i < bits.length(); i++)
+        for (int i = 0; i < CommonConfig.getInstance().numPieces; i++)
             System.out.print(bits.get(i) + ",");
         System.out.print("}");
         System.out.println();

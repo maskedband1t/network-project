@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -124,9 +125,11 @@ public class Process implements Runnable {
         }
     }
 
+    // Handle when everyone else completes the file
     public void neighborsComplete() {
         _peers_file_complete.set(true);
-        if (peerInfo.getFileComplete()) {
+        if (_peers_file_complete.get() && peerInfo.getFileComplete()) { // we are done && everyone else is done
+            Logger.getInstance().dangerouslyWrite("(HandleHave or HandleBitfield) Everyone else is done AND we are done.");
             Logger.getInstance().completedDownload();
             fileManager.mergePiecesIntoFile();
             shutdown = true;
@@ -137,11 +140,26 @@ public class Process implements Runnable {
     // Handle when the file is complete
     public synchronized void complete() {
         peerInfo.set_file_complete(true);
-        if (_peers_file_complete.get()) {
+        if (peerInfo.getFileComplete() && _peers_file_complete.get()) { // we are done && everyone else is done
+            Logger.getInstance().dangerouslyWrite("(4.1.1) We are done AND everyone else is done.");
             Logger.getInstance().completedDownload();
             fileManager.mergePiecesIntoFile();
             shutdown = true;
             System.exit(0);
+        }
+        else {
+            Logger.getInstance().dangerouslyWrite("(4.1.1) Not everyone is done. Here are the pieces missing: ");
+            // print for us
+            BitSet pBits = (BitSet)peerInfo.getBitfield().getBits().clone();
+            pBits.flip(0, CommonConfig.getInstance().numPieces);
+            Logger.getInstance().dangerouslyWrite(peerInfo.getId() + " bitfield missing: " + pBits.toString());
+
+            // print for peers
+            for (PeerInfo p : peerManager._peers) {
+                pBits = (BitSet)p.getBitfield().getBits().clone();
+                pBits.flip(0, CommonConfig.getInstance().numPieces);
+                Logger.getInstance().dangerouslyWrite(p.getId() + " bitfield missing: " + pBits.toString());
+            }
         }
     }
 
