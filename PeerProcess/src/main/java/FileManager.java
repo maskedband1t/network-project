@@ -1,3 +1,5 @@
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -111,7 +113,12 @@ public class FileManager {
 
         // Check if we are done
         if (haveAllPieces()) {
-            process.complete();
+            try{
+                process.complete();
+            }
+            catch (IOException e){
+                System.out.println("process.complete had some issues");
+            }
         }
 
         // Return success
@@ -123,7 +130,12 @@ public class FileManager {
         // Check if we are done
         if (haveAllPieces()) {
             Logger.getInstance().dangerouslyWrite("(4.1) We are done!");
-            process.complete();
+            try{
+                process.complete();
+            }
+            catch(IOException e){
+                System.out.println("problem with process.complete via handleDone");
+            }
         }
     }
 

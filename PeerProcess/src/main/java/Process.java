@@ -157,8 +157,15 @@ public class Process implements Runnable {
     }
 
     // Handle when the file is complete
-    public synchronized void complete() {
+    public synchronized void complete() throws IOException {
         peerInfo.set_file_complete(true);
+
+        Bitfield our_bitfield = peerInfo.getBitfield();
+        Message bf_msg = new Message(Helpers.BITFIELD, our_bitfield.getBits().toByteArray());
+        for(ConnectionHandler ch : _connHandlers){
+            ch.send(bf_msg);
+        }
+
         if (peerInfo.getFileComplete() && _peers_file_complete.get()) { // we are done && everyone else is done
             Logger.getInstance().dangerouslyWrite("(4.1.1) We are done AND everyone else is done.");
             Logger.getInstance().completedDownload();
