@@ -83,7 +83,7 @@ public class PeerProcess {
         
         // If we have the file, split it up into pieces
         if (PeerInfoConfig.getInstance().HasFile(ourInfo.getId())) {
-            System.out.println("SPLIT");
+            Helpers.println("SPLIT");
             peer.splitFile();
         }
 
@@ -101,7 +101,7 @@ public class PeerProcess {
     {
         // Must of format: java peerProcess <peerId>
         if (args.length != 1) {
-            System.out.println("Insufficient arguments: java peerProcess <peerId>");
+            Helpers.println("Insufficient arguments: java peerProcess <peerId>");
             return;
         }
 

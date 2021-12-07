@@ -30,11 +30,11 @@ public class StartRemotePeers {
 			while((st = in.readLine()) != null) {
 				
 				 String[] tokens = st.split("\\s+");
-		    	 //System.out.println("tokens begin ----");
+		    	 //Helpers.println("tokens begin ----");
 			     //for (int x=0; x<tokens.length; x++) {
-			     //    System.out.println(tokens[x]);
+			     //    Helpers.println(tokens[x]);
 			     //}
-		         //System.out.println("tokens end ----");
+		         //Helpers.println("tokens end ----");
 			    
 			     peerInfoVector.addElement(new RemotePeerInfo(tokens[0], tokens[1], tokens[2]));
 			
@@ -43,7 +43,7 @@ public class StartRemotePeers {
 			in.close();
 		}
 		catch (Exception ex) {
-			System.out.println(ex.toString());
+			Helpers.println(ex.toString());
 		}
 	}
 	
@@ -63,7 +63,7 @@ public class StartRemotePeers {
 			for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
 				RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
 				
-				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
+				Helpers.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
 				
 				// *********************** IMPORTANT *************************** //
 				// If your program is JAVA, use this line.
@@ -72,11 +72,11 @@ public class StartRemotePeers {
 				// If your program is C/C++, use this line instead of the above line. 
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; ./peerProcess " + pInfo.peerId);
 			}		
-			System.out.println("Starting all remote peers has done." );
+			Helpers.println("Starting all remote peers has done." );
 
 		}
 		catch (Exception ex) {
-			System.out.println(ex);
+			Helpers.println(ex);
 		}
 	}
 

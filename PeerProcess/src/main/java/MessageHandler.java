@@ -16,7 +16,7 @@ public class MessageHandler {
 
     // Handle an incoming message
     public Message handle(Message msg) {
-        System.out.println("Handling message of type: " + Helpers.GetMessageType(msg.getType()));
+        Helpers.println("Handling message of type: " + Helpers.GetMessageType(msg.getType()));
 
         // Handle depending on message type
         switch (msg.getType()) {
@@ -76,7 +76,7 @@ public class MessageHandler {
         if (!_choked) {
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
             byte[] newPieceIdxByteArray = Helpers.intToBytes(newPieceIdx, 4);
-            System.out.println("We want piece with index: " + newPieceIdx);
+            Helpers.println("We want piece with index: " + newPieceIdx);
             if (newPieceIdx >= 0)
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
         }
@@ -143,7 +143,7 @@ public class MessageHandler {
         Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
 
         // TODO: Debug print - can remove later
-        System.out.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
+        Helpers.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
         //bf.debugPrint();
 
         // Clears all bits that are set
@@ -169,7 +169,7 @@ public class MessageHandler {
 
         // Make sure we can send to remotePeer
         if (_peerManager.canUploadToPeer(_remotePeerId)) {
-            System.out.println("We can upload piece " + pieceIdx + " to peer " + _remotePeerId);
+            Helpers.println("We can upload piece " + pieceIdx + " to peer " + _remotePeerId);
             // Get the piece
             byte[] piece = _fileManager.getPiece(pieceIdx);
 
@@ -183,7 +183,7 @@ public class MessageHandler {
                 concat = new byte[4];
                 System.arraycopy(msg.getPayload(), 0, concat, 0, 4);
             }
-            //System.out.println(piece);
+            //Helpers.println(piece);
 
             // Send the piece
             if (concat != null) {
@@ -206,7 +206,7 @@ public class MessageHandler {
         if (!_choked) {
             // Get piece index field
             int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
-            System.out.println("THE PIECE INDEX is " + pieceIdx);
+            Helpers.println("THE PIECE INDEX is " + pieceIdx);
 
             // Get piece content
             byte[] pieceContent = Helpers.getPieceContentFromByteArray(msg.getPayload());

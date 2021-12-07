@@ -83,7 +83,7 @@ public class PeerInfo {
 
     // Set _interested
     public void setIfInterested(boolean isInterested) {
-        System.out.println("Setting interested to " + isInterested + " for " + peerId);
+        Helpers.println("Setting interested to " + isInterested + " for " + peerId);
         _interested.set(isInterested);
     }
 
@@ -121,6 +121,6 @@ public class PeerInfo {
 
     // Debugging purposes, print this peer's info
     public void debugPrint() {
-        System.out.println(getId() + " " + getHost() + " " + getPort() + " " + getFileComplete());
+        Helpers.println(getId() + " " + getHost() + " " + getPort() + " " + getFileComplete());
     }
 }

@@ -15,7 +15,7 @@ public class Message {
         this.type = type;
         if (data != null)
             this.payload = data.clone();
-        //System.out.println("Created " + Helpers.GetMessageType(type) + " message with length: " + this.length + " and payload " + data);
+        //Helpers.println("Created " + Helpers.GetMessageType(type) + " message with length: " + this.length + " and payload " + data);
     }
 
     // Get the length of the payload

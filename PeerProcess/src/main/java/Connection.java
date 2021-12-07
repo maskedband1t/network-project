@@ -30,7 +30,7 @@ public class Connection {
 	public void sendHandshake(HandshakeMessage msg) throws IOException{
 		_socket.write("P2PFILESHARINGPROJ".getBytes());
 		_socket.write(new byte[10]);
-		System.out.println("Sending handshake with id" + msg.getPeerId());
+		Helpers.println("Sending handshake with id" + msg.getPeerId());
 		_socket.write(Helpers.intToBytes(msg.getPeerId(), 4));
 	}
 
@@ -44,7 +44,7 @@ public class Connection {
 		try {
 			_socket.read(str);
 			if (!new String(str).equals("P2PFILESHARINGPROJ")) {
-				System.out.println("Did not receive handshake - expected handshake");
+				Helpers.println("Did not receive handshake - expected handshake");
 				return null;
 			}
 		}
@@ -58,7 +58,7 @@ public class Connection {
 			_socket.read(zeros);
 			for (byte b : zeros) {
 				if (b != 0) {
-					System.out.println("Handshake header not followed by 10 zero bits");
+					Helpers.println("Handshake header not followed by 10 zero bits");
 					return null;
 				}
 			}
@@ -77,7 +77,7 @@ public class Connection {
 			return null;
 		}
 
-		System.out.println("Received handshake with id " + Helpers.bytesToInt(id));
+		Helpers.println("Received handshake with id " + Helpers.bytesToInt(id));
 
 		// Returns a new handshake to send to the remote peer
 		return new HandshakeMessage(Helpers.bytesToInt(id));
@@ -99,19 +99,19 @@ public class Connection {
 			}
 		}
 		else {
-			System.out.println("Sending " + Helpers.GetMessageType(m.getType()) + " message with no payload.");
+			Helpers.println("Sending " + Helpers.GetMessageType(m.getType()) + " message with no payload.");
 		}
 	}
 
 	// Receives a message from remote peer
 	public Message receive() throws IOException {
-		System.out.println("Attempting to receive...");
+		Helpers.println("Attempting to receive...");
 		byte[] msg_length = new byte[4];
 		byte type;
 
 		// Read message length
 		try{
-			System.out.println("Reading 4 bytes into msg_length");
+			Helpers.println("Reading 4 bytes into msg_length");
 			for (int i = 0; i < 4; i++) {
 				try {
 					msg_length[i] = (byte)_socket.read();
@@ -122,7 +122,7 @@ public class Connection {
 				}
 			}
 			//_socket.read(msg_length, 4);
-			System.out.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
+			Helpers.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -133,7 +133,7 @@ public class Connection {
 		// Read message type
 		try {
 			type = (byte)_socket.read();
-			System.out.println("Read type: " + type);
+			Helpers.println("Read type: " + type);
 			if(type == -1) {
 				return null;
 				//throw new IOException("End of stream reached.");
@@ -150,14 +150,14 @@ public class Connection {
 		if (ml > 0) {
 			try {
 				_socket.read(msg, ml);
-				System.out.println("Read msg: " + Helpers.bytesToInt(msg));
+				Helpers.println("Read msg: " + Helpers.bytesToInt(msg));
 			} catch (IOException e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 		else {
-			//System.out.println("No payload, not reading");
+			//Helpers.println("No payload, not reading");
 		}
 
 		// Returns the message

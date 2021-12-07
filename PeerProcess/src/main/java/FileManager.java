@@ -26,7 +26,6 @@ public class FileManager {
             }
         }
 
-
         // Reset pieces directory if necessary
         File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
         if (piecesDir.exists())
@@ -167,10 +166,10 @@ public class FileManager {
 
             String str = remotePiecesBitset.toString();
             Logger.getInstance().dangerouslyWrite("Request indices to choose from: " + str);
-            System.out.println("Request indices to choose from: " + str);
-            System.out.println("Their pieces: " + remotePieces.getBits().toString());
-            System.out.println("Our pieces: " + receivedPieces.getBits().toString());
-            System.out.println("Requested pieces: " + receivedPieces.getBits().toString());
+            Helpers.println("Request indices to choose from: " + str);
+            Helpers.println("Their pieces: " + remotePieces.getBits().toString());
+            Helpers.println("Our pieces: " + receivedPieces.getBits().toString());
+            Helpers.println("Requested pieces: " + receivedPieces.getBits().toString());
 
             // "1,0,1,1" -> ["1","0","1" "1"]
             String[] indexes = str.substring(1, str.length()-1).split(",");
@@ -199,12 +198,12 @@ public class FileManager {
                     CommonConfig.getInstance().unchokingInterval * 1500L
             );
             // return the index of the piece to request
-            System.out.println("We choose index: " + pieceIndex);
+            Helpers.println("We choose index: " + pieceIndex);
             Logger.getInstance().dangerouslyWrite("REQUESTING " + pieceIndex);
             return pieceIndex;
         }
         // default
-        System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!");
+        Helpers.println("WE COULD NOT FIND AN INDEX TO REQUEST!!");
         return -1;
     }
 

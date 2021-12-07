@@ -44,6 +44,22 @@ public class Helpers {
         return destination;
     }
 
+    // Debug print statements
+    public static void println(String s) {
+        if (debug)
+            System.out.println(s);
+    }
+
+    public static void print(String s) {
+        if (debug)
+            System.out.print(s);
+    }
+
+    public static void printerr(String s) {
+        if (debug)
+            System.err.println(s);
+    }
+
     // Translate Message Types to friendly name
     public static String GetMessageType(byte b) {
         switch(b) {
@@ -81,6 +97,6 @@ public class Helpers {
     // Relative string path to where the built resources file is
     public static final String pathToResourcesFolder = "./../../../resources/main/";
 
-    // Debugging purposes
-    public static SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    // Debugging purposes - should we print debugging statements?
+    public static final boolean debug = true;
 }

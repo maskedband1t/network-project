@@ -18,7 +18,7 @@ public class Client {
 		try{
 			//create a socket to connect to the server
 			requestSocket = new Socket("localhost", 8000);
-			System.out.println("Connected to localhost in port 8000");
+			Helpers.println("Connected to localhost in port 8000");
 			//initialize inputStream and outputStream
 			out = new ObjectOutputStream(requestSocket.getOutputStream());
 			out.flush();
@@ -28,7 +28,7 @@ public class Client {
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 			while(true)
 			{
-				System.out.print("Hello, please input a sentence: ");
+				Helpers.print("Hello, please input a sentence: ");
 				//read a sentence from the standard input
 				message = bufferedReader.readLine();
 				//Send the sentence to the server
@@ -36,17 +36,17 @@ public class Client {
 				//Receive the upperCase sentence from the server
 				MESSAGE = (String)in.readObject();
 				//show the message to the user
-				System.out.println("Receive message: " + MESSAGE);
+				Helpers.println("Receive message: " + MESSAGE);
 			}
 		}
 		catch (ConnectException e) {
-    			System.err.println("Connection refused. You need to initiate a server first.");
+    			Helpers.printerr("Connection refused. You need to initiate a server first.");
 		} 
 		catch ( ClassNotFoundException e ) {
-            		System.err.println("Class not found");
+            		Helpers.printerr("Class not found");
         	} 
 		catch(UnknownHostException unknownHost){
-			System.err.println("You are trying to connect to an unknown host!");
+			Helpers.printerr("You are trying to connect to an unknown host!");
 		}
 		catch(IOException ioException){
 			ioException.printStackTrace();

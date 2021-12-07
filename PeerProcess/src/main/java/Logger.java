@@ -32,13 +32,13 @@ public class Logger {
         try {
             logFile = new File(Helpers.pathToResourcesFolder + "log_peer_" + peerId + ".log");
             if (logFile.exists()) {
-                System.out.println("log_peer_" + peerId + " exists, deleting it!");
+                Helpers.println("log_peer_" + peerId + " exists, deleting it!");
                 logFile.delete();
             }
             logFile.createNewFile();
         }
         catch (IOException e) {
-            System.err.println("An IO error occurred.");
+            Helpers.printerr("An IO error occurred.");
             e.printStackTrace();
         }
     }
@@ -53,7 +53,7 @@ public class Logger {
             bf.close();
         }
         catch (IOException e) {
-            System.err.println("An IO error occurred.");
+            Helpers.printerr("An IO error occurred.");
             e.printStackTrace();
             return false;
         }
@@ -69,7 +69,7 @@ public class Logger {
             bf.close();
         }
         catch (IOException e) {
-            System.err.println("An IO error occurred");
+            Helpers.printerr("An IO error occurred");
             e.printStackTrace();
             return false;
         }
@@ -92,7 +92,7 @@ public class Logger {
             return writeToLog("has the preferred neighbors " + idsString + ".");
         }
         catch (StringIndexOutOfBoundsException e) {
-            System.err.println("An indexing error occurred.");
+            Helpers.printerr("An indexing error occurred.");
             e.printStackTrace();
             return false;
         }

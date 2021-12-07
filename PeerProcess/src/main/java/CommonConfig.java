@@ -37,14 +37,14 @@ public class CommonConfig {
 
     // Debugging function to print the common configuration
     public void debugPrint() {
-        System.out.println("Common Config");
-        System.out.println("----------------");
-        System.out.println("NumberOfPreferredNeighbors " + numPrefNeighbors);
-        System.out.println("UnchokingInterval " + unchokingInterval);
-        System.out.println("OptimisticUnchokingInterval " + optimisticUnchokingInterval);
-        System.out.println("FileName " + fileName);
-        System.out.println("FileSize " + fileSize);
-        System.out.println("PieceSize " + pieceSize);
+        Helpers.println("Common Config");
+        Helpers.println("----------------");
+        Helpers.println("NumberOfPreferredNeighbors " + numPrefNeighbors);
+        Helpers.println("UnchokingInterval " + unchokingInterval);
+        Helpers.println("OptimisticUnchokingInterval " + optimisticUnchokingInterval);
+        Helpers.println("FileName " + fileName);
+        Helpers.println("FileSize " + fileSize);
+        Helpers.println("PieceSize " + pieceSize);
     }
 }
 

@@ -59,9 +59,9 @@ public class Process implements Runnable {
 
     // Builds Connection to peer
     public void buildPeer(PeerInfo info) throws IOException {
-        System.out.println("Attempting to connect to peer id: " + info.getId());
+        Helpers.println("Attempting to connect to peer id: " + info.getId());
         Connection c = new Connection(info);
-        System.out.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
+        Helpers.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
         ConnectionHandler ch = new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true);
         addConnectionHandler(ch);
     }
@@ -72,9 +72,9 @@ public class Process implements Runnable {
         List<PeerInfo> ourPeers = PeerInfoConfig.getInstance().GetPeersToConnectToFor(peerInfo.getId());
 
         // Debugging print statement
-        System.out.println(peerInfo.getId() + " will connect to ");
+        Helpers.println(peerInfo.getId() + " will connect to ");
         for (PeerInfo peer : ourPeers) {
-            System.out.print(peer.getId() + ",");
+            Helpers.print(peer.getId() + ",");
         }
 
         // Build connection to each peer
@@ -101,7 +101,7 @@ public class Process implements Runnable {
     public synchronized void choke_peers(Set<Integer> peers) throws IOException{
         for (ConnectionHandler ch : _connHandlers)
             if (peers.contains(ch.getRemotePeerId())) {
-                //System.out.println("Choking: " + ch.getRemotePeerId());
+                //Helpers.println("Choking: " + ch.getRemotePeerId());
                 ch.send(new Message(Helpers.CHOKE, new byte[]{}));
             }
     }
@@ -110,7 +110,7 @@ public class Process implements Runnable {
     public synchronized void unchoke_peers(Set<Integer> peers) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {
             if (peers.contains(ch.getRemotePeerId())) {
-                //System.out.println("Unchoking: " + ch.getRemotePeerId());
+                //Helpers.println("Unchoking: " + ch.getRemotePeerId());
                 ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
             }
         }
@@ -173,7 +173,7 @@ public class Process implements Runnable {
             ServerSocket s = new ServerSocket(peerInfo.getPort());
 
             // Debugging print statement
-            System.out.println("Peer " + peerInfo.getId() + " is listening on " + peerInfo.getHost() + ":" + peerInfo.getPort());
+            Helpers.println("Peer " + peerInfo.getId() + " is listening on " + peerInfo.getHost() + ":" + peerInfo.getPort());
 
             // While we are not in shutdown mode (not everyone has the file completed)
             while (!shutdown) {
@@ -186,7 +186,7 @@ public class Process implements Runnable {
 
                     // We use a default peer info since we haven't identified who they are yet
                     Connection conn = new Connection(new PeerInfo(), peerSocket);
-                    System.out.println("ADDING CONNECTION HANDLER [DETECTED NEW CONNECTION]");
+                    Helpers.println("ADDING CONNECTION HANDLER [DETECTED NEW CONNECTION]");
                     addConnectionHandler(new ConnectionHandler(peerInfo, conn, fileManager, peerManager));
                 }
                 catch (Exception e) {
@@ -198,7 +198,7 @@ public class Process implements Runnable {
             e.printStackTrace();
         }
         finally {
-            System.out.println("Shutting Down");
+            Helpers.println("Shutting Down");
         }
     }
 }

@@ -72,7 +72,7 @@ public class Bitfield {
             return bits.get(pieceIndex);
         }
         catch (IndexOutOfBoundsException e) {
-            System.err.println("Unable to get this piece: index out of bounds.");
+            Helpers.printerr("Unable to get this piece: index out of bounds.");
             e.printStackTrace();
             return false;
         }
@@ -85,7 +85,7 @@ public class Bitfield {
             return true;
         }
         catch (IndexOutOfBoundsException e) {
-            System.err.println("Unable to set this piece: index out of bounds.");
+            Helpers.printerr("Unable to set this piece: index out of bounds.");
             e.printStackTrace();
             return false;
         }
@@ -99,10 +99,10 @@ public class Bitfield {
     // Debugging function to print the bitset into the command line
     public void debugPrint() {
         int[] arr = bits.stream().toArray();
-        System.out.print("{");
+        Helpers.print("{");
         for (int i = 0; i < CommonConfig.getInstance().numPieces; i++)
-            System.out.print(bits.get(i) + ",");
-        System.out.print("}");
-        System.out.println();
+            Helpers.print(bits.get(i) + ",");
+        Helpers.print("}");
+        Helpers.println("");
     }
 }

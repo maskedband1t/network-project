@@ -25,7 +25,7 @@ public class ConnectionHandler implements Runnable{
         _peerManager = peerManager;
         _connectingPeer = false;
         _uuid = java.util.UUID.randomUUID();
-        System.out.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
+        Helpers.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
     }
 
     // Constructs a ConnectionHandler for a known remote peer
@@ -38,7 +38,7 @@ public class ConnectionHandler implements Runnable{
         _peerManager = peerManager;
         _connectingPeer = connectingPeer;
         _uuid = java.util.UUID.randomUUID();
-        System.out.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());}
+        Helpers.println("Constructed Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());}
 
     // Get remote peer id
     public int getRemotePeerId() { return _remotePeerId; }
@@ -78,18 +78,18 @@ public class ConnectionHandler implements Runnable{
             PeerInfo remoteInfo = PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId);
             _conn.updatePeerInfo(remoteInfo);
             _remotePeerInfo = remoteInfo;
-            System.out.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
+            Helpers.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
 
             // If we aren't the connector, we receive -> send
             //if (!_connectingPeer)
             //    _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // After handshake send bitfield message if we have any pieces
-            System.out.println("Checking if we have any set bits in our bitfield...");
+            Helpers.println("Checking if we have any set bits in our bitfield...");
             Bitfield field = _info.getBitfield();
             if (!field.empty()) {
                 // TODO: Debugging purposes, can remove
-                System.out.println("We do! Sending out bitfield too");
+                Helpers.println("We do! Sending out bitfield too");
                 field.debugPrint();
 
                 Logger.getInstance().dangerouslyWrite("Sending our bitfield over to " + _remotePeerId + ": " + field.asString());
@@ -99,7 +99,7 @@ public class ConnectionHandler implements Runnable{
                 _conn.send(msg);
             }
 
-            System.out.println("Received Handshake from peer " + _remotePeerId);
+            Helpers.println("Received Handshake from peer " + _remotePeerId);
 
             // Log
             Logger.getInstance().connectedWith(_remotePeerId, _connectingPeer);
@@ -112,11 +112,11 @@ public class ConnectionHandler implements Runnable{
                 try {
                     Message msgReceived = _conn.receive();
                     if (msgReceived != null) {
-                        System.out.println("Received a message of type " + Helpers.GetMessageType(msgReceived.getType()));
+                        Helpers.println("Received a message of type " + Helpers.GetMessageType(msgReceived.getType()));
                         Message msgToReturn = msgHandler.handle(msgReceived);
                         if (msgToReturn != null) {
                             _conn.send(msgToReturn);
-                            System.out.println("We are returning a message with type " + Helpers.GetMessageType(msgToReturn.getType()));
+                            Helpers.println("We are returning a message with type " + Helpers.GetMessageType(msgToReturn.getType()));
                         }
                     }
                 }
