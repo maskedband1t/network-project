@@ -134,13 +134,6 @@ public class FileManager {
         return (Bitfield)receivedPieces.clone();
     }
 
-    // Get pieces that are available to request
-    public BitSet getAvailablePiecesToRequest(BitSet piecesNotRequested) {
-        BitSet availablePieces = getReceivedPieces().getBits();
-        availablePieces.andNot(piecesNotRequested);
-        return availablePieces;
-    }
-
     // Get the index of the next piece to request
     public synchronized int getPieceToRequest(Bitfield remotePieces) {
         BitSet remotePiecesBitset = (BitSet)remotePieces.getBits().clone(); // remote pieces
@@ -192,12 +185,6 @@ public class FileManager {
         // default
         System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!");
         return -1;
-
-        // Determine which piece to request
-        //piecesNotRequested.andNot(receivedPieces.getBits());
-        //int pieceIdx = this.receivedPieces.getPieceIndexToRequest(this.requestedPieces, remotePieces);
-
-        //return pieceIdx;
     }
 
     public synchronized boolean hasPiece(int pieceIndex) {

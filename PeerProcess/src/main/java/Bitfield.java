@@ -101,66 +101,6 @@ public class Bitfield {
         return bits.cardinality() == 0;
     }
 
-    synchronized int getPieceIndexToRequest(Bitfield requestedPieces, Bitfield remotePieces) {
-        // logic for which piece to choose is detailed in the proj description
-
-        // toString() does this: {1,0,1,1} -> "1,0,1,1"
-
-        // Prints
-        Logger.getInstance().dangerouslyWrite("requestedPieces: (" + requestedPieces.getBits().length() + " bits) " + requestedPieces.asString());
-        Logger.getInstance().dangerouslyWrite("remotePieces: (" + remotePieces.getBits().length() + " bits) "  + remotePieces.asString());
-        Logger.getInstance().dangerouslyWrite("ourPieces: (" + this.getBits().length() + " bits) "  + this.asString());
-
-        // get the pieces we have -> get the pieces we don't have -> get the pieces we don't have that they have
-        Bitfield piecesWeCanRequest = clone(); // pieces we have
-        BitSet piecesWeCanRequestBitset = piecesWeCanRequest.getBits();
-        piecesWeCanRequestBitset.flip(0, piecesWeCanRequestBitset.length()); // pieces we dont have
-        piecesWeCanRequestBitset.and(remotePieces.getBits()); // pieces we dont have and they have
-        piecesWeCanRequestBitset.and(requestedPieces.getBits()); // pieces we dont have and they have and we havent requested yet
-
-        String str = piecesWeCanRequest.asString();
-        Logger.getInstance().dangerouslyWrite("piecesWeCanRequest (" + piecesWeCanRequestBitset.length() + " bits) " + str);
-
-        BitSet requestedPiecesBitset = requestedPieces.getBits();
-
-        // Choose a random piece to request if there are choices
-        if (!piecesWeCanRequestBitset.isEmpty()) {
-            // Request a piece that we do not have, that we haven't requested yet
-            // Random Selection Strategy if there are multiple choices
-            // Ex: We are Peer A, and are requesting a Piece from Peer B
-            //     We will randomly select a Piece to request from Peer B
-            //     of the pieces we do not have, and have not requested
-
-            // "1,0,1,1" -> ["1","0","1" "1"]
-            String[] indexes = str.substring(1, str.length()-1).split(",");
-            // Get random index, trim commas off, parse into int
-            int pieceIndex = Integer.parseInt(indexes[(int)(Math.random()*(indexes.length-1))].trim());
-
-            Logger.getInstance().dangerouslyWrite("GOT PIECE TO REQUEST: " + pieceIndex);
-
-            // since we're going to return this value, update that we will request this index
-            requestedPiecesBitset.set(pieceIndex);
-
-            // make the part requestable again in _timeoutInMillis
-            new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            synchronized (requestedPiecesBitset) {
-                                requestedPiecesBitset.clear(pieceIndex);
-                            }
-                        }
-                    },
-                    CommonConfig.getInstance().unchokingInterval * 2000
-            );
-            // return the index of the piece to request
-            return pieceIndex;
-        }
-        // default
-        System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!");
-        return -1;
-    }
-
     // Debugging function to print the bitset into the command line
     public void debugPrint() {
         int[] arr = bits.stream().toArray();

@@ -222,15 +222,13 @@ public class MessageHandler {
 
             Logger.getInstance().dangerouslyWrite("UPDATED DOWNLOAD RATE");
 
-
+            // Log
+            Logger.getInstance().dangerouslyWrite("(3)");
+            Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, _info.getBitfield().getBits().cardinality());
 
             // Handle if we're done
             Logger.getInstance().dangerouslyWrite("(4) Checking and handling if we're done");
             _fileManager.handleDone();
-
-            // Log
-            Logger.getInstance().dangerouslyWrite("(5)");
-            Logger.getInstance().downloadedPiece(_remotePeerId, pieceIdx, _info.getBitfield().getBits().cardinality());
 
             // Return Request msg if applicable
             int newPieceIdx = _fileManager.getPieceToRequest(_peerManager.getReceivedPieces(_remotePeerId));
