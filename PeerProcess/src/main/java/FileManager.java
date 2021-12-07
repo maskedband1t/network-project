@@ -120,7 +120,7 @@ public class FileManager {
     private boolean haveAllPieces() {
         if (!peerInfo.is_file_complete()) {
             BitSet set = receivedPieces.getBits();
-            for (int i = 0; i < set.length()-1; i++) {
+            for (int i = 0; i < set.length(); i++) {
                 if (!set.get(i)) {
                     Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + receivedPieces.toString());
                     return false;
@@ -222,7 +222,7 @@ public class FileManager {
     public void mergePiecesIntoFile() {
         String filePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
         String piecesPath = Helpers.pathToResourcesFolder + peerId + "/pieces/";
-        int size = (int)CommonConfig.getInstance().pieceSize - 1;
+        int size = CommonConfig.getInstance().numPieces - 1;
 
         File ofile = new File(filePath);
         FileOutputStream fos;
