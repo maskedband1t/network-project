@@ -65,14 +65,21 @@ public class Process implements Runnable {
         ConnectionHandler ch = new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true);
         addConnectionHandler(ch);
 
+        // Handle sending have messages they didn't receive bc connection wasn't made yet
         List<Message> messages = new ArrayList<Message>();
-        if (!peerInfo.is_file_complete()) {
+        if (!info.is_file_complete()) {
             BitSet bits = info.getBitfield().getBits();
             for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
                 if (bits.get(i))
                     messages.add(new Message(Helpers.HAVE, Helpers.intToBytes(i, 4)));
             }
             ch.queueMessages(messages);
+
+            // Debugging print statement
+            String logMsg = "Have messages to send to " + ch.getRemotePeerId() + ": ";
+            for (Message m : messages)
+                logMsg += Helpers.bytesToInt(m.getPayload()) + ",";
+            Logger.getInstance().dangerouslyWrite(logMsg);
         }
     }
 
