@@ -128,6 +128,7 @@ public class MessageHandler {
             return new Message(Helpers.INTERESTED, new byte[]{});
     }
 
+
     // Handle a message of type Bitfield
     private Message handleBitfieldMsg(Message msg) {
         // HAS packet payload: bitfield structure, which tracks the pieces of the file the peer has
