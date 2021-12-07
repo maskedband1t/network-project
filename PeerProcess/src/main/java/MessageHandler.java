@@ -161,7 +161,6 @@ public class MessageHandler {
         // Get piece index field
         int pieceIdx = Helpers.getPieceIndexFromByteArray(msg.getPayload());
 
-
         // Log
         Logger.getInstance().receivedRequestFrom(_remotePeerId, pieceIdx);
 
@@ -183,13 +182,15 @@ public class MessageHandler {
             }
             //System.out.println(piece);
 
-            Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);
-
             // Send the piece
-            if (concat != null)
+            if (concat != null) {
+                Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);
                 return new Message(Helpers.PIECE, concat);
+            }
         }
-
+        else {
+            Logger.getInstance().dangerouslyWrite(_remotePeerId + " requested piece " + pieceIdx + ", but we cannot upload to them.");
+        }
         return null;
     }
 

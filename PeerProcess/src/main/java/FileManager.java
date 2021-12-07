@@ -1,5 +1,7 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 public class FileManager {
     int peerId;
@@ -76,9 +78,9 @@ public class FileManager {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
         Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
-        receivedPieces.getBits().set(pieceIndex);
 
         if (isNewPiece) {
+            receivedPieces.getBits().set(pieceIndex);
             Logger.getInstance().dangerouslyWrite("(1.2) Adding " + pieceIndex);
             addPieceBytes(pieceIndex, piece);
         }
@@ -91,9 +93,9 @@ public class FileManager {
     public synchronized boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
         // True if we do not have this piece
         final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
-        receivedPieces.getBits().set(pieceIndex);
 
         if (force || isNewPiece) {
+            receivedPieces.getBits().set(pieceIndex);
             addPieceBytes(pieceIndex, piece);
         }
 
@@ -138,7 +140,7 @@ public class FileManager {
     public synchronized int getPieceToRequest(Bitfield remotePieces) {
         BitSet remotePiecesBitset = (BitSet)remotePieces.getBits().clone(); // remote pieces
         remotePiecesBitset.andNot(receivedPieces.getBits()); // remote pieces that we don't have
-        remotePiecesBitset.andNot(requestedPieces.getBits()); // remote pieces that we don't have and haven't requested
+        //remotePiecesBitset.andNot(requestedPieces.getBits()); // remote pieces that we don't have and haven't requested
 
         if (!remotePiecesBitset.isEmpty()) {
             // Request a piece that we do not have, that we haven't requested yet
@@ -165,17 +167,18 @@ public class FileManager {
             BitSet requestedPiecesBitset = requestedPieces.getBits();
             requestedPiecesBitset.set(pieceIndex);
 
-            // make the part requestable again in _timeoutInMillis
+            // make the part requestable again in unchokingInterval * 2000 ms
             new java.util.Timer().schedule(
                     new java.util.TimerTask() {
                         @Override
                         public void run() {
                             synchronized (requestedPiecesBitset) {
                                 requestedPiecesBitset.clear(pieceIndex);
+                                Logger.getInstance().dangerouslyWrite("Reset request status for piece " + pieceIndex);
                             }
                         }
                     },
-                    CommonConfig.getInstance().unchokingInterval * 2000
+                    CommonConfig.getInstance().unchokingInterval * 1500L
             );
             // return the index of the piece to request
             System.out.println("We choose index: " + pieceIndex);
@@ -212,6 +215,42 @@ public class FileManager {
             int end = Math.min(start + size, fileSize);
             byte[] pieceSubset = Helpers.getByteSubset(wholeFile, start, end);
             addPiece(i, pieceSubset, true);
+        }
+    }
+
+    // Merge the pieces into the file
+    public void mergePiecesIntoFile() {
+        String filePath = Helpers.pathToResourcesFolder + peerId + "/" + CommonConfig.getInstance().fileName;
+        String piecesPath = Helpers.pathToResourcesFolder + peerId + "/pieces/";
+        int size = (int)CommonConfig.getInstance().pieceSize - 1;
+
+        File ofile = new File(filePath);
+        FileOutputStream fos;
+        FileInputStream fis;
+        byte[] fileBytes;
+        int bytesRead = 0;
+        List<File> list = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            list.add(new File(piecesPath + i));
+        }
+        try {
+            fos = new FileOutputStream(ofile);
+            for (File file : list) {
+                fis = new FileInputStream(file);
+                fileBytes = new byte[(int) file.length()];
+                bytesRead = fis.read(fileBytes, 0, (int) file.length());
+                assert (bytesRead == fileBytes.length);
+                assert (bytesRead == (int) file.length());
+                fos.write(fileBytes);
+                fos.flush();
+                fileBytes = null;
+                fis.close();
+                fis = null;
+            }
+            fos.close();
+            fos = null;
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
     }
 

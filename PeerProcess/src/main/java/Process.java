@@ -128,6 +128,7 @@ public class Process implements Runnable {
         _peers_file_complete.set(true);
         if (peerInfo.getFileComplete()) {
             Logger.getInstance().completedDownload();
+            fileManager.mergePiecesIntoFile();
             shutdown = true;
             System.exit(0);
         }
@@ -138,6 +139,7 @@ public class Process implements Runnable {
         peerInfo.set_file_complete(true);
         if (_peers_file_complete.get()) {
             Logger.getInstance().completedDownload();
+            fileManager.mergePiecesIntoFile();
             shutdown = true;
             System.exit(0);
         }
