@@ -111,7 +111,9 @@ public class MessageHandler {
         // HAS packet payload: 4 byte piece index field
 
         // Get piece index field
+        Logger.getInstance().dangerouslyWrite("(handleHaveMsg)");
         int pieceIdx = Helpers.bytesToInt(msg.getPayload()); //Helpers.getPieceIndexFromByteArray(msg.getPayload());
+        Logger.getInstance().dangerouslyWrite("(handleHaveMsg) Helpers.bytesToInt(msg.payload()): " + pieceIdx);
 
         // Log
         Logger.getInstance().receivedHaveFrom(_remotePeerId, pieceIdx);
@@ -134,6 +136,7 @@ public class MessageHandler {
         // Initialize the bitfield for the peer that sent this message
         // Note: We only handle this bitfield message once per peer
         Bitfield bf = new Bitfield(msg.getPayload());
+        Logger.getInstance().dangerouslyWrite("(handleBitfieldMsg) from " + _remotePeerId + ": " + bf.getBits().toString());
         _peerManager.handleBitfield(_remotePeerId, bf);
 
         // Log

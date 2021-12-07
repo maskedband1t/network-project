@@ -160,6 +160,7 @@ public class PeerManager implements Runnable {
             if (peer.getId() == peerId) {
                 if(peer != null){
                     peer.setBitfield(bitfield);
+                    Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
                 }
                 download_finished();
             }

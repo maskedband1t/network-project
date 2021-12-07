@@ -90,7 +90,9 @@ public class ConnectionHandler implements Runnable{
             if (!field.empty()) {
                 // TODO: Debugging purposes, can remove
                 System.out.println("We do! Sending out bitfield too");
-                //field.debugPrint();
+                field.debugPrint();
+
+                Logger.getInstance().dangerouslyWrite("Sending our bitfield over to " + _remotePeerId + ": " + field.asString());
 
                 // Send the bitfield message
                 Message msg = new Message(Helpers.BITFIELD, field.getBits().toByteArray());
