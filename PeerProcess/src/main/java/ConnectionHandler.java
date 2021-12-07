@@ -90,7 +90,7 @@ public class ConnectionHandler implements Runnable{
                 Helpers.println("We do! Sending out bitfield too");
                 field.debugPrint();
 
-                Logger.getInstance().dangerouslyWrite("Sending our bitfield over to " + _remotePeerId + ": " + field.asString());
+                //Logger.getInstance().dangerouslyWrite("Sending our bitfield over to " + _remotePeerId + ": " + field.asString());
 
                 // Send the bitfield message
                 Message msg = new Message(Helpers.BITFIELD, field.getBits().toByteArray());

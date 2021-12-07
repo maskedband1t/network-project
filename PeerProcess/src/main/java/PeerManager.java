@@ -39,17 +39,23 @@ public class PeerManager implements Runnable {
                 }
 
                 synchronized(this){
-                        if(!_chokedPeers.isEmpty()){
-                            // shuffle to pick new unchoked peers
-                            Collections.shuffle(_chokedPeers);
+                    if(!_chokedPeers.isEmpty()){
+                        // shuffle to pick new unchoked peers
+                        Collections.shuffle(_chokedPeers);
 
-                            // clear to put new ones in
-                            _optimisticallyUnchokedPeers.clear();
+                        // clear to put new ones in
+                        _optimisticallyUnchokedPeers.clear();
 
-                            // since already shuffled, this is fine
-                            int _minPeers = Math.min(_chokedPeers.size() ,_num_optimistic_unchoked_neighbors);
-                            _optimisticallyUnchokedPeers.addAll(_chokedPeers.subList(0, _minPeers));
-                        }
+                        // since already shuffled, this is fine
+                        int _minPeers = Math.min(_chokedPeers.size() ,_num_optimistic_unchoked_neighbors);
+                        _optimisticallyUnchokedPeers.addAll(_chokedPeers.subList(0, _minPeers));
+                    }
+                }
+
+                try {
+                    _process.unchoke_peers((Set<Integer>) PeerInfo.toIdList(_optimisticallyUnchokedPeers));
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -142,7 +148,7 @@ public class PeerManager implements Runnable {
         List<PeerInfo> interestedPeers = new ArrayList<PeerInfo>();
 
         for(PeerInfo peer : _peers){
-            if(peer.isInterested()){
+            if(peer.isInterested() && !peer.getFileComplete()){
                 interestedPeers.add(peer);
             }
         }
@@ -161,7 +167,7 @@ public class PeerManager implements Runnable {
                 peer.setBitfield(bitfield);
                 if (bitfield.getBits().cardinality() == CommonConfig.getInstance().numPieces)
                     peer.set_file_complete(true);
-                Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
+                //Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
                 download_finished();
             }
         } 
@@ -182,11 +188,11 @@ public class PeerManager implements Runnable {
     private synchronized void download_finished(){
         for (PeerInfo peer : _peers) {
             if (peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
-                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
+                //Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
                 return;
             }
-            else
-                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
+            //else
+                //Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
         }
         _process.neighborsComplete();
     }
@@ -313,9 +319,9 @@ public class PeerManager implements Runnable {
                 // Select highest ranked peers
                 _preferredPeers.clear();
                 _preferredPeers.addAll(_interestedPeers.subList(0, Math.min(_num_Preferred_Neighbors, _interestedPeers.size())));
-                if(_preferredPeers.size() > 0){
-                    // logs
-                }
+                //if(_preferredPeers.size() > 0){
+                //    // logs
+                //}
 
                 Collection <PeerInfo> _choked_peers = new LinkedList<>(_peers);
                 _choked_peers.removeAll(_preferredPeers); // remove unchoked ones

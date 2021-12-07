@@ -29,7 +29,8 @@ public class FileManager {
         // Reset pieces directory if necessary
         File piecesDir = new File(Helpers.pathToResourcesFolder + peerId + "/pieces/");
         if (piecesDir.exists())
-            Logger.getInstance().dangerouslyWrite("Deleted " + deleteFolder(piecesDir, 0) + " pieces");
+            deleteFolder(piecesDir, 0);
+            //Logger.getInstance().dangerouslyWrite("Deleted " + deleteFolder(piecesDir, 0) + " pieces");
         piecesDir.mkdirs();
     }
 
@@ -126,7 +127,7 @@ public class FileManager {
     public void handleDone() {
         // Check if we are done
         if (haveAllPieces()) {
-            Logger.getInstance().dangerouslyWrite("(4.1) We are done!");
+            //Logger.getInstance().dangerouslyWrite("(4.1) We are done!");
             try{
                 process.complete();
             }

@@ -134,7 +134,7 @@ public class MessageHandler {
         // Initialize the bitfield for the peer that sent this message
         // Note: We only handle this bitfield message once per peer
         Bitfield bf = new Bitfield(msg.getPayload());
-        Logger.getInstance().dangerouslyWrite("(handleBitfieldMsg) from " + _remotePeerId + ": " + bf.getBits().toString());
+        //Logger.getInstance().dangerouslyWrite("(handleBitfieldMsg) from " + _remotePeerId + ": " + bf.getBits().toString());
         _peerManager.handleBitfield(_remotePeerId, bf);
 
         // Log
@@ -239,8 +239,8 @@ public class MessageHandler {
                 //Logger.getInstance().dangerouslyWrite("(6) Decided to request piece: " + newPieceIdx);
                 return new Message(Helpers.REQUEST, newPieceIdxByteArray);
             }
-            else
-                Logger.getInstance().dangerouslyWrite("We could not find a new piece to request (after receiving a piece).");
+            //else
+                //Logger.getInstance().dangerouslyWrite("We could not find a new piece to request (after receiving a piece).");
         }
 
         return null;

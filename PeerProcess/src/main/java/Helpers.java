@@ -98,5 +98,5 @@ public class Helpers {
     public static final String pathToResourcesFolder = "./../../../resources/main/";
 
     // Debugging purposes - should we print debugging statements?
-    public static final boolean debug = true;
+    public static final boolean debug = false;
 }
