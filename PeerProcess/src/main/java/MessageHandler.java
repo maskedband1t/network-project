@@ -175,7 +175,6 @@ public class MessageHandler {
             System.arraycopy(Helpers.intToBytes(pieceIdx,4), 0, concat, 0, 4);
             System.arraycopy(piece, 0, concat, 4, piece.length);
 
-
             //System.out.println(piece);
 
             Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);
