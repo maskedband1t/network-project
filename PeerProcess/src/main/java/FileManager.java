@@ -144,9 +144,10 @@ public class FileManager {
     // Get the index of the next piece to request
     public synchronized int getPieceToRequest(BitSet piecesNotRequested) {
         // Determine which piece to request
-        int test = requestedPieces.getPieceIndexToRequest(piecesNotRequested);
-        Logger.getInstance().dangerouslyWrite("REQUESTING " + test);
-        return test;
+        piecesNotRequested.andNot(peerInfo.getBitfield().getBits());
+        int pieceIdx = requestedPieces.getPieceIndexToRequest(piecesNotRequested);
+        Logger.getInstance().dangerouslyWrite("REQUESTING " + pieceIdx);
+        return pieceIdx;
     }
 
     public synchronized boolean hasPiece(int pieceIndex) {
