@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -61,7 +62,18 @@ public class Process implements Runnable {
         System.out.println("Attempting to connect to peer id: " + info.getId());
         Connection c = new Connection(info);
         System.out.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
-        addConnectionHandler(new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true));
+        ConnectionHandler ch = new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true);
+        addConnectionHandler(ch);
+
+        List<Message> messages = new ArrayList<Message>();
+        if (!peerInfo.is_file_complete()) {
+            BitSet bits = info.getBitfield().getBits();
+            for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
+                if (bits.get(i))
+                    messages.add(new Message(Helpers.HAVE, Helpers.intToBytes(i, 4)));
+            }
+            ch.queueMessages(messages);
+        }
     }
 
     // Builds Connections to all peers

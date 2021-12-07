@@ -90,8 +90,10 @@ public class ConnectionHelper extends Thread {
                         sendCheckRequest(msg);
                     }
                 }
-                else
+                else {
+                    _queue.add(msg);
                     System.out.println("Cannot send messages yet - we have not handshaked");
+                }
             }
             catch (Exception e) {
                 e.printStackTrace();

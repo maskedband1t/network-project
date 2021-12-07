@@ -227,7 +227,7 @@ public class PeerManager implements Runnable {
     }
 
     // Sets bit at pieceIdx of BitSet of remote peer with id peerId to 1
-    synchronized void we(int peerId, int pieceIdx) {
+    synchronized void receivedPiece(int peerId, int pieceIdx) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){

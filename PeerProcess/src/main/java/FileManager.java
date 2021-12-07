@@ -131,13 +131,18 @@ public class FileManager {
     private boolean haveAllPieces() {
         if (!peerInfo.is_file_complete()) {
             BitSet set = receivedPieces.getBits();
-            for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
+            if (set.length() < CommonConfig.getInstance().numPieces) {
+                return false;
+            }
+            else
+                return true;
+            /*for (int i = 0; i < CommonConfig.getInstance().numPieces; i++) {
                 if (!set.get(i)) {
                     Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + receivedPieces.toString());
                     return false;
                 }
             }
-            return true;
+            return true;*/
         }
         return true;
     }

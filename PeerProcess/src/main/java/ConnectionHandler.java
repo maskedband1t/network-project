@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -49,6 +50,12 @@ public class ConnectionHandler implements Runnable{
     public void send(Message msg) throws IOException {
         //_conn.send(msg);
         _queue.add(msg);
+    }
+
+    // Sends multiple messages
+    public void queueMessages(List<Message> msgs) {
+        for (Message m : msgs)
+            _queue.add(m);
     }
 
     @Override
