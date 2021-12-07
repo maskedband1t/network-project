@@ -44,10 +44,11 @@ public class Bitfield {
     }
 
     // Get bits as a string
-    public String toString() {
+    public String asString() {
         String str = "";
-        for (int i = 0; i < bits.length()-1; i++)
-            str += bits.get(i) + ",";
+        for (int i = 0; i < bits.length()-1; i++) {
+            str += i == bits.length() - 2 ? Helpers.boolToBit(bits.get(i)) : Helpers.boolToBit(bits.get(i)) + ",";
+        }
         return str;
     }
 
@@ -100,19 +101,30 @@ public class Bitfield {
         return bits.cardinality() == 0;
     }
 
-    synchronized int getPieceIndexToRequest(BitSet piecesNotRequested) {
+    synchronized int getPieceIndexToRequest(Bitfield requestedPieces, Bitfield remotePieces) {
         // logic for which piece to choose is detailed in the proj description
 
-        // {1,0,1,1} -> "1,0,1,1"
-        String str = piecesNotRequested.toString();
-        Logger.getInstance().dangerouslyWrite("PIECES NOT REQUESTED: " + str);
+        // toString() does this: {1,0,1,1} -> "1,0,1,1"
 
-        piecesNotRequested.andNot(bits);
+        // Prints
+        Logger.getInstance().dangerouslyWrite("requestedPieces: (" + requestedPieces.getBits().length() + " bits) " + requestedPieces.asString());
+        Logger.getInstance().dangerouslyWrite("remotePieces: (" + remotePieces.getBits().length() + " bits) "  + remotePieces.asString());
+        Logger.getInstance().dangerouslyWrite("ourPieces: (" + this.getBits().length() + " bits) "  + this.asString());
 
-        // {1,0,1,1} -> "1,0,1,1"
-        str = piecesNotRequested.toString();
-        Logger.getInstance().dangerouslyWrite("PIECES NOT REQUESTED (AND NOT): " + str);
-        if (!piecesNotRequested.isEmpty()) {
+        // get the pieces we have -> get the pieces we don't have -> get the pieces we don't have that they have
+        Bitfield piecesWeCanRequest = clone(); // pieces we have
+        BitSet piecesWeCanRequestBitset = piecesWeCanRequest.getBits();
+        piecesWeCanRequestBitset.flip(0, piecesWeCanRequestBitset.length()); // pieces we dont have
+        piecesWeCanRequestBitset.and(remotePieces.getBits()); // pieces we dont have and they have
+        piecesWeCanRequestBitset.and(requestedPieces.getBits()); // pieces we dont have and they have and we havent requested yet
+
+        String str = piecesWeCanRequest.asString();
+        Logger.getInstance().dangerouslyWrite("piecesWeCanRequest (" + piecesWeCanRequestBitset.length() + " bits) " + str);
+
+        BitSet requestedPiecesBitset = requestedPieces.getBits();
+
+        // Choose a random piece to request if there are choices
+        if (!piecesWeCanRequestBitset.isEmpty()) {
             // Request a piece that we do not have, that we haven't requested yet
             // Random Selection Strategy if there are multiple choices
             // Ex: We are Peer A, and are requesting a Piece from Peer B
@@ -127,15 +139,15 @@ public class Bitfield {
             Logger.getInstance().dangerouslyWrite("GOT PIECE TO REQUEST: " + pieceIndex);
 
             // since we're going to return this value, update that we will request this index
-            bits.set(pieceIndex);
+            requestedPiecesBitset.set(pieceIndex);
 
             // make the part requestable again in _timeoutInMillis
             new java.util.Timer().schedule(
                     new java.util.TimerTask() {
                         @Override
                         public void run() {
-                            synchronized (bits) {
-                                bits.clear(pieceIndex);
+                            synchronized (requestedPiecesBitset) {
+                                requestedPiecesBitset.clear(pieceIndex);
                             }
                         }
                     },

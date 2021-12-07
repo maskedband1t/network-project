@@ -214,16 +214,16 @@ public class PeerManager implements Runnable {
     }
 
     // Get a copy of the BitSet of remote peer with id peerId
-    synchronized BitSet getReceivedPieces(int peerId) {
+    synchronized Bitfield getReceivedPieces(int peerId) {
         for (PeerInfo peer : _peers) {
             if (peer.getId() == peerId) {
                 if(peer != null){
-                    Bitfield clone_bitfield = peer.getBitfield().clone(); // clone peers bitfield
-                    return clone_bitfield.getBits();
+                    //Bitfield clone_bitfield = peer.getBitfield().clone(); // clone peers bitfield
+                    return peer.getBitfield().clone(); //clone_bitfield.getBits();
                 }
             }
         }
-        return new BitSet();
+        return new Bitfield();
     }
 
     // Sets bit at pieceIdx of BitSet of remote peer with id peerId to 1

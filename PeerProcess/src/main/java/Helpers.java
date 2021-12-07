@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class Helpers {
+    // Get boolean as bit
+    public static int boolToBit(boolean b) { return b ? 1 : 0; }
+
     // Get an int as a byte array
     public static byte[] intToBytes(int i, int size) {
         return ByteBuffer.allocate(size).putInt(i).array();

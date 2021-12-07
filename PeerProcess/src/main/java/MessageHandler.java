@@ -171,10 +171,16 @@ public class MessageHandler {
             // Get the piece
             byte[] piece = _fileManager.getPiece(pieceIdx);
 
-            byte[] concat = new byte[4 + (piece == null ? 0 : piece.length)];
-            System.arraycopy(Helpers.intToBytes(pieceIdx,4), 0, concat, 0, 4);
-            System.arraycopy(piece, 0, concat, 4, piece.length);
-
+            byte[] concat;
+            if (piece != null) {
+                concat = new byte[4 + piece.length];
+                System.arraycopy(msg.getPayload(), 0, concat, 0, 4);
+                System.arraycopy(piece, 0, concat, 4, piece.length);
+            }
+            else {
+                concat = new byte[4];
+                System.arraycopy(msg.getPayload(), 0, concat, 0, 4);
+            }
             //System.out.println(piece);
 
             Logger.getInstance().dangerouslyWrite("SENDING " + pieceIdx + " to " + _remotePeerId);

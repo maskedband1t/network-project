@@ -4,7 +4,7 @@ import java.util.BitSet;
 public class FileManager {
     int peerId;
     PeerInfo peerInfo;
-    //Bitfield peerInfo.getBitfield();
+    Bitfield receivedPieces;
     Bitfield requestedPieces;
     private Process process = null;
 
@@ -12,7 +12,7 @@ public class FileManager {
     public FileManager(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.peerId = peerInfo.getId();
-        //this.peerInfo.getBitfield() = peerInfo.getBitfield();
+        this.receivedPieces = peerInfo.getBitfield();
         this.requestedPieces = new Bitfield();
 
         // Reset pieces directory if necessary
@@ -74,9 +74,9 @@ public class FileManager {
     // Adds the piece to the pieces directory
     public synchronized boolean addPiece(int pieceIndex, byte[] piece) {
         // True if we do not have this piece
-        final boolean isNewPiece = !peerInfo.getBitfield().getBits().get(pieceIndex);
+        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
         Logger.getInstance().dangerouslyWrite("(1.1) Is " + pieceIndex + " a a new piece?: " + isNewPiece);
-        peerInfo.getBitfield().getBits().set(pieceIndex);
+        receivedPieces.getBits().set(pieceIndex);
 
         if (isNewPiece) {
             Logger.getInstance().dangerouslyWrite("(1.2) Adding " + pieceIndex);
@@ -90,8 +90,8 @@ public class FileManager {
     // Adds the piece to the pieces directory, with force ability
     public synchronized boolean addPiece(int pieceIndex, byte[] piece, boolean force) {
         // True if we do not have this piece
-        final boolean isNewPiece = !peerInfo.getBitfield().getBits().get(pieceIndex);
-        peerInfo.getBitfield().getBits().set(pieceIndex);
+        final boolean isNewPiece = !receivedPieces.getBits().get(pieceIndex);
+        receivedPieces.getBits().set(pieceIndex);
 
         if (force || isNewPiece) {
             addPieceBytes(pieceIndex, piece);
@@ -117,10 +117,10 @@ public class FileManager {
     // Checks if we have all pieces
     private boolean haveAllPieces() {
         if (!peerInfo.is_file_complete()) {
-            BitSet set = peerInfo.getBitfield().getBits();
+            BitSet set = receivedPieces.getBits();
             for (int i = 0; i < set.length()-1; i++) {
                 if (!set.get(i)) {
-                    Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + peerInfo.getBitfield().toString());
+                    Logger.getInstance().dangerouslyWrite("(haveAllPieces) We do not have piece " + i + " here is the bitfield: " + receivedPieces.toString());
                     return false;
                 }
             }
@@ -129,9 +129,9 @@ public class FileManager {
         return true;
     }
 
-    // Get a copy of peerInfo.getBitfield(), because we are using logical operations on the clone
+    // Get a copy of receivedPieces, because we are using logical operations on the clone
     public synchronized Bitfield getReceivedPieces() {
-        return (Bitfield)peerInfo.getBitfield().clone();
+        return (Bitfield)receivedPieces.clone();
     }
 
     // Get pieces that are available to request
@@ -142,16 +142,66 @@ public class FileManager {
     }
 
     // Get the index of the next piece to request
-    public synchronized int getPieceToRequest(BitSet piecesNotRequested) {
+    public synchronized int getPieceToRequest(Bitfield remotePieces) {
+        BitSet remotePiecesBitset = (BitSet)remotePieces.getBits().clone(); // remote pieces
+        remotePiecesBitset.andNot(receivedPieces.getBits()); // remote pieces that we don't have
+        remotePiecesBitset.andNot(requestedPieces.getBits()); // remote pieces that we don't have and haven't requested
+
+        if (!remotePiecesBitset.isEmpty()) {
+            // Request a piece that we do not have, that we haven't requested yet
+            // Random Selection Strategy if there are multiple choices
+            // Ex: We are Peer A, and are requesting a Piece from Peer B
+            //     We will randomly select a Piece to request from Peer B
+            //     of the pieces we do not have, and have not requested
+
+            String str = remotePiecesBitset.toString();
+            Logger.getInstance().dangerouslyWrite("Request indices to choose from: " + str);
+            System.out.println("Request indices to choose from: " + str);
+            System.out.println("Their pieces: " + remotePieces.getBits().toString());
+            System.out.println("Our pieces: " + receivedPieces.getBits().toString());
+            System.out.println("Requested pieces: " + receivedPieces.getBits().toString());
+
+            // "1,0,1,1" -> ["1","0","1" "1"]
+            String[] indexes = str.substring(1, str.length()-1).split(",");
+            // Get random index, trim commas off, parse into int
+            int pieceIndex = Integer.parseInt(indexes[(int)(Math.random()*(indexes.length-1))].trim());
+
+            Logger.getInstance().dangerouslyWrite("GOT PIECE TO REQUEST: " + pieceIndex);
+
+            // since we're going to return this value, update that we will request this index
+            BitSet requestedPiecesBitset = requestedPieces.getBits();
+            requestedPiecesBitset.set(pieceIndex);
+
+            // make the part requestable again in _timeoutInMillis
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            synchronized (requestedPiecesBitset) {
+                                requestedPiecesBitset.clear(pieceIndex);
+                            }
+                        }
+                    },
+                    CommonConfig.getInstance().unchokingInterval * 2000
+            );
+            // return the index of the piece to request
+            System.out.println("We choose index: " + pieceIndex);
+            Logger.getInstance().dangerouslyWrite("REQUESTING " + pieceIndex);
+            return pieceIndex;
+        }
+        // default
+        System.out.println("WE COULD NOT FIND AN INDEX TO REQUEST!!");
+        return -1;
+
         // Determine which piece to request
-        piecesNotRequested.andNot(peerInfo.getBitfield().getBits());
-        int pieceIdx = requestedPieces.getPieceIndexToRequest(piecesNotRequested);
-        Logger.getInstance().dangerouslyWrite("REQUESTING " + pieceIdx);
-        return pieceIdx;
+        //piecesNotRequested.andNot(receivedPieces.getBits());
+        //int pieceIdx = this.receivedPieces.getPieceIndexToRequest(this.requestedPieces, remotePieces);
+
+        //return pieceIdx;
     }
 
     public synchronized boolean hasPiece(int pieceIndex) {
-        return peerInfo.getBitfield().getBits().get(pieceIndex);
+        return receivedPieces.getBits().get(pieceIndex);
     }
 
     // Get the byte array of the piece at an index
