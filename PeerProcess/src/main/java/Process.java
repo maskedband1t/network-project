@@ -1,7 +1,14 @@
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -143,6 +150,12 @@ public class Process implements Runnable {
     // Handle when the file is complete
     public synchronized void complete() throws IOException {
         peerInfo.set_file_complete(true);
+
+        // write to summary log
+        Path summary_path = Paths.get(".." + "resources" + "summary.txt");
+        BufferedWriter summary_file = Files.newBufferedWriter(summary_path,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        summary_file.write("Peer " + peerInfo.getId()  + " has all the pieces now!");
+        summary_file.write("\n");
 
         // Send our completed bitfield to everyone else
         Bitfield field = peerInfo.getBitfield();
