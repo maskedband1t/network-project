@@ -51,13 +51,13 @@ public class ConnectionHelper extends Thread {
 
                 // Debugging print statement
                 // For now, don't print for CHOKE and UNCHOKE msgs
-                if (msg.getType() != 1 && msg.getType() != 0) {
+                /*if (msg.getType() != 1 && msg.getType() != 0) {
                     Helpers.println("Dequeued a send message with type " + Helpers.GetMessageType(msg.getType()) + ", the queue now has the following messages: ");
                     for (Object m : _queue.toArray()) {
                         Helpers.print(((Message) m).getType() + ",");
                     }
                     Helpers.println("");
-                }
+                }*/
 
                 // Validate not null
                 if (msg == null) {
@@ -92,7 +92,7 @@ public class ConnectionHelper extends Thread {
                     }
                 }
                 else {
-                    _queue.add(msg);
+                    //_queue.add(msg);
                     Helpers.println("Cannot send messages yet - we have not handshaked");
                     //Logger.getInstance().dangerouslyWrite("ConnectionHelper remote id is -1, will readd msg to queue");
                 }

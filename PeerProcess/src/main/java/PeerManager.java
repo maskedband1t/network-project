@@ -234,10 +234,9 @@ public class PeerManager implements Runnable {
 
         while(!Process.shutdown){
             try {
-                Thread.sleep(_unchokingInterval * 1000);
+                Thread.sleep(_unchokingInterval * 1000L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                // TODO: handle exception
             }
 
             List<PeerInfo> _interestedPeers = getInterestedPeers();
@@ -305,21 +304,20 @@ public class PeerManager implements Runnable {
                 for(int id:preferredPeerIDs)
                     Helpers.print(id);
                 Helpers.println();*/
+
+                // Update _chokedPeerIDs and _preferredPeerIDs
+                update_choked_peers(chokedPeerIDs);
+                update_preferred_peers(preferredPeerIDs);
             }
 
             // could log here the state of every peer if helpful
             // ex. if choked, unchoked, or interested
             // anything helpful/needed to log every thread run
 
-            // Update _chokedPeerIDs and _preferredPeerIDs
-            // TODO: hand chokedPeerIds and preferredPeerIds to process
-            update_choked_peers(chokedPeerIDs);
-            update_preferred_peers(preferredPeerIDs);
-
             // choke/unchoke peers
             try {
-                choke_peers(chokedPeerIDs);
-                unchoke_peers(preferredPeerIDs);
+                choke_peers(_chokedPeerIDs);
+                unchoke_peers(_preferredPeerIDs);
             }
             catch(Exception e) {
                 e.printStackTrace();

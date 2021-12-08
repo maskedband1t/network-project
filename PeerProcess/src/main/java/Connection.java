@@ -113,28 +113,28 @@ public class Connection {
 		}
 
 		switch (m.getType()) {
-			case 0:
+			case Helpers.CHOKE:
 				Logger.getInstance().choked(_info.getId());
 				break;
-			case 1:
+			case Helpers.UNCHOKE:
 				Logger.getInstance().unchoked(_info.getId());
 				break;
-			case 2:
+			case Helpers.INTERESTED:
 				Logger.getInstance().sentInterestedTo(_info.getId());
 				break;
-			case 3:
+			case Helpers.NOTINTERESTED:
 				Logger.getInstance().sentNotInterestedTo(_info.getId());
 				break;
-			case 4:
+			case Helpers.HAVE:
 				Logger.getInstance().sentHaveTo(_info.getId(), Helpers.getPieceIndexFromByteArray(m.getPayload()));
 				break;
-			case 5:
+			case Helpers.BITFIELD:
 				Logger.getInstance().sentBitfieldTo(_info.getId());
 				break;
-			case 6:
+			case Helpers.REQUEST:
 				Logger.getInstance().sentRequestTo(_info.getId(), Helpers.getPieceIndexFromByteArray(m.getPayload()));
 				break;
-			case 7:
+			case Helpers.PIECE:
 				Logger.getInstance().sentPieceTo(_info.getId(), Helpers.getPieceIndexFromByteArray(m.getPayload()));
 				break;
 			default:
