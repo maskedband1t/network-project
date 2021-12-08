@@ -111,6 +111,35 @@ public class Connection {
 		else {
 			Helpers.println("Sending " + Helpers.GetMessageType(m.getType()) + " message with no payload.");
 		}
+
+		switch (m.getType()) {
+			case 0:
+				Logger.getInstance().choked(_info.getId());
+				break;
+			case 1:
+				Logger.getInstance().unchoked(_info.getId());
+				break;
+			case 2:
+				Logger.getInstance().sentInterestedTo(_info.getId());
+				break;
+			case 3:
+				Logger.getInstance().sentNotInterestedTo(_info.getId());
+				break;
+			case 4:
+				Logger.getInstance().sentHaveTo(_info.getId(), Helpers.getPieceIndexFromByteArray(m.getPayload()));
+				break;
+			case 5:
+				Logger.getInstance().sentBitfieldTo(_info.getId());
+				break;
+			case 6:
+				Logger.getInstance().sentRequestTo(_info.getId(), Helpers.getPieceIndexFromByteArray(m.getPayload()));
+				break;
+			case 7:
+				Logger.getInstance().sentPieceTo(_info.getId(), Helpers.getPieceIndexFromByteArray(m.getPayload()));
+				break;
+			default:
+				Logger.getInstance().dangerouslyWrite("Sent an unknown message to " + _info.getId() + ".");
+		}
 	}
 
 	// Receives a message from remote peer

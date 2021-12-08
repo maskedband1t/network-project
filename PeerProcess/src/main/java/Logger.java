@@ -106,9 +106,17 @@ public class Logger {
         return writeToLog("has the optimistically unchoked neighbor " + partnerId + ".");
     }
 
+    public synchronized boolean unchoked(int partnerId) {
+        return writeToLog("unchoked " + partnerId + ".");
+    }
+
     // Log after receiving Unchoke message from remote peer
     public synchronized boolean unchokedBy(int partnerId) {
         return writeToLog("is unchoked by " + partnerId + ".");
+    }
+
+    public synchronized boolean choked(int partnerId) {
+        return writeToLog("choked " + partnerId + ".");
     }
 
     // Log after receiving Choke message from remote peer
@@ -116,9 +124,17 @@ public class Logger {
         return writeToLog("is choked by " + partnerId + ".");
     }
 
+    public synchronized boolean sentHaveTo(int partnerId, int pieceIndex) {
+        return writeToLog("sent the 'have' message to " + partnerId + " for the piece " + pieceIndex + ".");
+    }
+
     // Log after receiving Have message from remote peer
     public synchronized boolean receivedHaveFrom(int partnerId, int pieceIndex) {
         return writeToLog("received the 'have' message from " + partnerId + " for the piece " + pieceIndex + ".");
+    }
+
+    public synchronized boolean sentInterestedTo(int partnerId) {
+        return writeToLog("sent the 'interested' message to " + partnerId + ".");
     }
 
     // Log after receiving Interested message from remote peer
@@ -126,14 +142,26 @@ public class Logger {
         return writeToLog("received the 'interested' message from " + partnerId + ".");
     }
 
+    public synchronized boolean sentNotInterestedTo(int partnerId) {
+        return writeToLog("sent the 'not interested' message to " + partnerId + ".");
+    }
+
     // Log after receiving Not Interested message from remote peer
     public synchronized boolean receivedNotInterestedFrom(int partnerId) {
         return writeToLog("received the 'not interested' message from " + partnerId + ".");
     }
 
+    public synchronized boolean sentBitfieldTo(int partnerId) {
+        return writeToLog("sent the 'bitfield' message to " + partnerId + ".");
+    }
+
     // Log after receiving Bitfield message from remote peer
     public synchronized boolean receivedBitfieldFrom(int partnerId) {
         return writeToLog("received the 'bitfield' message from " + partnerId + ".");
+    }
+
+    public synchronized boolean sentRequestTo(int partnerId, int pieceIndex) {
+        return writeToLog("sent the 'request' message to " + partnerId + " for the piece " + pieceIndex + ".");
     }
 
     // Log after receiving Request message from remote peer
@@ -144,6 +172,10 @@ public class Logger {
     // Log after receiving Piece message from remote peer
     public synchronized boolean downloadedPiece(int partnerId, int pieceIndex, int pieceCount) {
         return writeToLog("has downloaded the piece " + pieceIndex + " from " + partnerId + ". Now the number of pieces it has is " + pieceCount + ".");
+    }
+
+    public synchronized boolean sentPieceTo(int partnerId, int pieceIndex) {
+        return writeToLog("sent the piece " + pieceIndex + " to " + partnerId + ".");
     }
 
     // Log after this peer has completed downloaded the file
