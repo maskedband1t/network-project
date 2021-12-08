@@ -68,9 +68,11 @@ public class ConnectionHandler implements Runnable{
                 _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // Receive handshake, we now identified remote peer
-            HandshakeMessage rcvHandshake = _conn.receiveHandshake();
-            if (rcvHandshake != null)
-                _remotePeerId = rcvHandshake.getPeerId();
+            while (_remotePeerId == -1) {
+                HandshakeMessage rcvHandshake = _conn.receiveHandshake();
+                if (rcvHandshake != null)
+                    _remotePeerId = rcvHandshake.getPeerId();
+            }
 
             // Based off of their id, fill connection's peerinfo properly
             PeerInfo remoteInfo = PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId);

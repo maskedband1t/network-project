@@ -220,6 +220,8 @@ public class Process implements Runnable {
     // The entry point for this thread
     @Override
     public void run() {
+        System.out.println("Running...");
+
         // Start the ProcessDoneChecker on its own thread
         _processDoneChecker.registerFileManager(fileManager);
         _processDoneChecker.registerPeerManager(peerManager);

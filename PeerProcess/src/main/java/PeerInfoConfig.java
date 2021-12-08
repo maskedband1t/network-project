@@ -55,8 +55,8 @@ public class PeerInfoConfig {
 
     // Debugging purposes, print out the configuration file contents
     public void debugPrint() {
-        Helpers.println("Peer Info Config");
-        Helpers.println("----------------");
+        System.out.println("Peer Info Config");
+        System.out.println("----------------");
         for (int i = 0; i < peerInfos.size(); i++) {
             peerInfos.get(i).debugPrint();
         }

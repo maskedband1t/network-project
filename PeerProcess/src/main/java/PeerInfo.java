@@ -125,6 +125,6 @@ public class PeerInfo {
 
     // Debugging purposes, print this peer's info
     public void debugPrint() {
-        Helpers.println(getId() + " " + getHost() + " " + getPort() + " " + getFileComplete());
+        System.out.println(getId() + " " + getHost() + " " + getPort() + " " + getFileComplete());
     }
 }
