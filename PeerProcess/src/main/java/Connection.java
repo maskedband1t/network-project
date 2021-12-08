@@ -141,7 +141,7 @@ public class Connection {
 		int ml = Helpers.bytesToInt(msg_length) - 1;
 
 		// validate ml
-		if (ml > CommonConfig.getInstance().pieceSize + 4)
+		if (ml > CommonConfig.getInstance().pieceSize + 4 || ml < 0)
 			return null;
 
 		// Read message type

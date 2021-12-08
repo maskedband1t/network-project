@@ -84,18 +84,21 @@ public class Logger {
 
     // Log stating this peer's preferred neighbors
     public synchronized boolean preferredNeighbors(Set<Integer> ids) {
-        try {
-            // Generate comma-separated string of preferred neighbor ids
-            String idsString = ids.toString();
-            idsString = idsString.substring(1, idsString.length() - 1);
-    
-            return writeToLog("has the preferred neighbors " + idsString + ".");
+        if (!ids.isEmpty()) {
+            try {
+                // Generate comma-separated string of preferred neighbor ids
+                String idsString = ids.toString();
+                idsString = idsString.substring(1, idsString.length() - 1);
+
+                return writeToLog("has the preferred neighbors " + idsString + ".");
+            }
+            catch (StringIndexOutOfBoundsException e) {
+                Helpers.printerr("An indexing error occurred.");
+                e.printStackTrace();
+                return false;
+            }
         }
-        catch (StringIndexOutOfBoundsException e) {
-            Helpers.printerr("An indexing error occurred.");
-            e.printStackTrace();
-            return false;
-        }
+        return false;
     }
 
     // Log stating this peer's optimistically unchoked neighbor
