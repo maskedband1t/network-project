@@ -98,7 +98,6 @@ public class Bitfield {
 
     // Debugging function to print the bitset into the command line
     public void debugPrint() {
-        int[] arr = bits.stream().toArray();
         Helpers.print("{");
         for (int i = 0; i < CommonConfig.getInstance().numPieces; i++)
             Helpers.print(bits.get(i) + ",");
