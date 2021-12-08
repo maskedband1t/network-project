@@ -15,7 +15,7 @@ public class PeerSocket implements SocketInterface{
 			is = s.getInputStream();
 			os = s.getOutputStream();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -26,7 +26,7 @@ public class PeerSocket implements SocketInterface{
 			is = s.getInputStream();
 			os = s.getOutputStream();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -37,7 +37,7 @@ public class PeerSocket implements SocketInterface{
 			os.close();
 			s.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -47,7 +47,7 @@ public class PeerSocket implements SocketInterface{
 			os.write(b);
 			os.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -56,7 +56,7 @@ public class PeerSocket implements SocketInterface{
 		try {
 			os.write(b);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -66,7 +66,7 @@ public class PeerSocket implements SocketInterface{
 			return is.read();
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return -1;
 		}
 	}
@@ -78,7 +78,7 @@ public class PeerSocket implements SocketInterface{
 			return is.read(b, 0, len);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return -1;
 		}
 	}
@@ -89,7 +89,7 @@ public class PeerSocket implements SocketInterface{
 		return is.read(b);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return -1;
 		}
 	}

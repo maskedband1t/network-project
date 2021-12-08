@@ -69,7 +69,8 @@ public class ConnectionHandler implements Runnable{
 
             // Receive handshake, we now identified remote peer
             HandshakeMessage rcvHandshake = _conn.receiveHandshake();
-            _remotePeerId = rcvHandshake.getPeerId();
+            if (rcvHandshake != null)
+                _remotePeerId = rcvHandshake.getPeerId();
 
             // Based off of their id, fill connection's peerinfo properly
             PeerInfo remoteInfo = PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId);
@@ -130,6 +131,6 @@ public class ConnectionHandler implements Runnable{
             // Close the connection before exiting the run() function
             _conn.close();
         }
-        Logger.getInstance().dangerouslyWrite("Terminating ConnectionHandler thread, messages will no longer be accepted nor handled");
+        //Logger.getInstance().dangerouslyWrite("Terminating ConnectionHandler thread, messages will no longer be accepted nor handled");
     }
 }

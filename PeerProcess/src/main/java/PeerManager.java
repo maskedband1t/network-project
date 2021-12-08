@@ -110,10 +110,10 @@ public class PeerManager implements Runnable {
                 peer.setBitfield(bitfield);
                 if (bitfield.getBits().cardinality() == CommonConfig.getInstance().numPieces)
                     peer.set_file_complete(true);
-                Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
-                Logger.getInstance().dangerouslyWrite("Current state of peers: ");
-                for(PeerInfo p:_peers)
-                    Logger.getInstance().dangerouslyWrite(p.getId() + ": " + p.getFileComplete() + " (" + p.getBitfield().getBits().cardinality() + ")");
+                //Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
+                //Logger.getInstance().dangerouslyWrite("Current state of peers: ");
+                //for(PeerInfo p:_peers)
+                //    Logger.getInstance().dangerouslyWrite(p.getId() + ": " + p.getFileComplete() + " (" + p.getBitfield().getBits().cardinality() + ")");
                 download_finished();
             }
         } 
@@ -134,11 +134,11 @@ public class PeerManager implements Runnable {
     public synchronized void download_finished(){
         for (PeerInfo peer : _peers) {
             if (peer.getBitfield().getBits().cardinality() != CommonConfig.getInstance().numPieces){
-                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
+                //Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
                 return;
             }
             else if (!peer.getFileComplete()) {
-                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
+                //Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
                 peer.set_file_complete(true);
             }
         }

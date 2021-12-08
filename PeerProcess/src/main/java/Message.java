@@ -5,13 +5,13 @@
 *    - a message payload with variable size.
 **/
 public class Message {
-    private int length;
-    private byte type;
-    private byte[] payload;
+    private int length = 0;
+    private byte type = 0;
+    private byte[] payload = new byte[]{};
 
     // Construct a message with a type and payload
     public Message(byte type, byte[] data) {
-        this.length = (data == null ? 0 : data.length) + 1; // 1 for type byte
+        this.length = (data == null || data.equals(new byte[]{}) ? 0 : data.length) + 1; // 1 for type byte
         this.type = type;
         if (data != null)
             this.payload = data.clone();

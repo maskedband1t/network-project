@@ -85,8 +85,9 @@ public class Connection {
 	// Sends a message to remote pLeer
 	public synchronized void send(Message m) throws IOException {
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
-		Helpers.println("Connection.send message length: " + m.getLength() + " for type: " + Helpers.GetMessageType(m.getType()));
-		//if (_socket == null)
+		//System.out.println("Connection.send message length: " + m.getLength() + " for type: " + Helpers.GetMessageType(m.getType()));
+		if (_socket == null)
+			return;
 			//Logger.getInstance().dangerouslyWrite("SOCKET IS NULL D:");
 		try {
 			_socket.write(lengthAsArr);
@@ -159,7 +160,7 @@ public class Connection {
 		if (ml > 0) {
 			try {
 				_socket.read(msg, ml);
-				Helpers.println("Read msg: " + Helpers.bytesToInt(msg));
+				//Helpers.println("Read msg: " + Helpers.bytesToInt(msg));
 			} catch (IOException e) {
 				e.printStackTrace();
 				return null;

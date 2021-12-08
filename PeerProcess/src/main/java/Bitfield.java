@@ -19,7 +19,7 @@ public class Bitfield {
 
     // Init bits with a byte array
     public Bitfield(byte[] set) {
-        bits = BitSet.valueOf(set);
+        bits = BitSet.valueOf(set.clone());
     }
 
     public Bitfield(BitSet set) {
@@ -40,7 +40,7 @@ public class Bitfield {
 
     // Get bits as byte array
     public byte[] toByteArray() {
-        return bits.toByteArray();
+        return ((BitSet)bits.clone()).toByteArray();
     }
 
     // Get bits as a string

@@ -98,7 +98,7 @@ public class Process implements Runnable {
     private synchronized boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
-            Logger.getInstance().dangerouslyWrite(peerInfo.getId() + " added connection handler for " + connHdlr.getPeerId());
+            //Logger.getInstance().dangerouslyWrite(peerInfo.getId() + " added connection handler for " + connHdlr.getPeerId());
             new Thread(connHdlr).start(); // start handling connection on another thread
             try {
                 wait(10);
@@ -144,14 +144,11 @@ public class Process implements Runnable {
         _peers_file_complete.set(true);
         // we are done && everyone else is done
         if (peerInfo.getFileComplete() || peerInfo.getBitfield().getBits().cardinality() == CommonConfig.getInstance().numPieces) {
-            Logger.getInstance().dangerouslyWrite("Current state of peers: ");
-            for(PeerInfo p: PeerInfoConfig.getInstance().peerInfos)
-                Logger.getInstance().dangerouslyWrite(p.getId() + ": " + p.getFileComplete() + " (" + p.getBitfield().getBits().cardinality() + ")");
+            //Logger.getInstance().dangerouslyWrite("Current state of peers: ");
+            //for(PeerInfo p: PeerInfoConfig.getInstance().peerInfos)
+            //    Logger.getInstance().dangerouslyWrite(p.getId() + ": " + p.getFileComplete() + " (" + p.getBitfield().getBits().cardinality() + ")");
             //Logger.getInstance().dangerouslyWrite("(HandleHave or HandleBitfield) Everyone else is done AND we are done.");
-            Logger.getInstance().completedDownload();
-            fileManager.mergePiecesIntoFile();
-            shutdown = true;
-            System.exit(0);
+            successfullyExit();
         }
     }
 
@@ -164,8 +161,9 @@ public class Process implements Runnable {
         if (!field.empty()) {
             byte[] arr = field.getBits().toByteArray();
             for (ConnectionHandler ch : _connHandlers) {
-                Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
-                ch.sendDirectly(new Message(Helpers.BITFIELD, arr));
+                //Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
+                Message bitfieldMsg = new Message(Helpers.BITFIELD, arr);
+                ch.sendDirectly(bitfieldMsg);
             }
         }
         //else
@@ -173,25 +171,8 @@ public class Process implements Runnable {
 
         // Handle shutdown
         if (_peers_file_complete.get()) { // we are done && everyone else is done
-            // write to summary log
-            try {
-                File logFile = new File(Helpers.pathToResourcesFolder + "swummary.log");
-                logFile.createNewFile();
-
-                BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
-                bf.write(java.time.LocalDateTime.now() + ": Peer " + peerInfo.getId()  + " has all the pieces now!");
-                bf.newLine();
-                bf.close();
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
-
             //Logger.getInstance().dangerouslyWrite("(4.1.1) We are done AND everyone else is done.");
-            Logger.getInstance().completedDownload();
-            fileManager.mergePiecesIntoFile();
-            shutdown = true;
-            System.exit(0);
+            successfullyExit();
         }
         else { // Debug print why we didn't shut down
             //Logger.getInstance().dangerouslyWrite("(4.1.1) Not everyone is done. Here are the pieces missing: ");
@@ -207,6 +188,33 @@ public class Process implements Runnable {
                 //Logger.getInstance().dangerouslyWrite(p.getId() + " bitfield missing: " + pBits.toString());
             }
         }
+    }
+
+    // Writes completion to summary log
+    private synchronized void writeToSummaryLog() {
+        // write to summary log
+        try {
+            File logFile = new File(Helpers.pathToResourcesFolder + "summary.log");
+            //logFile.createNewFile();
+
+            BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
+            bf.write(java.time.LocalDateTime.now() + ": Peer " + peerInfo.getId()  + " has all the pieces now!");
+            bf.newLine();
+            bf.close();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Handles completion of process
+    private synchronized void successfullyExit() {
+        writeToSummaryLog();
+        Logger.getInstance().completedDownload();
+        fileManager.mergePiecesIntoFile();
+        shutdown = true;
+        System.out.println("Successfully exiting...");
+        System.exit(0);
     }
 
     // The entry point for this thread
