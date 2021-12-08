@@ -64,12 +64,12 @@ public class ConnectionHandler implements Runnable{
 
         try {
             // If we are the connector, we send -> receive
-            if (_connectingPeer)
-                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            //if (_connectingPeer)
+            _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // Receive handshake, we now identified remote peer
             HandshakeMessage rcvHandshake = _conn.receiveHandshake();
-            _remotePeerId = rcvHandshake != null ? rcvHandshake.getPeerId() : -1;
+            _remotePeerId = rcvHandshake.getPeerId();
 
             // Based off of their id, fill connection's peerinfo properly
             PeerInfo remoteInfo = PeerInfoConfig.getInstance().GetPeerInfo(_remotePeerId);
@@ -78,8 +78,8 @@ public class ConnectionHandler implements Runnable{
             Helpers.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
 
             // If we aren't the connector, we receive -> send
-            if (!_connectingPeer)
-                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            //if (!_connectingPeer)
+            //    _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // After handshake send bitfield message if we have any pieces
             Helpers.println("Checking if we have any set bits in our bitfield...");

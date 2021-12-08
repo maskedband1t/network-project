@@ -234,7 +234,7 @@ public class PeerManager implements Runnable {
 
         while(!Process.shutdown){
             try {
-                Thread.sleep(_unchokingInterval);
+                Thread.sleep(_unchokingInterval * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 // TODO: handle exception

@@ -29,7 +29,7 @@ class OptimisticUnchoker extends Thread {
         while(!Process.shutdown){
             try {
                 // constantly sleeping for interval and reshuffling once out
-                Thread.sleep(_optimistic_unchoking_interval);
+                Thread.sleep(_optimistic_unchoking_interval * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

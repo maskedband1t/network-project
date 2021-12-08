@@ -199,7 +199,7 @@ public class FileManager {
                             }
                         }
                     },
-                    CommonConfig.getInstance().unchokingInterval * 1500L
+                    CommonConfig.getInstance().unchokingInterval * 2000L
             );
             // return the index of the piece to request
             Helpers.println("We choose index: " + pieceIndex);
