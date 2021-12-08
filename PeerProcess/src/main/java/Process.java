@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -58,12 +57,19 @@ public class Process implements Runnable {
     }
 
     // Builds Connection to peer
-    public void buildPeer(PeerInfo info) throws IOException {
-        Helpers.println("Attempting to connect to peer id: " + info.getId());
-        Connection c = new Connection(info);
-        Helpers.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
-        ConnectionHandler ch = new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true);
-        addConnectionHandler(ch);
+    public void buildPeer(PeerInfo info) {
+        Connection c = null;
+        try {
+            Helpers.println("Attempting to connect to peer id: " + info.getId());
+            c = new Connection(info);
+            Helpers.println("ADDING CONNECTION HANDLER [BUILDING NEW CONNECTION]");
+            ConnectionHandler ch = new ConnectionHandler(peerInfo, c, fileManager, peerManager, info, true);
+            addConnectionHandler(ch);
+        }
+        catch (Exception e) {
+            if (c != null)
+                c.close();
+        }
     }
 
     // Builds Connections to all peers
@@ -218,6 +224,8 @@ public class Process implements Runnable {
                     e.printStackTrace();
                 }
             }
+
+            s.close();
         }
         catch (Exception e) {
             e.printStackTrace();

@@ -54,8 +54,9 @@ public class ConnectionHelper extends Thread {
                 if (msg.getType() != 1 && msg.getType() != 0) {
                     Helpers.println("Dequeued a send message with type " + Helpers.GetMessageType(msg.getType()) + ", the queue now has the following messages: ");
                     for (Object m : _queue.toArray()) {
-                        Helpers.println("> " + ((Message) m).getType());
+                        Helpers.print(((Message) m).getType() + ",");
                     }
+                    Helpers.println("");
                 }
 
                 // Validate not null

@@ -52,11 +52,11 @@ public class PeerManager implements Runnable {
                     }
                 }
 
-                try {
+                /*try {
                     _process.unchoke_peers(PeerInfo.toIdList(_optimisticallyUnchokedPeers));
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         }
     }
