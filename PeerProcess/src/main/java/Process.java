@@ -1,6 +1,4 @@
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
@@ -167,12 +165,6 @@ public class Process implements Runnable {
     public synchronized void complete() throws IOException {
         peerInfo.set_file_complete(true);
 
-        // write to summary log
-        Path summary_path = Paths.get(".." + "resources" + "summary.txt");
-        BufferedWriter summary_file = Files.newBufferedWriter(summary_path,StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        summary_file.write("Peer " + peerInfo.getId()  + " has all the pieces now!");
-        summary_file.write("\n");
-
         // Send our completed bitfield to everyone else
         Bitfield field = peerInfo.getBitfield();
         if (!field.empty()) {
@@ -187,6 +179,20 @@ public class Process implements Runnable {
 
         // Handle shutdown
         if (_peers_file_complete.get()) { // we are done && everyone else is done
+            // write to summary log
+            try {
+                File logFile = new File(Helpers.pathToResourcesFolder + "summary.log");
+                logFile.createNewFile();
+
+                BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
+                bf.write(java.time.LocalDateTime.now() + ": Peer " + peerInfo.getId()  + " has all the pieces now!");
+                bf.newLine();
+                bf.close();
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+
             //Logger.getInstance().dangerouslyWrite("(4.1.1) We are done AND everyone else is done.");
             Logger.getInstance().completedDownload();
             fileManager.mergePiecesIntoFile();
