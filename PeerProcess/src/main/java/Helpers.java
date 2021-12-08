@@ -1,6 +1,5 @@
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class Helpers {
@@ -97,6 +96,9 @@ public class Helpers {
     // Relative string path to where the built resources file is
     public static final String pathToResourcesFolder = "./../../../resources/main/";
 
+    // Interval for checking done-ness (milliseconds)
+    public static final int checkDoneInterval = 5000;
+
     // Debugging purposes - should we print debugging statements?
-    public static final boolean debug = true;
+    public static final boolean debug = false;
 }

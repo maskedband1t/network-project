@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 public class Connection {
 	private PeerInfo _info;
@@ -8,7 +7,7 @@ public class Connection {
 
 	// Constructs a connection based off of PeerInfo
 	public Connection(PeerInfo info)
-	throws IOException, UnknownHostException {
+	throws IOException {
 		_info = info;
 		PeerSocketFactory factory = new PeerSocketFactory();
 		_socket = factory.buildSocket(_info.getHost(), _info.getPort());
@@ -27,7 +26,7 @@ public class Connection {
 	}
 
 	// Sends a handshake message
-	public void sendHandshake(HandshakeMessage msg) throws IOException{
+	public void sendHandshake(HandshakeMessage msg) throws IOException {
 		_socket.write("P2PFILESHARINGPROJ".getBytes());
 		_socket.write(new byte[10]);
 		Helpers.println("Sending handshake with id" + msg.getPeerId());
@@ -84,8 +83,7 @@ public class Connection {
 	}
 
 	// Sends a message to remote pLeer
-	public synchronized void send(Message m)
-	throws IOException {
+	public synchronized void send(Message m) throws IOException {
 		byte[] lengthAsArr = Helpers.intToBytes(m.getLength(), 4);
 		Helpers.println("Connection.send message length: " + m.getLength() + " for type: " + Helpers.GetMessageType(m.getType()));
 		//if (_socket == null)

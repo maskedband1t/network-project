@@ -1,66 +1,9 @@
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class PeerManager implements Runnable {
-
-    // PeerManager has OptimisticUnchoker as a separate thread
-    class OptimisticUnchoker extends Thread {
-        private final int _num_optimistic_unchoked_neighbors;
-        private final int _optimistic_unchoking_interval;
-        private final List<PeerInfo> _chokedPeers = new ArrayList<>();
-        // TODO: set up collection of optimistically unchoked peers
-        final Collection<PeerInfo> _optimisticallyUnchokedPeers = Collections.newSetFromMap(new ConcurrentHashMap<PeerInfo, Boolean>());
-
-        // Construct an Optimistic Unchoker
-        OptimisticUnchoker(){
-            _num_optimistic_unchoked_neighbors = 1;    // hardcoded for now (maybe don't need to change)
-            _optimistic_unchoking_interval = CommonConfig.getInstance().optimisticUnchokingInterval;
-        }
-
-        // Set _chokedPeers
-        void setChokedPeers(Collection<PeerInfo> chokedPeers) { // shouldn't be able to access this while running
-            _chokedPeers.clear();
-            _chokedPeers.addAll(chokedPeers);
-        }
-
-        // The entry point for this thread
-        @Override
-        public void run(){
-            while(!Process.shutdown){
-                try {
-                    // constantly sleeping for interval and reshuffling once out
-                    Thread.sleep(_optimistic_unchoking_interval);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    // TODO: handle exception
-                }
-
-                synchronized(this){
-                    if(!_chokedPeers.isEmpty()){
-                        // shuffle to pick new unchoked peers
-                        Collections.shuffle(_chokedPeers);
-
-                        // clear to put new ones in
-                        _optimisticallyUnchokedPeers.clear();
-
-                        // since already shuffled, this is fine
-                        int _minPeers = Math.min(_chokedPeers.size() ,_num_optimistic_unchoked_neighbors);
-                        _optimisticallyUnchokedPeers.addAll(_chokedPeers.subList(0, _minPeers));
-                    }
-                }
-
-                /*try {
-                    _process.unchoke_peers(PeerInfo.toIdList(_optimisticallyUnchokedPeers));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
-            }
-        }
-    }
-
     private int _peerId;
     public Collection<PeerInfo> _preferredPeers = new HashSet<>();
     public List<PeerInfo> _peers = new ArrayList<>();
@@ -167,7 +110,10 @@ public class PeerManager implements Runnable {
                 peer.setBitfield(bitfield);
                 if (bitfield.getBits().cardinality() == CommonConfig.getInstance().numPieces)
                     peer.set_file_complete(true);
-                //Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
+                Logger.getInstance().dangerouslyWrite("Updated bitfield for " + peerId + " to: " + peer.getBitfield().getBits().toString());
+                Logger.getInstance().dangerouslyWrite("Current state of peers: ");
+                for(PeerInfo p:_peers)
+                    Logger.getInstance().dangerouslyWrite(p.getId() + ": " + p.getFileComplete() + " (" + p.getBitfield().getBits().cardinality() + ")");
                 download_finished();
             }
         } 
@@ -185,14 +131,16 @@ public class PeerManager implements Runnable {
     }
 
     // Handles logic for finishing the file if necessary
-    private synchronized void download_finished(){
+    public synchronized void download_finished(){
         for (PeerInfo peer : _peers) {
-            if (peer.getBitfield().getBits().cardinality() < CommonConfig.getInstance().numPieces){
-                //Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
+            if (peer.getBitfield().getBits().cardinality() != CommonConfig.getInstance().numPieces){
+                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " is NOT done. Cardinality (" + peer.getBitfield().getBits().cardinality() + ")");
                 return;
             }
-            //else
-                //Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
+            else if (!peer.getFileComplete()) {
+                Logger.getInstance().dangerouslyWrite("(download_finished) Peer " + peer.getId() + " IS done.");
+                peer.set_file_complete(true);
+            }
         }
         _process.neighborsComplete();
     }
@@ -261,6 +209,20 @@ public class PeerManager implements Runnable {
         if (this._process != null) {
             this._process.unchoke_peers(peers);
         }
+    }
+
+    // checks if the peer with given id has the file
+    public boolean hasFile(int id) {
+        for (PeerInfo p : _peers) {
+            if (p.getId() == id)
+                return p.getFileComplete();
+        }
+        return false;
+    }
+
+    // checks if the peer with given id started with file
+    public boolean startedWithFile(int id) {
+        return PeerInfoConfig.getInstance().GetPeerInfo(id).getStartedWithFile();
     }
 
     // The entry point for this thread

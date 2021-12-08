@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class PeerSocket implements SocketInterface{
 	private Socket s;
@@ -10,40 +9,55 @@ public class PeerSocket implements SocketInterface{
 	private OutputStream os;
 
 	// Constructor for PeerSocket, uses params to create Java API Socket
-	public PeerSocket(String host, int port)
-	throws IOException {
-		s = new Socket(host,port);
-		is = s.getInputStream();
-		os = s.getOutputStream();
+	public PeerSocket(String host, int port) {
+		try {
+			s = new Socket(host,port);
+			is = s.getInputStream();
+			os = s.getOutputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Constructor with an existing Socket
-	public PeerSocket(Socket socket)
-	throws IOException {
+	public PeerSocket(Socket socket) {
 		s = socket;
-		is = s.getInputStream();
-		os = s.getOutputStream();
+		try {
+			is = s.getInputStream();
+			os = s.getOutputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Close socket
-	public void close()
-	throws IOException {
-		is.close();
-		os.close();
-		s.close();
+	public void close() {
+		try {
+			is.close();
+			os.close();
+			s.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Write to socket
-	public void write(byte[] b)
-	throws IOException{
-		os.write(b);
-		os.flush();
+	public void write(byte[] b) {
+		try {
+			os.write(b);
+			os.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Write byte to socket
-	public void write(byte b)
-			throws IOException{
-		os.write(b);
+	public void write(byte b) {
+		try {
+			os.write(b);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Read next byte from socket
@@ -52,30 +66,30 @@ public class PeerSocket implements SocketInterface{
 			return is.read();
 		}
 		catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			return -1;
 		}
 	}
 
 	// Read determined amount from socket
-	public int read(byte[] b, int len) throws IOException {
+	public int read(byte[] b, int len) {
 		try {
 			// set default offset to 0
 			return is.read(b, 0, len);
 		}
 		catch (Exception e) {
-			//System.exit(-1);
+			e.printStackTrace();
 			return -1;
 		}
 	}
 
 	// Read fully from socket
-	public int read(byte[] b) throws IOException {
+	public int read(byte[] b) {
 		try {
 		return is.read(b);
 		}
 		catch (Exception e) {
-			//System.exit(-1);
+			e.printStackTrace();
 			return -1;
 		}
 	}

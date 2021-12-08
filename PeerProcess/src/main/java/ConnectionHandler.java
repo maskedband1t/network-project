@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -47,12 +46,12 @@ public class ConnectionHandler implements Runnable{
     public int getPeerId() { return _info.getId(); }
 
     // Queue message
-    public void send(Message msg) throws IOException {
+    public void send(Message msg) {
         _queue.add(msg);
     }
 
     // Send message
-    public synchronized void sendDirectly(Message msg) throws IOException {
+    public void sendDirectly(Message msg) throws IOException {
         _conn.send(msg);
     }
 
@@ -65,8 +64,8 @@ public class ConnectionHandler implements Runnable{
 
         try {
             // If we are the connector, we send -> receive
-            //if (_connectingPeer)
-            _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            if (_connectingPeer)
+                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // Receive handshake, we now identified remote peer
             HandshakeMessage rcvHandshake = _conn.receiveHandshake();
@@ -79,8 +78,8 @@ public class ConnectionHandler implements Runnable{
             Helpers.println("Updated Connection Handler [" + _uuid + "]for " + _info.getId() + " to remote peer " + _remotePeerInfo.getId());
 
             // If we aren't the connector, we receive -> send
-            //if (!_connectingPeer)
-            //    _conn.sendHandshake(new HandshakeMessage(_info.getId()));
+            if (!_connectingPeer)
+                _conn.sendHandshake(new HandshakeMessage(_info.getId()));
 
             // After handshake send bitfield message if we have any pieces
             Helpers.println("Checking if we have any set bits in our bitfield...");
@@ -110,11 +109,11 @@ public class ConnectionHandler implements Runnable{
                 try {
                     Message msgReceived = _conn.receive();
                     if (msgReceived != null) {
-                        Helpers.println("Received a message of type " + Helpers.GetMessageType(msgReceived.getType()));
+                        //System.out.println("Received a message of type " + Helpers.GetMessageType(msgReceived.getType()));
                         Message msgToReturn = msgHandler.handle(msgReceived);
                         if (msgToReturn != null) {
                             _conn.send(msgToReturn);
-                            Helpers.println("We are returning a message with type " + Helpers.GetMessageType(msgToReturn.getType()));
+                            //System.out.println("We are returning a message with type " + Helpers.GetMessageType(msgToReturn.getType()));
                         }
                     }
                 }
@@ -131,5 +130,6 @@ public class ConnectionHandler implements Runnable{
             // Close the connection before exiting the run() function
             _conn.close();
         }
+        Logger.getInstance().dangerouslyWrite("Terminating ConnectionHandler thread, messages will no longer be accepted nor handled");
     }
 }

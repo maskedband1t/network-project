@@ -1,11 +1,9 @@
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -21,6 +19,7 @@ public class Process implements Runnable {
     private PeerInfo peerInfo;
     private FileManager fileManager;
     public PeerManager peerManager;
+    private ProcessDoneChecker _processDoneChecker;
 
     // whether we should shutdown the program
     public static boolean shutdown;
@@ -32,9 +31,10 @@ public class Process implements Runnable {
     public Process(PeerInfo peerInfo) {
         this.peerInfo = peerInfo;
         this.shutdown = false;
+        this._peers_file_complete = new AtomicBoolean(false);
         this.fileManager = new FileManager(peerInfo);
         this.peerManager = new PeerManager(peerInfo.getId());
-        this._peers_file_complete = new AtomicBoolean(false);
+        _processDoneChecker = new ProcessDoneChecker();
     }
 
     // Split the file into pieces
@@ -98,6 +98,7 @@ public class Process implements Runnable {
     private synchronized boolean addConnectionHandler(ConnectionHandler connHdlr) {
         if (!_connHandlers.contains(connHdlr)) {
             _connHandlers.add(connHdlr);
+            Logger.getInstance().dangerouslyWrite(peerInfo.getId() + " added connection handler for " + connHdlr.getPeerId());
             new Thread(connHdlr).start(); // start handling connection on another thread
             try {
                 wait(10);
@@ -127,16 +128,6 @@ public class Process implements Runnable {
         }
     }
 
-    // unchoke peers
-    public synchronized void unchoke_peers(List<Integer> peers) throws IOException {
-        for (ConnectionHandler ch : _connHandlers) {
-            if (peers.contains(ch.getRemotePeerId())) {
-                //Helpers.println("Unchoking: " + ch.getRemotePeerId());
-                ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
-            }
-        }
-    }
-
     // Handle when a piece arrives
     public synchronized void receivedPiece(int pieceIndex) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {
@@ -153,6 +144,9 @@ public class Process implements Runnable {
         _peers_file_complete.set(true);
         // we are done && everyone else is done
         if (peerInfo.getFileComplete() || peerInfo.getBitfield().getBits().cardinality() == CommonConfig.getInstance().numPieces) {
+            Logger.getInstance().dangerouslyWrite("Current state of peers: ");
+            for(PeerInfo p: PeerInfoConfig.getInstance().peerInfos)
+                Logger.getInstance().dangerouslyWrite(p.getId() + ": " + p.getFileComplete() + " (" + p.getBitfield().getBits().cardinality() + ")");
             //Logger.getInstance().dangerouslyWrite("(HandleHave or HandleBitfield) Everyone else is done AND we are done.");
             Logger.getInstance().completedDownload();
             fileManager.mergePiecesIntoFile();
@@ -170,7 +164,7 @@ public class Process implements Runnable {
         if (!field.empty()) {
             byte[] arr = field.getBits().toByteArray();
             for (ConnectionHandler ch : _connHandlers) {
-                //Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
+                Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
                 ch.sendDirectly(new Message(Helpers.BITFIELD, arr));
             }
         }
@@ -218,6 +212,11 @@ public class Process implements Runnable {
     // The entry point for this thread
     @Override
     public void run() {
+        // Start the ProcessDoneChecker on its own thread
+        _processDoneChecker.registerFileManager(fileManager);
+        _processDoneChecker.registerPeerManager(peerManager);
+        _processDoneChecker.start();
+
         try {
             // Create a Server Socket listener
             ServerSocket s = new ServerSocket(peerInfo.getPort());

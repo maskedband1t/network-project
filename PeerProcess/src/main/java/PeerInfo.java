@@ -7,10 +7,11 @@ public class PeerInfo {
     private int peerId;
     private String hostname;
     private int port;
+    private Boolean startedWithFile = false;
     private AtomicBoolean _interested;
     private AtomicInteger _downloadRate;
     private Bitfield _bitfield;
-    private AtomicBoolean _file_complete = new AtomicBoolean(false);;
+    private AtomicBoolean _file_complete = new AtomicBoolean(false);
 
     // Construct a default PeerInfo
     public PeerInfo() {
@@ -29,6 +30,7 @@ public class PeerInfo {
         this.port = port;
         this._interested = new AtomicBoolean (false);
         this._downloadRate = new AtomicInteger(0);
+        this.startedWithFile = file_complete;
         this._file_complete.set(file_complete);
         this._bitfield = new Bitfield(file_complete);
     }
@@ -56,6 +58,11 @@ public class PeerInfo {
 
     // Get the bitfield
     public Bitfield getBitfield() { return _bitfield; }
+
+    // Get startedWithFile
+    public boolean getStartedWithFile() {
+        return startedWithFile;
+    }
 
     // Get _file_complete
     public boolean getFileComplete() {

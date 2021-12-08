@@ -131,32 +131,37 @@ public class MessageHandler {
         // HAS packet payload: bitfield structure, which tracks the pieces of the file the peer has
         // Ex: If there are 32 pieces of the file, and the peer has all of them, it will send a payload of 32 bits
 
-        // Initialize the bitfield for the peer that sent this message
-        // Note: We only handle this bitfield message once per peer
-        Bitfield bf = new Bitfield(msg.getPayload());
-        //Logger.getInstance().dangerouslyWrite("(handleBitfieldMsg) from " + _remotePeerId + ": " + bf.getBits().toString());
-        _peerManager.handleBitfield(_remotePeerId, bf);
+        // We only update bitfield if they are not done, or they are done but they started as done
+        if (!_peerManager.hasFile(_remotePeerId) || _peerManager.startedWithFile(_remotePeerId)) {
+            // Initialize the bitfield for the peer that sent this message
+            // Note: We only handle this bitfield message once per peer
+            Bitfield bf = new Bitfield(msg.getPayload());
+            //Logger.getInstance().dangerouslyWrite("(handleBitfieldMsg) from " + _remotePeerId + ": " + bf.getBits().toString());
+            _peerManager.handleBitfield(_remotePeerId, bf);
 
-        // Log
-        Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
+            // Log
+            Logger.getInstance().receivedBitfieldFrom(_remotePeerId);
 
-        // TODO: Debug print - can remove later
-        //Helpers.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
-        //bf.debugPrint();
+            // TODO: Debug print - can remove later
+            //Helpers.println("Setting Bitfield for peer " + _remotePeerId);// + " to: ");
+            //bf.debugPrint();
 
-        // Clears all bits that are set
-        bf.getBits().andNot(_fileManager.getReceivedPieces().getBits());
+            // Clears all bits that are set
+            bf.getBits().andNot(_fileManager.getReceivedPieces().getBits());
 
-        // Send message back based on whether or not bitfield has this piece
-        if (bf.empty())
-            return new Message(Helpers.NOTINTERESTED, new byte[]{});
-        else
-            return new Message(Helpers.INTERESTED, new byte[]{});
+            // Send message back based on whether or not bitfield has this piece
+            if (bf.empty())
+                return new Message(Helpers.NOTINTERESTED, new byte[]{});
+            else
+                return new Message(Helpers.INTERESTED, new byte[]{});
+        }
+
+        return null;
     }
 
     // Handle a message of type Request
     private Message handleRequestMsg(Message msg) {
-        // HAS packet payload: 4 byte piece index field
+        // HAS packet payload: 4 'byte piece index field
         // Ex: The peer has requested for us to send the piece corresponding to the 4 byte piece index field in the payload
 
         // Get piece index field
