@@ -90,9 +90,17 @@ public class Connection {
 		Helpers.println("Connection.send message length: " + m.getLength() + " for type: " + Helpers.GetMessageType(m.getType()));
 		//if (_socket == null)
 			//Logger.getInstance().dangerouslyWrite("SOCKET IS NULL D:");
-		_socket.write(lengthAsArr);
-		_socket.write(m.getType());
+		try {
+			_socket.write(lengthAsArr);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
+		try {
+			_socket.write(m.getType());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		// Send message payload
 		if (m.getLength()-1 > 0) {
 			try {
