@@ -158,7 +158,7 @@ public class Process implements Runnable {
 
         // Send our completed bitfield to everyone else
         Bitfield field = peerInfo.getBitfield();
-        if (!field.empty()) {
+        if (!field.empty() && !peerInfo.getStartedWithFile()) {
             byte[] arr = field.getBits().toByteArray();
             for (ConnectionHandler ch : _connHandlers) {
                 //Logger.getInstance().dangerouslyWrite("Sending over our bitfield to " + ch.getRemotePeerId());
