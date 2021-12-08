@@ -295,7 +295,9 @@ public class PeerManager implements Runnable {
                 else
                     optimistically_unchokable_peers = _interestedPeers.subList(_num_Preferred_Neighbors, _interestedPeers.size());
 
-                Logger.getInstance().optimisticallyUnchokedNeighbor(optimistically_unchokable_peers.iterator().next().getId());
+                if (optimistically_unchokable_peers.stream().findFirst().isPresent()) {
+                    Logger.getInstance().optimisticallyUnchokedNeighbor(optimistically_unchokable_peers.stream().findFirst().get().getId());
+                }
 
                 preferredPeerIDs.addAll(PeerInfo.toIdList(_preferredPeers));
 
