@@ -15,18 +15,30 @@ Compilation of this project requires the following:
 
 - [IntelliJ IDEA](https://www.jetbrains.com/idea/)
 - Gradle, Gradle Extension plugins for IntelliJ (installed by default)
-- [Java Development Kit](https://www.oracle.com/java/technologies/downloads/)
+- [Java Development Kit](https://adoptium.net/?variant=openjdk8) (Adopt Open 1.8 Recommended)
+- Windows is recommended
 
 In order to compile the project:
 
 1. Download the zip file that is submitted.
+
 2. Unzip the downloaded file.
+
 3. Launch IntelliJ. You should see the window pictured below.
 
 ![intellij-launch](./images/intellij-launch.png)
 
-4. Select Open or Import and navigate to and open `/network-project/PeerProcess/` from the unzipped file.
-5. A new window should open appearing like below. If you wish to configure anything before building, please refer to the [Configuration](#configuration) section. Otherwise, right click PeerProcess on the left side in the project structure and click the Build Module 'PeerProcess' option.
+4. Select Open, then navigate to and open `/network-project/PeerProcess/` from the unzipped file.
+
+5. A new window should open appearing like below. If you wish to configure anything before building, please refer to the [Configuration](#configuration) section. 
+
+![project-open](./images/project-open.png)
+
+6. In the project tree on the left, expand `src/main/`. There should be two directories inside: `java/` and `resources/`. Right click `java/` and select Mark Directory as Sources Root. Then right click `resources/` and select Mark Directory as Resources Root. If these options are not available, skip this step.
+
+![mark-dir](./images/mark-dir.png)
+
+5. Now right click `PeerProcess/` in the project tree and click the Build Module 'PeerProcess' option.
 
 ![intellij-build](./images/intellij-build.png)
 
@@ -36,14 +48,31 @@ In order to compile the project:
 ---
 
 
+## Compilation Without IntelliJ IDEA (For CISE Machines)
+
+If you would instead like to build the project without IntelliJ, follow the instructions below.
+
+1. Download the zip file that is submitted.
+
+2. Unzip the downloaded file.
+
+3. Navigate to `network-project/PeerProcess/src/main/java` in your terminal and run the following command: `rm -rf ../../../build mkdir ../../../build && javac -d ../../../build/classes/java/main *.java && cd ../../../build && mkdir resources && cd resources && mkdir main && cd main && mkdir 1001 && cp ../../../src/main/resources/PeerInfo.cfg ./PeerInfo.cfg && cp ../../../src/main/resources/Common.cfg ./Common.cfg && cp ../../../src/main/resources/1001/thefile ./1001/thefile && cd ../../classes/java/main/`
+
+
+
+---
+
+
 ## Execution
 
-The example here will only be with 2 peers. However, more peers may be used if [configured correctly](#configuration).
+The example here will only be with 2 peers. However, as seen in the demonstration video, more peers may be used if [configured correctly](#configuration).
 
 In order to execute the project:
 
 1. Follow the compilation directions from the previous section.
-2. Navigate to `network-project/PeerProcess/build/classes/java/main/` in the unzipped file.
+
+2. Navigate to `network-project/PeerProcess/build/classes/java/main/` in the unzipped file from yout terminal.
+
 3. Run the command `java PeerProcess 1001`. You should see output similar to the screenshot below.
 
 ![terminal-first-peer](./images/terminal-first-peer.png)
@@ -51,6 +80,8 @@ In order to execute the project:
 4. In order to run a second peer locally, open a separate terminal window and follow steps 2 and 3, but replace `1001` with `1002`. The output should be similar too the screenshot below.
 
 ![terminal-second-peer](./images/terminal-second-peer.png)
+
+5. After execution, you may find a summary and individual peer logs in `network-project/PeerProcess/build/resources/main/`. **NOTE: The summary log must be deleted before each run to have an updated version.**
 
 
 ---
@@ -86,10 +117,17 @@ The peers involved can also be configured at `network-project/PeerProcess/src/ma
 For example:
 
 ```
-1001 localhost 4123 1
-1002 localhost 4124 0
-1003 localhost 4125 0
-1004 localhost 4126 0
+1001 localhost 4001 1
+1002 localhost 4002 0
+1003 localhost 4003 0
+1004 localhost 4004 0
+1005 localhost 4005 0
+1006 localhost 4006 1
+1007 localhost 4007 0
+1008 localhost 4008 0
+1009 localhost 4009 0
 ```
 
-When adding or removing additional peers, you must also make directories corresponding to their ID inside `network-project/PeerProcess/src/main/resources/`, e.g. `1001/` or `1002/`. Furthermore, if a peer is stated to have the file inside `PeerInfo.cfg`, you must have a copy of the file inside its directory.
+If a peer begins with the file, it must have its own directory in `network-project/PeerProcess/src/main/resources/` corresponding to its peer id, such as `1001/`. This directory should also contain the file it begins with.
+
+For example, following the `PeerInfo.cfg` shown above, both `1001/` and `1006/` would be found in `network-project/PeerProcess/src/main/resources/`, and `thefile` would be located in both of those.
