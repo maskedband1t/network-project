@@ -13,6 +13,12 @@ Allison Wu, Brian Koehler, Anurag Akkiraju
 
 ---
 
+## Notes
+
+The read me is mainly for running the solution among process instances on localhost, rather than across devices. An external, unprovided script must be used to run the solution across several devices, which may require ssh'ing as well.
+
+---
+
 ## Configuration
 
 **NOTE: Any change in configuration requires the project to be rebuilt.**
