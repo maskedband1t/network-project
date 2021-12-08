@@ -39,7 +39,7 @@ public class Helpers {
 
     // Get a subset of a byte array
     public static byte[] getByteSubset(byte[] source, int srcBegin, int srcEnd) {
-        byte destination[] = new byte[srcEnd - srcBegin];
+        byte[] destination = new byte[srcEnd - srcBegin];
         copyBytes(source, srcBegin, srcEnd, destination, 0);
         return destination;
     }
@@ -98,5 +98,5 @@ public class Helpers {
     public static final String pathToResourcesFolder = "./../../../resources/main/";
 
     // Debugging purposes - should we print debugging statements?
-    public static final boolean debug = false;
+    public static final boolean debug = true;
 }

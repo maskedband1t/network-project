@@ -181,7 +181,7 @@ public class Process implements Runnable {
         if (_peers_file_complete.get()) { // we are done && everyone else is done
             // write to summary log
             try {
-                File logFile = new File(Helpers.pathToResourcesFolder + "summary.log");
+                File logFile = new File(Helpers.pathToResourcesFolder + "swummary.log");
                 logFile.createNewFile();
 
                 BufferedWriter bf = new BufferedWriter(new FileWriter(logFile, true));
