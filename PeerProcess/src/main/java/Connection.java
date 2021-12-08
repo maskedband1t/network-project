@@ -132,13 +132,17 @@ public class Connection {
 				}
 			}
 			//_socket.read(msg_length, 4);
-			Helpers.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
+			//System.out.println("Read msg_length: " + Helpers.bytesToInt(msg_length));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
 		// ml is length of payload only (one was for type byte)
 		int ml = Helpers.bytesToInt(msg_length) - 1;
+
+		// validate ml
+		if (ml > CommonConfig.getInstance().pieceSize + 4)
+			return null;
 
 		// Read message type
 		try {

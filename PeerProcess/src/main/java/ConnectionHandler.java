@@ -129,6 +129,7 @@ public class ConnectionHandler implements Runnable{
         }
         finally {
             // Close the connection before exiting the run() function
+            if (_conn != null)
             _conn.close();
         }
         //Logger.getInstance().dangerouslyWrite("Terminating ConnectionHandler thread, messages will no longer be accepted nor handled");
