@@ -33,9 +33,12 @@ public class PeerSocket implements SocketInterface{
 	// Close socket
 	public void close() {
 		try {
-			is.close();
-			os.close();
-			s.close();
+			if (is != null)
+				is.close();
+			if (os != null)
+				os.close();
+			if (s != null)
+				s.close();
 		} catch (IOException e) {
 			//e.printStackTrace();
 		}
@@ -44,8 +47,10 @@ public class PeerSocket implements SocketInterface{
 	// Write to socket
 	public void write(byte[] b) {
 		try {
-			os.write(b);
-			os.flush();
+			if (b != null) {
+				os.write(b);
+				os.flush();
+			}
 		} catch (IOException e) {
 			//e.printStackTrace();
 		}
