@@ -2,7 +2,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 public class Logger {
     private static Logger instance = null;
@@ -83,7 +83,7 @@ public class Logger {
     }
 
     // Log stating this peer's preferred neighbors
-    public synchronized boolean preferredNeighbors(List<Integer> ids) {
+    public synchronized boolean preferredNeighbors(Set<Integer> ids) {
         try {
             // Generate comma-separated string of preferred neighbor ids
             String idsString = ids.toString();

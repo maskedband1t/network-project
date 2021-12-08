@@ -157,6 +157,7 @@ public class PeerManager implements Runnable {
         Set<Integer> preferred_peers = new HashSet<>();
         preferred_peers.addAll(c_peers);
         _preferredPeerIDs = preferred_peers;
+        Logger.getInstance().preferredNeighbors(_preferredPeerIDs);
     }
 
     // Get _chokedPeerIDs
@@ -293,6 +294,8 @@ public class PeerManager implements Runnable {
                     optimistically_unchokable_peers = new ArrayList<PeerInfo>();
                 else
                     optimistically_unchokable_peers = _interestedPeers.subList(_num_Preferred_Neighbors, _interestedPeers.size());
+
+                Logger.getInstance().optimisticallyUnchokedNeighbor(optimistically_unchokable_peers.iterator().next().getId());
 
                 preferredPeerIDs.addAll(PeerInfo.toIdList(_preferredPeers));
 
