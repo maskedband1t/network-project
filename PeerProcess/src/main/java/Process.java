@@ -116,6 +116,16 @@ public class Process implements Runnable {
         }
     }
 
+    // unchoke peers
+    public synchronized void unchoke_peers(List<Integer> peers) throws IOException {
+        for (ConnectionHandler ch : _connHandlers) {
+            if (peers.contains(ch.getRemotePeerId())) {
+                //Helpers.println("Unchoking: " + ch.getRemotePeerId());
+                ch.send(new Message(Helpers.UNCHOKE, new byte[]{}));
+            }
+        }
+    }
+
     // Handle when a piece arrives
     public synchronized void receivedPiece(int pieceIndex) throws IOException {
         for (ConnectionHandler ch : _connHandlers) {

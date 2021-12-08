@@ -53,7 +53,7 @@ public class PeerManager implements Runnable {
                 }
 
                 try {
-                    _process.unchoke_peers((Set<Integer>) PeerInfo.toIdList(_optimisticallyUnchokedPeers));
+                    _process.unchoke_peers(PeerInfo.toIdList(_optimisticallyUnchokedPeers));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
