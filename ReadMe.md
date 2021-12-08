@@ -71,11 +71,11 @@ In order to compile the project:
 
 ![intellij-launch](./images/intellij-launch.png)
 
-4. Select Open, then navigate to and open `/network-project/PeerProcess/` from the unzipped file.
+4. Create a New Project, and use Gradle with Java for compilation.
 
-5. A new window should open appearing like below. If you wish to configure anything before building, please refer to the [Configuration](#configuration) section. 
+![create-new-project](./images/create-new-project.png)
 
-![project-open](./images/project-open.PNG)
+5. Replace the default `src` directory with the unzipped `src` directory provided in the Canvas submission. If you wish to configure anything before building, please refer to the [Configuration](#configuration) section. 
 
 6. In the project tree on the left, expand `src/main/`. There should be two directories inside: `java/` and `resources/`. Right click `java/` and select Mark Directory as Sources Root. Then right click `resources/` and select Mark Directory as Resources Root. If these options are not available, skip this step.
 
@@ -97,7 +97,7 @@ If you would instead like to build the project without IntelliJ, follow the inst
 
 2. Unzip the downloaded file.
 
-3. Navigate to `network-project/PeerProcess/src/main/java` in your terminal and run the following command: `rm -rf ../../../build mkdir ../../../build && javac -d ../../../build/classes/java/main *.java && cd ../../../build && mkdir resources && cd resources && mkdir main && cd main && mkdir 1001 && cp ../../../src/main/resources/PeerInfo.cfg ./PeerInfo.cfg && cp ../../../src/main/resources/Common.cfg ./Common.cfg && cp ../../../src/main/resources/1001/thefile ./1001/thefile && cd ../../classes/java/main/`
+3. Navigate to `<project-name>/src/main/java` in your terminal and run the following command: `rm -rf ../../../build mkdir ../../../build && javac -d ../../../build/classes/java/main *.java && cd ../../../build && mkdir resources && cd resources && mkdir main && cd main && mkdir 1001 && cp ../../../src/main/resources/PeerInfo.cfg ./PeerInfo.cfg && cp ../../../src/main/resources/Common.cfg ./Common.cfg && cp ../../../src/main/resources/1001/thefile ./1001/thefile && cd ../../classes/java/main/`
 
 ---
 
@@ -109,7 +109,7 @@ In order to execute the project:
 
 1. Follow the compilation directions from the previous section.
 
-2. Navigate to `network-project/PeerProcess/build/classes/java/main/` in the unzipped file from yout terminal.
+2. Navigate to `<project-name>/build/classes/java/main/` in the unzipped file from yout terminal.
 
 3. Run the command `java PeerProcess 1001`. You should see output similar to the screenshot below.
 
@@ -119,30 +119,30 @@ In order to execute the project:
 
 ![terminal-second-peer](./images/terminal-second-peer.png)
 
-5. After execution, you may find a summary and individual peer logs in `network-project/PeerProcess/build/resources/main/`. **NOTE: The summary log must be deleted before each run to have an updated version.**
+5. After execution, you may find a summary and individual peer logs in `<project-name>/build/resources/main/`. **NOTE: The summary log must be deleted before each run to have an updated version.**
 
 ---
 
 ## Resources folder hierarchy (post-execution)
 
-After executing the solution (see instructions here [here](#execution)), `network-project/PeerProcess/build/resources/main` should look similar to the screenshot below.
+After executing the solution (see instructions here [here](#execution)), `<project-name>/build/resources/main` should look similar to the screenshot below.
 
 ![resources-hierarchy](./images/resources-hierarchy.png)
 
 ### Hierarchy Description
-1. `network-project/PeerProcess/build/resources/main/<id>`
+1. `<project-name>/build/resources/main/<id>`
   - Directory containing the peers pieces and file
-    - *Ex: Peer 1001 has `network-project/PeerProcess/build/resources/main/1001`*
-    - `network-project/PeerProcess/build/resources/main/<id>/pieces`
-      - *Ex: Peer 1001's piece 50 is at `network-project/PeerProcess/build/resources/main/1001/pieces/50`*
+    - *Ex: Peer 1001 has `<project-name>/build/resources/main/1001`*
+    - `<project-name>/build/resources/main/<id>/pieces`
+      - *Ex: Peer 1001's piece 50 is at `<project-name>/build/resources/main/1001/pieces/50`*
       - Contains all pieces files that make up the file  
-    - `network-project/PeerProcess/build/resources/main/<id>/<filename>`
-      - *Ex: Peer 1001's completed file, tree.jpg, is at `network-project/PeerProcess/build/resources/main/1001/tree.jpg`*
+    - `<project-name>/build/resources/main/<id>/<filename>`
+      - *Ex: Peer 1001's completed file, tree.jpg, is at `<project-name>/build/resources/main/1001/tree.jpg`*
       - The path to the target file
-3. `network-project/PeerProcess/build/resources/main/log_peer_<id>`
-   - *Ex: Peer 1001 logs everything to `network-project/PeerProcess/build/resources/main/log_peer_1001`*
+3. `<project-name>/build/resources/main/log_peer_<id>`
+   - *Ex: Peer 1001 logs everything to `<project-name>/build/resources/main/log_peer_1001`*
    - Contains all of a peers message and event logs 
-4. `network-project/PeerProcess/build/resources/main/summary`
+4. `<project-name>/build/resources/main/summary`
    - All peers log their completion statement to this file
 5. All other files in the resources folder are unchanged after compilation 
 
